@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import de.tum.cit.fop.maze.GameControl.ConfigManager;
+import de.tum.cit.fop.maze.GameControl.SettingsScreen;
 import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
 /**

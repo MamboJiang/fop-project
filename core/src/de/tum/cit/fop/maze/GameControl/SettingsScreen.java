@@ -1,8 +1,7 @@
-package de.tum.cit.fop.maze;
+package de.tum.cit.fop.maze.GameControl;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -12,8 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-
-import java.util.Map;
+import de.tum.cit.fop.maze.MazeRunnerGame;
 
 /**
  * Screen for game settings including volume and key bindings.
