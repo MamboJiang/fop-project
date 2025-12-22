@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
+import de.tum.cit.fop.maze.GameControl.ConfigManager;
 import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
 /**
@@ -28,6 +29,10 @@ public class MazeRunnerGame extends Game {
 
     // Character animation downwards
     private Animation<TextureRegion> characterDownAnimation;
+    
+    // Configuration Manager
+    private ConfigManager configManager;
+    private Music backgroundMusic;
 
     /**
      * Constructor for MazeRunnerGame.
@@ -43,18 +48,22 @@ public class MazeRunnerGame extends Game {
      */
     @Override
     public void create() {
+        configManager = new ConfigManager(); // Initialize config manager
+
         spriteBatch = new SpriteBatch(); // Create SpriteBatch
         skin = new Skin(Gdx.files.internal("craft/craftacular-ui.json")); // Load UI skin
         this.loadCharacterAnimation(); // Load character animation
 
         // Play some background music
         // Background sound
-        Music backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("background.mp3"));
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("background.mp3"));
         backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(configManager.getMusicVolume());
         backgroundMusic.play();
 
         goToMenu(); // Navigate to the menu screen
     }
+
 
     /**
      * Switches to the menu screen.
@@ -76,6 +85,30 @@ public class MazeRunnerGame extends Game {
             menuScreen.dispose(); // Dispose the menu screen if it exists
             menuScreen = null;
         }
+    }
+
+    /**
+     * Switches to the settings screen.
+     */
+    public void goToSettings() {
+        this.setScreen(new SettingsScreen(this));
+        if (menuScreen != null) {
+            menuScreen.dispose();
+            menuScreen = null;
+        }
+    }
+    
+    /**
+     * Updates the music volume based on configuration.
+     */
+    public void updateMusicVolume() {
+        if (backgroundMusic != null) {
+            backgroundMusic.setVolume(configManager.getMusicVolume());
+        }
+    }
+
+    public ConfigManager getConfigManager() {
+        return configManager;
     }
 
     /**
@@ -108,6 +141,9 @@ public class MazeRunnerGame extends Game {
         getScreen().dispose(); // Dispose the current screen
         spriteBatch.dispose(); // Dispose the spriteBatch
         skin.dispose(); // Dispose the skin
+        if (backgroundMusic != null) {
+            backgroundMusic.dispose();
+        }
     }
 
     // Getter methods

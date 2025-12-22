@@ -1,0 +1,10 @@
+{
+keyBindings: {
+	class: java.util.HashMap
+	PAUSE: 111
+	DOWN: 47
+	LEFT: 29
+	RIGHT: 32
+	UP: 51
+}
+}
