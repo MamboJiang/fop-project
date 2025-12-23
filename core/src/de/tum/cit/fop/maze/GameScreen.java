@@ -172,7 +172,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-
+        Gdx.input.setInputProcessor(null); // Clear any input processor from previous screen
     }
 
     @Override
