@@ -161,7 +161,7 @@ public class GameScreen implements Screen {
         // Logic update
         if (!isPaused) {
             if (character != null) {
-                character.update(delta, mapObjects);
+                character.update(delta, mapObjects, game.getConfigManager());
 
                 // Camera follow character
                 camera.position.set(character.getPosition().x, character.getPosition().y, 0);

@@ -51,89 +51,103 @@ public class Character extends GameObject {
             Texture texture = new Texture(Gdx.files.internal("character.png"));
             TextureRegion[][] tmp = TextureRegion.split(texture, 16, 32);
 
+            // Helper to extract first 4 frames
+            TextureRegion[] downFrames = new TextureRegion[4];
+            TextureRegion[] rightFrames = new TextureRegion[4];
+            TextureRegion[] upFrames = new TextureRegion[4];
+            TextureRegion[] leftFrames = new TextureRegion[4];
+            
+            int index = 0;
+            for (int i = 0; i < 4; i++) {
+                downFrames[i] = tmp[0][i];
+                rightFrames[i] = tmp[1][i];
+                upFrames[i] = tmp[2][i];
+                leftFrames[i] = tmp[3][i];
+            }
+
             // Row 0: Down
-            walkDown = new Animation<>(0.1f, tmp[0]);
+            walkDown = new Animation<>(0.1f, downFrames);
             // Row 1: Right
-            walkRight = new Animation<>(0.1f, tmp[1]);
+            walkRight = new Animation<>(0.1f, rightFrames);
             // Row 2: Up
-            walkUp = new Animation<>(0.1f, tmp[2]);
+            walkUp = new Animation<>(0.1f, upFrames);
             // Row 3: Left
-            walkLeft = new Animation<>(0.1f, tmp[3]);
+            walkLeft = new Animation<>(0.1f, leftFrames);
 
             // Set initial texture
-            this.textureRegion = tmp[0][0];
+            this.textureRegion = downFrames[0];
         }
 
-        public void update(float delta, List<GameObject> mapObjects) {
-            stateTime += delta;
-            handleInput();
+    public void update(float delta, List<GameObject> mapObjects, de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
+        stateTime += delta;
+        handleInput(configManager);
 
-            if (isMoving) {
-                float moveAmount = speed * delta;
-                float oldX = position.x;
-                float oldY = position.y;
+        if (isMoving) {
+            float moveAmount = speed * delta;
+            float oldX = position.x;
+            float oldY = position.y;
 
-                switch (currentDirection) {
-                    case DOWN: position.y -= moveAmount; break;
-                    case RIGHT: position.x += moveAmount; break;
-                    case UP: position.y += moveAmount; break;
-                    case LEFT: position.x -= moveAmount; break;
-                }
-
-                updateBounds();
-
-                if (checkCollision(mapObjects)) {
-                    // Revert position if collided
-                    position.set(oldX, oldY);
-                    updateBounds();
-                }
-            }
-
-            // Update texture based on animation
-            Animation<TextureRegion> currentAnim;
             switch (currentDirection) {
-                case DOWN: currentAnim = walkDown; break;
-                case RIGHT: currentAnim = walkRight; break;
-                case UP: currentAnim = walkUp; break;
-                case LEFT: currentAnim = walkLeft; break;
-                default: currentAnim = walkDown; break;
+                case DOWN: position.y -= moveAmount; break;
+                case RIGHT: position.x += moveAmount; break;
+                case UP: position.y += moveAmount; break;
+                case LEFT: position.x -= moveAmount; break;
             }
 
-            if (isMoving) {
-                this.textureRegion = currentAnim.getKeyFrame(stateTime, true);
-            } else {
-                this.textureRegion = currentAnim.getKeyFrame(0, true); // Stand still frame
-            }
+            updateBounds();
 
-            // Handle damage flash
-            if (damageFlashTime > 0) {
-                damageFlashTime -= delta;
+            if (checkCollision(mapObjects)) {
+                // Revert position if collided
+                position.set(oldX, oldY);
+                updateBounds();
             }
         }
 
-        private void handleInput() {
-            isMoving = false;
-
-            if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
-                speed = RUN_SPEED;
-            } else {
-                speed = WALK_SPEED;
-            }
-
-            if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-                currentDirection = Direction.DOWN;
-                isMoving = true;
-            } else if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-                currentDirection = Direction.UP;
-                isMoving = true;
-            } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-                currentDirection = Direction.LEFT;
-                isMoving = true;
-            } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-                currentDirection = Direction.RIGHT;
-                isMoving = true;
-            }
+        // Update texture based on animation
+        Animation<TextureRegion> currentAnim;
+        switch (currentDirection) {
+            case DOWN: currentAnim = walkDown; break;
+            case RIGHT: currentAnim = walkRight; break;
+            case UP: currentAnim = walkUp; break;
+            case LEFT: currentAnim = walkLeft; break;
+            default: currentAnim = walkDown; break;
         }
+
+        if (isMoving) {
+            this.textureRegion = currentAnim.getKeyFrame(stateTime, true);
+        } else {
+            this.textureRegion = currentAnim.getKeyFrame(0, true); // Stand still frame
+        }
+
+        // Handle damage flash
+        if (damageFlashTime > 0) {
+            damageFlashTime -= delta;
+        }
+    }
+
+    private void handleInput(de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
+        isMoving = false;
+
+        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+            speed = RUN_SPEED;
+        } else {
+            speed = WALK_SPEED;
+        }
+
+        if (Gdx.input.isKeyPressed(configManager.getKey("DOWN"))) {
+            currentDirection = Direction.DOWN;
+            isMoving = true;
+        } else if (Gdx.input.isKeyPressed(configManager.getKey("UP"))) {
+            currentDirection = Direction.UP;
+            isMoving = true;
+        } else if (Gdx.input.isKeyPressed(configManager.getKey("LEFT"))) {
+            currentDirection = Direction.LEFT;
+            isMoving = true;
+        } else if (Gdx.input.isKeyPressed(configManager.getKey("RIGHT"))) {
+            currentDirection = Direction.RIGHT;
+            isMoving = true;
+        }
+    }
 
         private void updateBounds() {
             this.bounds.setPosition(position.x + 4, position.y);
