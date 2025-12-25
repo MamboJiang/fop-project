@@ -1,6 +1,8 @@
 package de.tum.cit.fop.maze;
 
+
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -20,6 +22,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import de.tum.cit.fop.maze.GameObj.Character;
 import de.tum.cit.fop.maze.GameObj.EntryPoint;
 import de.tum.cit.fop.maze.GameObj.GameObject;
+import de.tum.cit.fop.maze.GameControl.HUD;
 
 import java.util.List;
 
@@ -33,7 +36,11 @@ public class GameScreen implements Screen {
     private final OrthographicCamera camera;
     private final BitmapFont font;
     private ShapeRenderer shapeRenderer;
+    private HUD hud;
     
+    // Debug
+    private boolean debugEnabled = false;
+
     // Pause State and UI
     private boolean isPaused = false;
     private Stage pauseStage;
@@ -62,6 +69,7 @@ public class GameScreen implements Screen {
         font = game.getSkin().getFont("font");
         
         shapeRenderer = new ShapeRenderer();
+        hud = new HUD(game.getSpriteBatch(), this, game.getSkin());
 
         setupPauseMenu();
         setupLevel();
@@ -143,11 +151,22 @@ public class GameScreen implements Screen {
      */
     private void togglePause() {
         isPaused = !isPaused;
+        updateInputProcessor();
+    }
+    
+    public void updateInputProcessor() {
+        InputMultiplexer multiplexer = new InputMultiplexer();
         if (isPaused) {
-            Gdx.input.setInputProcessor(pauseStage);
+            multiplexer.addProcessor(pauseStage);
         } else {
-            Gdx.input.setInputProcessor(null); // Or the game input processor if one exists
+            // Process HUD input first, then game input (if any)
+            multiplexer.addProcessor(hud.getStage());
         }
+        Gdx.input.setInputProcessor(multiplexer);
+    }
+    
+    public void toggleDebug() {
+        debugEnabled = !debugEnabled;
     }
 
 
@@ -202,17 +221,17 @@ public class GameScreen implements Screen {
             game.getSpriteBatch().setColor(1, 1, 1, 1); // Reset color
         }
 
-        // Draw Lives HUD
-        // Using unprojected coordinates for HUD is tricky without a separate camera.
-        // We will just draw it near the character for now or assume camera position is center.
-        if (character != null) {
-            font.draw(game.getSpriteBatch(), "Lives: " + character.getLives(), camera.position.x - 100, camera.position.y + 100);
-        }
-
         game.getSpriteBatch().end(); // Important to call this after drawing everything
         
-        // Debug Rendering for Collision Boxes
+        // Draw HUD
         if (character != null) {
+            hud.update(character);
+            hud.render(delta);
+        }
+        
+        
+        // Debug Rendering for Collision Boxes
+        if (debugEnabled && character != null) {
             shapeRenderer.setProjectionMatrix(camera.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             
@@ -253,6 +272,7 @@ public class GameScreen implements Screen {
     public void resize(int width, int height) {
         camera.setToOrtho(false);
         pauseStage.getViewport().update(width, height, true);
+        hud.resize(width, height);
     }
 
 
@@ -266,7 +286,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-        Gdx.input.setInputProcessor(null); // Clear any input processor from previous screen
+        updateInputProcessor();
     }
 
     @Override
@@ -278,5 +298,6 @@ public class GameScreen implements Screen {
         if (pauseBackground != null) pauseBackground.dispose();
         if (pauseStage != null) pauseStage.dispose();
         if (shapeRenderer != null) shapeRenderer.dispose();
+        if (hud != null) hud.dispose();
     }
 }

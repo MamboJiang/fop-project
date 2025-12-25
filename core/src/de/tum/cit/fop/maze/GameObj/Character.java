@@ -12,6 +12,7 @@ import java.util.List;
 
 public class Character extends GameObject {
         private int lives;
+        private boolean hasKey = false;
         private float speed;
         private static final float WALK_SPEED = 100f;
         private static final float RUN_SPEED = 200f;
@@ -35,7 +36,7 @@ public class Character extends GameObject {
 
         public Character(float x, float y) {
             super(x, y, 16, 32, null); // width 16, height 32
-            this.lives = 3; // Default lives
+            this.lives = 4; // Default lives
             this.speed = WALK_SPEED;
             this.currentDirection = Direction.DOWN;
             this.stateTime = 0f;
@@ -186,6 +187,27 @@ public class Character extends GameObject {
 
         public boolean isDamaged() {
             return damageFlashTime > 0;
+        }
+
+        public boolean hasKey() {
+            return hasKey;
+        }
+
+        public void setHasKey(boolean hasKey) {
+            this.hasKey = hasKey;
+        }
+        
+        // Debug methods
+        public void setLives(int lives) {
+            this.lives = lives;
+            if (this.lives > 4) this.lives = 4;
+            if (this.lives < 0) this.lives = 0;
+        }
+
+        public void addLives(int amount) {
+            this.lives += amount;
+            if (this.lives > 4) this.lives = 4;
+            if (this.lives < 0) this.lives = 0;
         }
 
 
