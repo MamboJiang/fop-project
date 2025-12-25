@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -30,9 +32,8 @@ public class GameScreen implements Screen {
     private final MazeRunnerGame game;
     private final OrthographicCamera camera;
     private final BitmapFont font;
-
-    private float sinusInput = 0f;
-
+    private ShapeRenderer shapeRenderer;
+    
     // Pause State and UI
     private boolean isPaused = false;
     private Stage pauseStage;
@@ -59,6 +60,8 @@ public class GameScreen implements Screen {
 
         // Get the font from the game's skin
         font = game.getSkin().getFont("font");
+        
+        shapeRenderer = new ShapeRenderer();
 
         setupPauseMenu();
         setupLevel();
@@ -206,8 +209,38 @@ public class GameScreen implements Screen {
             font.draw(game.getSpriteBatch(), "Lives: " + character.getLives(), camera.position.x - 100, camera.position.y + 100);
         }
 
-
         game.getSpriteBatch().end(); // Important to call this after drawing everything
+        
+        // Debug Rendering for Collision Boxes
+        if (character != null) {
+            shapeRenderer.setProjectionMatrix(camera.combined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            
+            // Draw Character Bounds (Red)
+            shapeRenderer.setColor(Color.RED);
+            shapeRenderer.rect(
+                character.getBounds().x, 
+                character.getBounds().y, 
+                character.getBounds().width, 
+                character.getBounds().height
+            );
+            
+            // Draw Wall Bounds (Green)
+            shapeRenderer.setColor(Color.GREEN);
+            if (mapObjects != null) {
+                for (GameObject obj : mapObjects) {
+                    if (obj instanceof de.tum.cit.fop.maze.GameObj.Wall) {
+                        shapeRenderer.rect(
+                            obj.getBounds().x, 
+                            obj.getBounds().y, 
+                            obj.getBounds().width, 
+                            obj.getBounds().height
+                        );
+                    }
+                }
+            }
+            shapeRenderer.end();
+        }
 
         // Draw pause menu if paused
         if (isPaused) {
@@ -244,5 +277,6 @@ public class GameScreen implements Screen {
     public void dispose() {
         if (pauseBackground != null) pauseBackground.dispose();
         if (pauseStage != null) pauseStage.dispose();
+        if (shapeRenderer != null) shapeRenderer.dispose();
     }
 }

@@ -50,7 +50,7 @@ public class MapLoader {
                     if (type != 0) {
                         // 添加地板 (假设 basictiles.png 中 regions[1][1] 是地板)
                         // 注意：这里需要你确认一下地板在图片里的位置，通常是第2行第2列或其他位置
-                        objects.add(new Wall(worldX, worldY, 16, 16, regions[1][1]));
+                        objects.add(new Floor(worldX, worldY, 16, 16, regions[1][1]));
                     }
 
                     // 3. 添加具体的游戏对象
