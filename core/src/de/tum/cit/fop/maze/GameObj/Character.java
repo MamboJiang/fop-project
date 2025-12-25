@@ -44,7 +44,7 @@ public class Character extends GameObject {
 
             // precise collision bounds (smaller than texture to allow overlap with head/feet properly)
             // Adjusting bounds to be the bottom part of the character for better perspective
-            this.bounds = new Rectangle(x + 4, y, 8, 12);
+            this.bounds = new Rectangle(x+4, y+4, 8, 8);
         }
 
         private void loadAnimations() {
@@ -150,7 +150,7 @@ public class Character extends GameObject {
     }
 
         private void updateBounds() {
-            this.bounds.setPosition(position.x + 4, position.y);
+            this.bounds.setPosition(position.x+4, position.y+4);
         }
 
         private boolean checkCollision(List<GameObject> mapObjects) {
@@ -160,6 +160,7 @@ public class Character extends GameObject {
                 // Wall collision
                 if (obj instanceof Wall) {
                     if (bounds.overlaps(obj.getBounds())) {
+                        System.out.println("Colliding with wall at: " + obj.getPosition());
                         return true;
                     }
                 }
@@ -186,5 +187,7 @@ public class Character extends GameObject {
         public boolean isDamaged() {
             return damageFlashTime > 0;
         }
+
+
 }
 
