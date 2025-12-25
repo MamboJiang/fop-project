@@ -151,6 +151,27 @@ public class HUD {
         contentTable.add(hpMinusBtn).left().pad(5).row();
         contentTable.add(keyBtn).left().pad(5).row();
         
+        // Zoom In Button
+        TextButton zoomInBtn = new TextButton("Zoom +", skin);
+        zoomInBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                gameScreen.zoomIn();
+            }
+        });
+        
+        // Zoom Out Button
+        TextButton zoomOutBtn = new TextButton("Zoom -", skin);
+        zoomOutBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                gameScreen.zoomOut();
+            }
+        });
+        
+        contentTable.add(zoomInBtn).left().pad(5).row();
+        contentTable.add(zoomOutBtn).left().pad(5).row();
+        
         // Add content table and toggle button to main table
         // We want the toggle button at the bottom, and content above it
         debugTable.add(contentTable).left().pad(5).row();

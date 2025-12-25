@@ -168,6 +168,16 @@ public class GameScreen implements Screen {
     public void toggleDebug() {
         debugEnabled = !debugEnabled;
     }
+    
+    public void zoomIn() {
+        camera.zoom = Math.max(0.1f, camera.zoom - 0.1f);
+        camera.update();
+    }
+    
+    public void zoomOut() {
+        camera.zoom = Math.min(2.0f, camera.zoom + 0.1f);
+        camera.update();
+    }
 
 
     // Screen interface methods with necessary functionality
@@ -219,6 +229,9 @@ public class GameScreen implements Screen {
             );
 
             game.getSpriteBatch().setColor(1, 1, 1, 1); // Reset color
+            
+            // Draw Navigation Arrow
+            character.drawArrow(game.getSpriteBatch());
         }
 
         game.getSpriteBatch().end(); // Important to call this after drawing everything

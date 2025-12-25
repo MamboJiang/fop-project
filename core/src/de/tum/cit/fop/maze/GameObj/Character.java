@@ -8,6 +8,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import java.util.List;
 
 public class Character extends GameObject {
@@ -29,6 +32,10 @@ public class Character extends GameObject {
         // Damage VFX
         private float damageFlashTime = 0f;
         private static final float DAMAGE_DURATION = 1.0f;
+        
+        // Navigation Arrow
+        private TextureRegion arrowRegion;
+        private Vector2 targetPosition; // Position of closest key or exit
 
         public enum Direction {
             DOWN, RIGHT, UP, LEFT
@@ -51,6 +58,11 @@ public class Character extends GameObject {
         private void loadAnimations() {
             Texture texture = new Texture(Gdx.files.internal("character.png"));
             TextureRegion[][] tmp = TextureRegion.split(texture, 16, 32);
+
+            Texture thingsTexture = new Texture(Gdx.files.internal("assets/things.png"));
+            TextureRegion[][] thingsTmp = TextureRegion.split(thingsTexture, 16, 16);
+            arrowRegion = thingsTmp[4][0];
+
 
             // Helper to extract first 4 frames
             TextureRegion[] downFrames = new TextureRegion[4];
@@ -124,6 +136,71 @@ public class Character extends GameObject {
         if (damageFlashTime > 0) {
             damageFlashTime -= delta;
         }
+        
+        updateTarget(mapObjects);
+    }
+    
+    private void updateTarget(List<GameObject> mapObjects) {
+        targetPosition = null;
+        float minDst = Float.MAX_VALUE;
+        
+        // If has Key, look for Exit. Else look for Key.
+        Class<?> targetType = hasKey ? Exit.class : Key.class;
+        
+        for (GameObject obj : mapObjects) {
+            if (targetType.isInstance(obj)) {
+                 float dst = Vector2.dst2(position.x, position.y, obj.getPosition().x, obj.getPosition().y);
+                 if (dst < minDst) {
+                     minDst = dst;
+                     targetPosition = obj.getPosition();
+                 }
+            }
+        }
+        
+        // If searching for key but none found (e.g. all collected or none exist), target Exit
+        if (!hasKey && targetPosition == null) {
+            targetType = Exit.class;
+            for (GameObject obj : mapObjects) {
+                if (targetType.isInstance(obj)) {
+                     float dst = Vector2.dst2(position.x, position.y, obj.getPosition().x, obj.getPosition().y);
+                     if (dst < minDst) {
+                         minDst = dst;
+                         targetPosition = obj.getPosition();
+                     }
+                }
+            }
+        }
+    }
+    
+    public void drawArrow(SpriteBatch batch) {
+        if (targetPosition == null) return;
+        
+        float angle = MathUtils.atan2(targetPosition.y - position.y, targetPosition.x - position.x) * MathUtils.radiansToDegrees;
+        float radius = 20f;
+        
+        // Center of character
+        float cx = position.x + width / 2;
+        float cy = position.y + height / 2; // Approximating center, char is 32 high but visual center roughly 16 up?
+        
+        float arrowX = cx + MathUtils.cosDeg(angle) * (radius);
+        float arrowY = cy + MathUtils.sinDeg(angle) * (radius);
+        
+        // Draw centered on arrowX, arrowY
+        // Subtract half width/height of arrow to center texture
+        float w = 16;
+        float h = 16;
+        
+        batch.draw(
+            arrowRegion, 
+            arrowX - w/2, arrowY - h/2, 
+            w/2, h/2, 
+            w, h, 
+            1, 1, 
+            angle - 90 // Adjust rotation so arrow points correctly (assuming texture points UP or RIGHT)
+                       // If texture points UP (standard), and angle 0 is Right, then rotate -90?
+                       // If texture points RIGHT, then angle.
+                       // Let's assume UP. 0 deg in atan2 is RIGHT. arrow UP needs -90 to become RIGHT. 
+        );
     }
 
     private void handleInput(de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
