@@ -37,6 +37,13 @@ public class Character extends GameObject {
         private TextureRegion arrowRegion;
         private Vector2 targetPosition; // Position of closest key or exit
 
+        // Physics
+        private Vector2 velocity = new Vector2();
+        private float acceleration = 800f;
+        private float friction = 800f;
+        private float maxSpeed = WALK_SPEED;
+        private Vector2 inputVector = new Vector2();
+
         public enum Direction {
             DOWN, RIGHT, UP, LEFT
         }
@@ -93,26 +100,81 @@ public class Character extends GameObject {
 
     public void update(float delta, List<GameObject> mapObjects, de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
         stateTime += delta;
+        
         handleInput(configManager);
+        
+        // Physics update
+        float targetX = inputVector.x * maxSpeed;
+        float targetY = inputVector.y * maxSpeed;
+        
+        // Apply acceleration/friction
+        velocity.x = approach(velocity.x, targetX, (inputVector.x != 0 ? acceleration : friction) * delta);
+        velocity.y = approach(velocity.y, targetY, (inputVector.y != 0 ? acceleration : friction) * delta);
+        
+        // Animation state
+        if (velocity.len() > 10f) {
+            isMoving = true;
+            // Update direction based on velocity
+            if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
+                currentDirection = velocity.x > 0 ? Direction.RIGHT : Direction.LEFT;
+            } else {
+                currentDirection = velocity.y > 0 ? Direction.UP : Direction.DOWN;
+            }
+        } else {
+            isMoving = false;
+        }
 
-        if (isMoving) {
-            float moveAmount = speed * delta;
+        if (velocity.len() > 1f) {
             float oldX = position.x;
             float oldY = position.y;
-
-            switch (currentDirection) {
-                case DOWN: position.y -= moveAmount; break;
-                case RIGHT: position.x += moveAmount; break;
-                case UP: position.y += moveAmount; break;
-                case LEFT: position.x -= moveAmount; break;
-            }
-
+            
+            // Move X
+            position.x += velocity.x * delta;
             updateBounds();
-
-            if (checkCollision(mapObjects)) {
-                // Revert position if collided
-                position.set(oldX, oldY);
+            GameObject colX = checkCollision(mapObjects);
+            if (colX != null) {
+                position.x = oldX;
+                velocity.x = 0; // Stop on collision
                 updateBounds();
+            }
+            
+            // Move Y
+            position.y += velocity.y * delta;
+            updateBounds();
+            GameObject colY = checkCollision(mapObjects);
+            if (colY != null) {
+                position.y = oldY;
+                velocity.y = 0; // Stop on collision
+                updateBounds();
+            }
+            
+            // Corner Sliding Logic (Adapted to velocity)
+            // If we are stopped in one axis but trying to move, check for corner
+            if (colX != null && Math.abs(inputVector.x) > 0 && Math.abs(inputVector.y) == 0) {
+                 // Trying to move Horizontally, blocked. Check if we can slide Vertically.
+                 Rectangle wallBounds = colX.getBounds();
+                 float overlapY = Math.min(bounds.y + bounds.height, wallBounds.y + wallBounds.height) - Math.max(bounds.y, wallBounds.y);
+                 float SLIDE_THRESHOLD = 8.0f;
+                 if (overlapY > 0 && overlapY <= SLIDE_THRESHOLD) {
+                     float centerY = bounds.y + bounds.height/2;
+                     float wallCenterY = wallBounds.y + wallBounds.height/2;
+                     float slide = 50f * delta; // fixed slide speed
+                     if (centerY < wallCenterY) position.y -= slide;
+                     else position.y += slide;
+                 }
+            }
+            if (colY != null && Math.abs(inputVector.y) > 0 && Math.abs(inputVector.x) == 0) {
+                 // Trying to move Vertically, blocked. Check Horizontal.
+                 Rectangle wallBounds = colY.getBounds();
+                 float overlapX = Math.min(bounds.x + bounds.width, wallBounds.x + wallBounds.width) - Math.max(bounds.x, wallBounds.x);
+                 float SLIDE_THRESHOLD = 8.0f;
+                 if (overlapX > 0 && overlapX <= SLIDE_THRESHOLD) {
+                     float centerX = bounds.x + bounds.width/2;
+                     float wallCenterX = wallBounds.x + wallBounds.width/2;
+                     float slide = 50f * delta;
+                     if (centerX < wallCenterX) position.x -= slide;
+                     else position.x += slide;
+                 }
             }
         }
 
@@ -138,6 +200,14 @@ public class Character extends GameObject {
         }
         
         updateTarget(mapObjects);
+    }
+    
+    private float approach(float current, float target, float amount) {
+        if (current < target) {
+            return Math.min(current + amount, target);
+        } else {
+            return Math.max(current - amount, target);
+        }
     }
     
     private void updateTarget(List<GameObject> mapObjects) {
@@ -204,26 +274,20 @@ public class Character extends GameObject {
     }
 
     private void handleInput(de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
-        isMoving = false;
-
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
-            speed = RUN_SPEED;
+            maxSpeed = RUN_SPEED;
         } else {
-            speed = WALK_SPEED;
+            maxSpeed = WALK_SPEED;
         }
-
-        if (Gdx.input.isKeyPressed(configManager.getKey("DOWN"))) {
-            currentDirection = Direction.DOWN;
-            isMoving = true;
-        } else if (Gdx.input.isKeyPressed(configManager.getKey("UP"))) {
-            currentDirection = Direction.UP;
-            isMoving = true;
-        } else if (Gdx.input.isKeyPressed(configManager.getKey("LEFT"))) {
-            currentDirection = Direction.LEFT;
-            isMoving = true;
-        } else if (Gdx.input.isKeyPressed(configManager.getKey("RIGHT"))) {
-            currentDirection = Direction.RIGHT;
-            isMoving = true;
+        
+        inputVector.set(0, 0);
+        if (Gdx.input.isKeyPressed(configManager.getKey("UP"))) inputVector.y = 1;
+        if (Gdx.input.isKeyPressed(configManager.getKey("DOWN"))) inputVector.y = -1;
+        if (Gdx.input.isKeyPressed(configManager.getKey("LEFT"))) inputVector.x = -1;
+        if (Gdx.input.isKeyPressed(configManager.getKey("RIGHT"))) inputVector.x = 1;
+        
+        if (inputVector.len2() > 0) {
+            inputVector.nor(); // Normalize for consistent diagonal speed
         }
     }
 
@@ -231,19 +295,18 @@ public class Character extends GameObject {
             this.bounds.setPosition(position.x+4, position.y+4);
         }
 
-        private boolean checkCollision(List<GameObject> mapObjects) {
+        private GameObject checkCollision(List<GameObject> mapObjects) {
             for (GameObject obj : mapObjects) {
                 if (obj == this) continue;
 
                 // Wall collision
                 if (obj instanceof Wall) {
                     if (bounds.overlaps(obj.getBounds())) {
-                        System.out.println("Colliding with wall at: " + obj.getPosition());
-                        return true;
+                        return obj;
                     }
                 }
             }
-            return false;
+            return null;
         }
 
         public void takeDamage() {
@@ -281,11 +344,15 @@ public class Character extends GameObject {
             if (this.lives < 0) this.lives = 0;
         }
 
-        public void addLives(int amount) {
+    public void addLives(int amount) {
             this.lives += amount;
             if (this.lives > 4) this.lives = 4;
             if (this.lives < 0) this.lives = 0;
         }
+
+    public Vector2 getVelocity() {
+        return velocity;
+    }
 
 
 }

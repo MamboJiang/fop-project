@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.graphics.Color;
 import de.tum.cit.fop.maze.GameObj.Character;
 import de.tum.cit.fop.maze.GameScreen;
@@ -26,6 +27,7 @@ public class HUD {
     private Image keyImage;
     private Table table;
     private Table debugTable;
+    private Label debugInfoLabel;
     
     // Dependencies
     private final GameScreen gameScreen;
@@ -99,6 +101,10 @@ public class HUD {
         // Container for content buttons
         final Table contentTable = new Table();
         contentTable.setVisible(false); // Initially hidden
+        
+        // Debug Info Label
+        debugInfoLabel = new Label("Speed: 0\nHP: 4\nKey: false", skin);
+        contentTable.add(debugInfoLabel).left().pad(5).row();
         
         // Toggle Menu Button (Always visible)
         TextButton toggleMenuBtn = new TextButton("Debug", skin);
@@ -201,6 +207,12 @@ public class HUD {
              keyImage.setColor(Color.WHITE); // Normal color
         } else {
              keyImage.setColor(Color.DARK_GRAY); // Dimmed if not collected
+        }
+        
+        // Update Debug Label
+        if (debugInfoLabel != null) {
+            float speed = character.getVelocity().len();
+            debugInfoLabel.setText(String.format("Speed: %.2f\nHP: %d\nKey: %b", speed, lives, character.hasKey()));
         }
     }
     
