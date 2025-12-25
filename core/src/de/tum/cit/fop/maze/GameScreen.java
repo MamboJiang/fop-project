@@ -195,8 +195,17 @@ public class GameScreen implements Screen {
             if (character != null) {
                 character.update(delta, mapObjects, game.getConfigManager());
 
-                // Camera follow character
-                camera.position.set(character.getPosition().x, character.getPosition().y, 0);
+                // Camera follow character with smooth lerp
+                float targetX = character.getPosition().x + 8; // Center of 16 width
+                float targetY = character.getPosition().y + 16; // Center of 32 height
+                
+                // Lerp factor (adjust for smoothness, 5f is typical)
+                float lerpSpeed = 5f;
+                camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
+                camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
+                
+                // Ensure camera doesn't show black bars if possible, or just clamp?
+                // For now just update.
                 camera.update();
             }
         }
