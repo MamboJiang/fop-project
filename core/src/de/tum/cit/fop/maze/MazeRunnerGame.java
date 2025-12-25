@@ -3,6 +3,7 @@ package de.tum.cit.fop.maze;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -10,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import de.tum.cit.fop.maze.GameControl.ConfigManager;
+import de.tum.cit.fop.maze.GameControl.LevelSelectionScreen;
 import de.tum.cit.fop.maze.GameControl.SettingsScreen;
 import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
@@ -79,11 +81,23 @@ public class MazeRunnerGame extends Game {
 
     /**
      * Switches to the game screen.
+     * @param mapFile The map file to load.
      */
-    public void goToGame() {
-        this.setScreen(new GameScreen(this)); // Set the current screen to GameScreen
+    public void goToGame(FileHandle mapFile) {
+        this.setScreen(new GameScreen(this, mapFile)); // Set the current screen to GameScreen
         if (menuScreen != null) {
             menuScreen.dispose(); // Dispose the menu screen if it exists
+            menuScreen = null;
+        }
+    }
+    
+    /**
+     * Switches to the level selection screen.
+     */
+    public void goToLevelSelect() {
+        this.setScreen(new LevelSelectionScreen(this));
+        if (menuScreen != null) {
+            menuScreen.dispose();
             menuScreen = null;
         }
     }

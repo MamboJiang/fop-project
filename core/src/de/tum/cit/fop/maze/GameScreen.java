@@ -18,6 +18,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.files.FileHandle;
+import de.tum.cit.fop.maze.GameObj.GameObject;
+import de.tum.cit.fop.maze.MapLoader;
+import java.util.List;
 
 /**
  * The GameScreen class is responsible for rendering the gameplay screen.
@@ -28,6 +32,9 @@ public class GameScreen implements Screen {
     private final MazeRunnerGame game;
     private final OrthographicCamera camera;
     private final BitmapFont font;
+    
+    // Game Objects
+    private List<GameObject> gameObjects;
 
     private float sinusInput = 0f;
     
@@ -40,14 +47,18 @@ public class GameScreen implements Screen {
      * Constructor for GameScreen. Sets up the camera and font.
      *
      * @param game The main game class, used to access global resources and methods.
+     * @param mapFile The map file to load.
      */
-    public GameScreen(MazeRunnerGame game) {
+    public GameScreen(MazeRunnerGame game, FileHandle mapFile) {
         this.game = game;
-
+        
+        // Load map
+        this.gameObjects = MapLoader.loadMap(mapFile);
+        
         // Create and configure the camera for the game view
         camera = new OrthographicCamera();
         camera.setToOrtho(false);
-        camera.zoom = 0.75f;
+        camera.zoom = 0.5f; // Zoom in a bit more for 16px tiles
 
         // Get the font from the game's skin
         font = game.getSkin().getFont("font");
@@ -126,25 +137,15 @@ public class GameScreen implements Screen {
         // Render game world
         game.getSpriteBatch().begin(); // Important to call this before drawing anything
         
-        // Render the text
-        font.draw(game.getSpriteBatch(), "Press " + Input.Keys.toString(game.getConfigManager().getKey("PAUSE")) + " to pause", 
-                  camera.position.x - 100, camera.position.y + 120);
-
-        // Draw the character next to the text :) / We can reuse sinusInput here
-        // Only update animation frame if not paused
-        float stateTime = isPaused ? sinusInput : (sinusInput += delta);
-        
-        // Move text in a circular path to have an example of a moving object
-        float textX = (float) (camera.position.x + Math.sin(stateTime) * 100);
-        float textY = (float) (camera.position.y + Math.cos(stateTime) * 100);
-
-        game.getSpriteBatch().draw(
-                game.getCharacterDownAnimation().getKeyFrame(stateTime, true),
-                textX - 96,
-                textY - 64,
-                64,
-                128
-        );
+        for (GameObject obj : gameObjects) {
+             game.getSpriteBatch().draw(
+                 obj.getTextureRegion(),
+                 obj.getPosition().x,
+                 obj.getPosition().y,
+                 obj.getWidth(),
+                 obj.getHeight()
+             );
+        }
 
         game.getSpriteBatch().end(); // Important to call this after drawing everything
         

@@ -3,7 +3,7 @@ musicVolume: 0.1
 soundVolume: 0.1
 keyBindings: {
 	class: java.util.HashMap
-	PAUSE: 41
+	PAUSE: 111
 	DOWN: 47
 	LEFT: 29
 	RIGHT: 32

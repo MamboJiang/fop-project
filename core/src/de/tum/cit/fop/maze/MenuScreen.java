@@ -40,12 +40,13 @@ public class MenuScreen implements Screen {
         // Add a label as a title
         table.add(new Label("Hello World from the Menu!", game.getSkin(), "title")).padBottom(80).row();
 
+        // Create and add a "Start" button
         TextButton startButton = new TextButton("Start", game.getSkin());
         table.add(startButton).width(300).padBottom(15).row();
         startButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.goToGame();
+                game.goToLevelSelect();
             }
         });
 
