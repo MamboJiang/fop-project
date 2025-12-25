@@ -41,14 +41,16 @@ public class GameScreen implements Screen {
     // Game Objects
     private de.tum.cit.fop.maze.GameObj.Character character;
     private List<GameObject> mapObjects;
+    private FileHandle mapFile;
 
     /**
      * Constructor for GameScreen. Sets up the camera and font.
      *
      * @param game The main game class, used to access global resources and methods.
      */
-    public GameScreen(MazeRunnerGame game) {
+    public GameScreen(MazeRunnerGame game, FileHandle mapFile) {
         this.game = game;
+        this.mapFile = mapFile;
 
         // Create and configure the camera for the game view
         camera = new OrthographicCamera();
@@ -65,14 +67,19 @@ public class GameScreen implements Screen {
     private void setupLevel() {
         // Load map
         // Ideally we should select levels, for now load level 1
-        FileHandle mapHandle = Gdx.files.internal("maps/level-1.properties");
-        if (!mapHandle.exists()) {
+        //FileHandle mapHandle = Gdx.files.internal("maps/level-1.properties");
+        //if (!mapHandle.exists()) {
             // Try absolute path if internal fails (e.g. running from IDE root vs assets root)
             // However, map loader tries internal. Let's assume standard GDX internal structure.
             // If this fails, we might need to look in "assets/maps" or similar depending on working dir
+        if(this.mapFile ==null || !this.mapFile.exists()){
+            Gdx.app.error("GameScreen", "Map file is null or does not exist!");
+            this.mapFile = Gdx.files.internal("maps/level-1.properties");
         }
 
-        mapObjects = MapLoader.loadMap(mapHandle);
+
+
+        mapObjects = MapLoader.loadMap(this.mapFile);
 
         // Find entry point to spawn character
         float spawnX = 0;
@@ -85,7 +92,7 @@ public class GameScreen implements Screen {
             }
         }
 
-        character = new Character(spawnX, spawnY);
+        character = new Character(spawnX+16, spawnY);
     }
 
     private void setupPauseMenu() {

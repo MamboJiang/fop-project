@@ -84,7 +84,7 @@ public class MazeRunnerGame extends Game {
      * @param mapFile The map file to load.
      */
     public void goToGame(FileHandle mapFile) {
-        this.setScreen(new GameScreen(this)); // Set the current screen to GameScreen
+        this.setScreen(new GameScreen(this, mapFile)); // Set the current screen to GameScreen
         if (menuScreen != null) {
             menuScreen.dispose(); // Dispose the menu screen if it exists
             menuScreen = null;
