@@ -6,6 +6,9 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -49,7 +52,9 @@ public class GameScreen implements Screen {
     // Game Objects
     private de.tum.cit.fop.maze.GameObj.Character character;
     private List<GameObject> mapObjects;
+    private List<de.tum.cit.fop.maze.GameObj.Enemy> enemies;
     private FileHandle mapFile;
+    private de.tum.cit.fop.maze.AI.Grid grid;
 
     /**
      * Constructor for GameScreen. Sets up the camera and font.
@@ -96,6 +101,9 @@ public class GameScreen implements Screen {
 
         mapObjects = MapLoader.loadMap(this.mapFile);
 
+        // Initialize AI Grid
+        grid = new de.tum.cit.fop.maze.AI.Grid(0, 0, mapObjects);
+
         // Find entry point to spawn character
         float spawnX = 0;
         float spawnY = 0;
@@ -108,6 +116,27 @@ public class GameScreen implements Screen {
         }
 
         character = new Character(spawnX+16, spawnY);
+        
+        // Create Enemy List
+        enemies = new java.util.ArrayList<>();
+        
+        // Find Enemy Spawn Points and Convert to Real Enemies
+        List<GameObject> toRemove = new java.util.ArrayList<>();
+        for (GameObject obj : mapObjects) {
+             if (obj instanceof de.tum.cit.fop.maze.GameObj.EnemySpawnPoint) {
+                 enemies.add(new de.tum.cit.fop.maze.GameObj.Enemy(
+                     obj.getPosition().x, 
+                     obj.getPosition().y, 
+                     obj.getTextureRegion(), 
+                     grid, 
+                     character
+                 ));
+                 toRemove.add(obj);
+             }
+        }
+        
+        // Remove spawn points from mapObjects so they don't render twice or collide
+        mapObjects.removeAll(toRemove);
     }
 
     private void setupPauseMenu() {
@@ -214,6 +243,11 @@ public class GameScreen implements Screen {
     // Screen interface methods with necessary functionality
     @Override
     public void render(float delta) {
+        // Toggle Debug
+        if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F3)) {
+            toggleDebug();
+        }
+
         // Check for pause key press to go back to the menu
         if (Gdx.input.isKeyJustPressed(game.getConfigManager().getKey("PAUSE"))) {
             togglePause();
@@ -283,8 +317,22 @@ public class GameScreen implements Screen {
             // Draw Navigation Arrow
             character.drawArrow(game.getSpriteBatch());
         }
+        
+        // Draw Enemies
+        for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
+            game.getSpriteBatch().draw(enemy.getTextureRegion(), enemy.getPosition().x, enemy.getPosition().y, 16, 16);
+            // Draw Status Icon
+            enemy.drawStatus(game.getSpriteBatch(), font);
+        }
 
         game.getSpriteBatch().end(); // Important to call this after drawing everything
+        
+        // Update Enemies
+        if (!isPaused) {
+            for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
+                enemy.update(delta);
+            }
+        }
         
         // Draw HUD
         if (character != null) {
@@ -321,6 +369,12 @@ public class GameScreen implements Screen {
                     }
                 }
             }
+            
+            // Draw Enemy Path Debug
+            for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
+                enemy.drawDebug(shapeRenderer);
+            }
+            
             shapeRenderer.end();
         }
 

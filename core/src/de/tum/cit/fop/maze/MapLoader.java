@@ -69,7 +69,7 @@ public class MapLoader {
                             obj = new Trap(worldX, worldY, 16, 16, regions[9][2]);
                             break;
                         case 4: // 敌人
-                            obj = new Enemy(worldX, worldY, 16, 16, regions[3][6]);
+                            obj = new EnemySpawnPoint(worldX, worldY, 16, 16, regions[3][6]);
                             break;
                         case 5: // 钥匙/宝箱
                             obj = new Key(worldX, worldY, 16, 16, regions[4][4]);

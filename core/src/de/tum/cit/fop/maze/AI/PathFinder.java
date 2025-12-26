@@ -3,24 +3,24 @@ package de.tum.cit.fop.maze.AI;
 import com.badlogic.gdx.math.Vector2;
 import java.util.*;
 
-/**
- * simple A* PathFinder for Grid-based maps.
- */
 public class PathFinder {
     
-    public static class Node implements Comparable<Node> {
-        public int x, y;
-        public Node parent;
-        public float gCost; // Cost from start
-        public float hCost; // Heuristic to end
+    private static class Node implements Comparable<Node> {
+        int x, y;
+        Node parent;
+        float gCost; // Cost from start
+        float hCost; // Heuristic to end
         
-        public Node(int x, int y) {
+        public Node(int x, int y, Node parent, float g, float h) {
             this.x = x;
             this.y = y;
+            this.parent = parent;
+            this.gCost = g;
+            this.hCost = h;
         }
         
         public float fCost() { return gCost + hCost; }
-
+        
         @Override
         public int compareTo(Node o) {
             return Float.compare(this.fCost(), o.fCost());
@@ -33,115 +33,81 @@ public class PathFinder {
             Node node = (Node) o;
             return x == node.x && y == node.y;
         }
-
+        
         @Override
         public int hashCode() {
             return Objects.hash(x, y);
         }
     }
-
-    /**
-     * Finds a path from start to end using A* algorithm.
-     * @param grid boolean 2D array where true = walkable, false = wall.
-     * @param start World position start (will be converted to grid coords).
-     * @param end World position end (will be converted to grid coords).
-     * @param tileSize Size of each tile (e.g., 16).
-     * @return List of World Positions (centers of tiles) for the path, or empty if no path.
-     */
-    public static List<Vector2> findPath(boolean[][] grid, Vector2 start, Vector2 end, float tileSize) {
-        int startX = (int) (start.x / tileSize);
-        int startY = (int) (start.y / tileSize);
-        int endX = (int) (end.x / tileSize);
-        int endY = (int) (end.y / tileSize);
+    
+    public static List<Vector2> findPath(Grid grid, Vector2 startWorld, Vector2 endWorld) {
+        int startX = (int)(startWorld.x / 16);
+        int startY = (int)(startWorld.y / 16);
+        int endX = (int)(endWorld.x / 16);
+        int endY = (int)(endWorld.y / 16);
         
-        int width = grid.length;
-        int height = grid[0].length;
+        if (!grid.isWalkable(endX, endY)) return null; // Target unreachable
         
-        // Bounds check
-        if (startX < 0 || startX >= width || startY < 0 || startY >= height || 
-            endX < 0 || endX >= width || endY < 0 || endY >= height) {
-            return new ArrayList<>();
-        }
-        
-        // Open and Closed sets
         PriorityQueue<Node> openSet = new PriorityQueue<>();
         Set<Node> closedSet = new HashSet<>();
-        Map<String, Node> allNodes = new HashMap<>(); // Cache nodes to update costs
+        Map<String, Node> nodeMap = new HashMap<>(); // To check if node exists with better path
         
-        Node startNode = new Node(startX, startY);
-        startNode.gCost = 0;
-        startNode.hCost = heuristic(startX, startY, endX, endY);
-        
+        Node startNode = new Node(startX, startY, null, 0, heuristic(startX, startY, endX, endY));
         openSet.add(startNode);
-        allNodes.put(key(startX, startY), startNode);
+        nodeMap.put(key(startX, startY), startNode);
         
         while (!openSet.isEmpty()) {
             Node current = openSet.poll();
-            
-            if (current.x == endX && current.y == endY) {
-                return retracePath(current, tileSize);
-            }
-            
             closedSet.add(current);
             
-            // Neighbors (4 directions)
-            int[][] dirs = {{0,1}, {1,0}, {0,-1}, {-1,0}};
+            if (current.x == endX && current.y == endY) {
+                return reconstructPath(current);
+            }
             
-            for (int[] dir : dirs) {
-                int nx = current.x + dir[0];
-                int ny = current.y + dir[1];
+            for (int[] offset : new int[][]{{0,1}, {0,-1}, {1,0}, {-1,0}}) { // 4-Directional
+                int nx = current.x + offset[0];
+                int ny = current.y + offset[1];
                 
-                if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
-                if (!grid[nx][ny]) continue; // Wall
+                if (!grid.isWalkable(nx, ny)) continue;
                 
-                Node neighbor = allNodes.getOrDefault(key(nx, ny), new Node(nx, ny));
+                float newGCost = current.gCost + 1;
+                Node neighbor = new Node(nx, ny, current, newGCost, heuristic(nx, ny, endX, endY));
+                
                 if (closedSet.contains(neighbor)) continue;
                 
-                float newGCost = current.gCost + 1; // Distance 1
+                Node existing = nodeMap.get(key(nx, ny));
+                if (existing != null && newGCost >= existing.gCost) continue;
                 
-                boolean inOpenSet = openSet.contains(neighbor);
-                
-                if (!inOpenSet || newGCost < neighbor.gCost) {
-                    neighbor.gCost = newGCost;
-                    neighbor.hCost = heuristic(nx, ny, endX, endY);
-                    neighbor.parent = current;
-                    
-                    if (!inOpenSet) {
-                        openSet.add(neighbor);
-                        allNodes.put(key(nx, ny), neighbor);
-                    } else {
-                        // Re-sort priority queue (inefficient but safe way is remove/add)
-                        openSet.remove(neighbor);
-                        openSet.add(neighbor);
-                    }
+                if (existing != null) {
+                    openSet.remove(existing);
+                    nodeMap.remove(key(nx, ny));
                 }
+                
+                openSet.add(neighbor);
+                nodeMap.put(key(nx, ny), neighbor);
             }
         }
         
-        return new ArrayList<>(); // No path found
+        return null; // No path found
+    }
+    
+    private static float heuristic(int x1, int y1, int x2, int y2) {
+        // Manhattan Distance for 4-way movement
+        return Math.abs(x1 - x2) + Math.abs(y1 - y2);
     }
     
     private static String key(int x, int y) {
         return x + "," + y;
     }
     
-    private static float heuristic(int x1, int y1, int x2, int y2) {
-        // Manhattan distance usually better for 4-way grid
-        return Math.abs(x1 - x2) + Math.abs(y1 - y2);
-    }
-    
-    private static List<Vector2> retracePath(Node endNode, float tileSize) {
+    private static List<Vector2> reconstructPath(Node endNode) {
         List<Vector2> path = new ArrayList<>();
         Node current = endNode;
-        
         while (current != null) {
-            // Convert grid coord back to world center coord
-            float worldX = current.x * tileSize + tileSize/2;
-            float worldY = current.y * tileSize + tileSize/2;
-            path.add(new Vector2(worldX, worldY));
+            // Convert back to world coordinates (Center of tile)
+            path.add(new Vector2(current.x * 16 + 8, current.y * 16 + 8));
             current = current.parent;
         }
-        
         Collections.reverse(path);
         return path;
     }
