@@ -26,7 +26,7 @@ public class SettingsScreen implements Screen {
 
     public SettingsScreen(MazeRunnerGame game) {
         this.game = game;
-        this.stage = new Stage(new ScreenViewport(), game.getSpriteBatch());
+        this.stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), game.getSpriteBatch());
 
         Table table = new Table();
         table.setFillParent(true);

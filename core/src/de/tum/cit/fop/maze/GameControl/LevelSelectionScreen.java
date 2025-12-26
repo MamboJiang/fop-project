@@ -27,7 +27,7 @@ public class LevelSelectionScreen implements Screen {
 
     public LevelSelectionScreen(MazeRunnerGame game) {
         this.game = game;
-        this.stage = new Stage(new ScreenViewport(), game.getSpriteBatch());
+        this.stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), game.getSpriteBatch());
 
         Table table = new Table();
         // table.setFillParent(true); // Don't fill parent if using ScrollPane, or use container

@@ -19,10 +19,14 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import de.tum.cit.fop.maze.GameObj.Character;
 import de.tum.cit.fop.maze.GameObj.EntryPoint;
 import de.tum.cit.fop.maze.GameObj.GameObject;
 import de.tum.cit.fop.maze.GameControl.HUD;
+import de.tum.cit.fop.maze.GameControl.PauseMenu;
 
 import java.util.List;
 
@@ -34,6 +38,7 @@ public class GameScreen implements Screen {
 
     private final MazeRunnerGame game;
     private final OrthographicCamera camera;
+    private final Viewport viewport; // Added Viewport
     private final BitmapFont font;
     private ShapeRenderer shapeRenderer;
     private HUD hud;
@@ -44,7 +49,7 @@ public class GameScreen implements Screen {
     // Pause State and UI
     private boolean isPaused = false;
     private Stage pauseStage;
-    private Texture pauseBackground;
+    private PauseMenu pauseMenu;
 
     // Game Objects
     private de.tum.cit.fop.maze.GameObj.Character character;
@@ -62,8 +67,12 @@ public class GameScreen implements Screen {
 
         // Create and configure the camera for the game view
         camera = new OrthographicCamera();
-        camera.setToOrtho(false);
-        camera.zoom = 0.5f;
+        camera.zoom = 0.7f; // Removed manual zoom, let viewport handle it
+        
+        // Use ExtendViewport: (minWidth, minHeight, camera)
+        // 640x360 guarantees a 16:9 view at least.
+        // If window is bigger, it scales up.
+        viewport = new ExtendViewport(640, 360, camera);
 
         // Get the font from the game's skin
         font = game.getSkin().getFont("font");
@@ -107,43 +116,13 @@ public class GameScreen implements Screen {
     }
 
     private void setupPauseMenu() {
-        pauseStage = new Stage(new ScreenViewport(), game.getSpriteBatch());
-
-        // Create semi-transparent background
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(0, 0, 0, 0.7f); // 70% transparent black
-        pixmap.fill();
-        pauseBackground = new Texture(pixmap);
-        pixmap.dispose();
-
-        Image backgroundImage = new Image(pauseBackground);
-        backgroundImage.setFillParent(true);
-        pauseStage.addActor(backgroundImage);
-
-        // Table for buttons
-        Table table = new Table();
-        table.setFillParent(true);
-        pauseStage.addActor(table);
-
-        // Resume Button
-        TextButton resumeButton = new TextButton("Resume", game.getSkin());
-        table.add(resumeButton).width(300).padBottom(20).row();
-        resumeButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                togglePause();
-            }
-        });
-
-        // Menu Button
-        TextButton menuButton = new TextButton("Exit to Menu", game.getSkin());
-        table.add(menuButton).width(300).row();
-        menuButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.goToMenu();
-            }
-        });
+        pauseStage = new Stage(new FitViewport(1920, 1080), game.getSpriteBatch());
+        
+        pauseMenu = new PauseMenu(game, 
+            () -> togglePause(), // Resume action
+            null // Exit action (default)
+        );
+        pauseStage.addActor(pauseMenu);
     }
 
     /**
@@ -151,6 +130,11 @@ public class GameScreen implements Screen {
      */
     private void togglePause() {
         isPaused = !isPaused;
+        if (isPaused) {
+            pauseMenu.show();
+        } else {
+            pauseMenu.hide(); // Should already be hidden by Resume button, but safe to call
+        }
         updateInputProcessor();
     }
     
@@ -170,6 +154,7 @@ public class GameScreen implements Screen {
     }
     
     public void zoomIn() {
+        // With viewport, zoom modifies camera.zoom directly
         camera.zoom = Math.max(0.1f, camera.zoom - 0.1f);
         camera.update();
     }
@@ -204,9 +189,8 @@ public class GameScreen implements Screen {
                 camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
                 camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
                 
-                // Ensure camera doesn't show black bars if possible, or just clamp?
-                // For now just update.
-                camera.update();
+                camera.update(); 
+                // Note: viewport.apply() sets the projection matrix of the camera effectively
             }
             if(mapObjects != null){
                 mapObjects.removeIf(GameObject::isMarkedForRemoval);
@@ -218,6 +202,7 @@ public class GameScreen implements Screen {
         }
 
         // Render
+        viewport.apply(); // Update camera viewport
         game.getSpriteBatch().setProjectionMatrix(camera.combined);
         game.getSpriteBatch().begin();
 
@@ -299,7 +284,7 @@ public class GameScreen implements Screen {
 
 
     public void resize(int width, int height) {
-        camera.setToOrtho(false);
+        viewport.update(width, height, false); // Update Viewport
         pauseStage.getViewport().update(width, height, true);
         hud.resize(width, height);
     }
@@ -324,7 +309,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        if (pauseBackground != null) pauseBackground.dispose();
         if (pauseStage != null) pauseStage.dispose();
         if (shapeRenderer != null) shapeRenderer.dispose();
         if (hud != null) hud.dispose();

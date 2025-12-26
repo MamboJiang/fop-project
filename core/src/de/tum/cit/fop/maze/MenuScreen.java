@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 /**
@@ -27,10 +28,9 @@ public class MenuScreen implements Screen {
      * @param game The main game class, used to access global resources and methods.
      */
     public MenuScreen(MazeRunnerGame game) {
-        var camera = new OrthographicCamera();
-        camera.zoom = 1.5f; // Set camera zoom for a closer view
-
-        Viewport viewport = new ScreenViewport(camera); // Create a viewport with the camera
+        // Use FitViewport with virtual resolution 1280x720
+        // This ensures the UI scales to fit the window while maintaining aspect ratio
+        Viewport viewport = new FitViewport(2560, 1440);
         stage = new Stage(viewport, game.getSpriteBatch()); // Create a stage for UI elements
 
         Table table = new Table(); // Create a table for layout
@@ -57,6 +57,26 @@ public class MenuScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.goToSettings();
+            }
+        });
+
+        // Create and add a "Story Mode" button
+        TextButton storyButton = new TextButton("Story Mode", game.getSkin());
+        table.add(storyButton).width(300).padBottom(15).row();
+        storyButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.setScreen(new de.tum.cit.fop.maze.Conversation.StoryDialogueScreen(game));
+            }
+        });
+
+        // Create and add a "Dialogue Demo" button
+        TextButton dialogueButton = new TextButton("Dialogue Demo", game.getSkin());
+        table.add(dialogueButton).width(300).padBottom(15).row();
+        dialogueButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.setScreen(new de.tum.cit.fop.maze.Conversation.DialogueScreen(game));
             }
         });
 

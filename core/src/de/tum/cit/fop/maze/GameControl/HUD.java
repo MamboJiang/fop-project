@@ -37,7 +37,7 @@ public class HUD {
     public HUD(SpriteBatch spriteBatch, GameScreen gameScreen, Skin skin) {
         this.gameScreen = gameScreen;
         this.skin = skin;
-        stage = new Stage(new ScreenViewport(), spriteBatch);
+        stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), spriteBatch);
         
         // Load textures
         objectsTexture = new Texture(Gdx.files.internal("objects.png"));
