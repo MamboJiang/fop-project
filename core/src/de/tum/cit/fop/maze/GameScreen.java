@@ -6,19 +6,11 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -27,6 +19,7 @@ import de.tum.cit.fop.maze.GameObj.EntryPoint;
 import de.tum.cit.fop.maze.GameObj.GameObject;
 import de.tum.cit.fop.maze.GameControl.HUD;
 import de.tum.cit.fop.maze.GameControl.PauseMenu;
+import de.tum.cit.fop.maze.GameControl.GameOverMenu;
 
 import java.util.List;
 
@@ -48,8 +41,10 @@ public class GameScreen implements Screen {
 
     // Pause State and UI
     private boolean isPaused = false;
+    private boolean isGameOver = false;
     private Stage pauseStage;
     private PauseMenu pauseMenu;
+    private GameOverMenu GameOverMenu;
 
     // Game Objects
     private de.tum.cit.fop.maze.GameObj.Character character;
@@ -125,6 +120,57 @@ public class GameScreen implements Screen {
         pauseStage.addActor(pauseMenu);
     }
 
+    private void loadNextLevel() {
+        // 1. 获取所有地图文件
+        List<FileHandle> maps = MapLoader.getMapFiles(); //
+        int currentIndex = -1;
+
+        // 2. 找到当前地图在列表中的位置
+        for (int i = 0; i < maps.size(); i++) {
+            // mapFile 是 GameScreen 的成员变量
+            if (maps.get(i).name().equals(this.mapFile.name())) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        // 3. 判断是否有下一张图
+        if (currentIndex != -1 && currentIndex + 1 < maps.size()) {
+            // 有下一关：告诉主游戏类切换到下一张地图
+            FileHandle nextMap = maps.get(currentIndex + 1);
+            game.goToGame(nextMap); //
+        } else {
+            // 没有下一关了（全通关）：回到主菜单
+            game.goToMenu();
+        }
+    }
+
+    private void showGameOverMenu(boolean win) {
+        if (isGameOver) return; // 防止重复触发
+        isGameOver = true;
+
+        // 创建结果菜单
+        GameOverMenu = new GameOverMenu(game,
+                () -> {
+                    // Retry 逻辑: 重新加载当前地图
+                    game.goToGame(this.mapFile);
+                },
+                () -> {
+                    // Exit 逻辑: 实际上 ResultMenu 里已经调用 goToMenu 了，这里可以留空或做清理
+                },
+                () -> {
+                    loadNextLevel();
+                },
+                win
+        );
+
+        pauseStage.addActor(GameOverMenu);
+        GameOverMenu.show();
+
+        // 切换输入处理器到 UI
+        Gdx.input.setInputProcessor(pauseStage);
+    }
+
     /**
      * Toggles the pause state and handles input processor switching.
      */
@@ -174,9 +220,9 @@ public class GameScreen implements Screen {
         }
 
         ScreenUtils.clear(0, 0, 0, 1); // Clear the screen
-
+        boolean isLevelCompleted = character.isLevelCompleted();
         // Logic update
-        if (!isPaused) {
+        if (!isPaused && !isGameOver && !isLevelCompleted) {
             if (character != null) {
                 character.update(delta, mapObjects, game.getConfigManager());
 
@@ -196,12 +242,11 @@ public class GameScreen implements Screen {
                 mapObjects.removeIf(GameObject::isMarkedForRemoval);
             }
             if (character.isLevelCompleted()) {
-                game.goToMenu(); // 调用主类的切换屏幕方法
-                return; // 直接结束当前帧，避免后续不必要的渲染
+                showGameOverMenu(true);
+
             }
             if(character.isDead()){
-                game.goToMenu();
-                return;
+                showGameOverMenu(false);
             }
         }
 
@@ -280,7 +325,7 @@ public class GameScreen implements Screen {
         }
 
         // Draw pause menu if paused
-        if (isPaused) {
+        if (isPaused || isGameOver || isLevelCompleted) {
             pauseStage.act(delta);
             pauseStage.draw();
         }
