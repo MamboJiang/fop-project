@@ -184,34 +184,8 @@ public class Character extends GameObject {
             collisionAddressing(colY, oldY, false);
 
 
-            // Corner Sliding Logic (Adapted to velocity)
-            // If we are stopped in one axis but trying to move, check for corner
-            if (colX != null && Math.abs(inputVector.x) > 0 && Math.abs(inputVector.y) == 0) {
-                // Trying to move Horizontally, blocked. Check if we can slide Vertically.
-                Rectangle wallBounds = colX.getBounds();
-                float overlapY = Math.min(bounds.y + bounds.height, wallBounds.y + wallBounds.height) - Math.max(bounds.y, wallBounds.y);
-                float SLIDE_THRESHOLD = 8.0f;
-                if (overlapY > 0 && overlapY <= SLIDE_THRESHOLD) {
-                    float centerY = bounds.y + bounds.height/2;
-                    float wallCenterY = wallBounds.y + wallBounds.height/2;
-                    float slide = 50f * delta; // fixed slide speed
-                    if (centerY < wallCenterY) position.y -= slide;
-                    else position.y += slide;
-                }
-            }
-            if (colY != null && Math.abs(inputVector.y) > 0 && Math.abs(inputVector.x) == 0) {
-                // Trying to move Vertically, blocked. Check Horizontal.
-                Rectangle wallBounds = colY.getBounds();
-                float overlapX = Math.min(bounds.x + bounds.width, wallBounds.x + wallBounds.width) - Math.max(bounds.x, wallBounds.x);
-                float SLIDE_THRESHOLD = 8.0f;
-                if (overlapX > 0 && overlapX <= SLIDE_THRESHOLD) {
-                    float centerX = bounds.x + bounds.width/2;
-                    float wallCenterX = wallBounds.x + wallBounds.width/2;
-                    float slide = 50f * delta;
-                    if (centerX < wallCenterX) position.x -= slide;
-                    else position.x += slide;
-                }
-            }
+            // Corner Sliding Logic
+            handleWallSliding(delta, mapObjects, colX, colY);
         }
 
         // Update texture based on animation
@@ -388,6 +362,98 @@ public class Character extends GameObject {
 
     public Vector2 getVelocity() {
         return velocity;
+    }
+
+    private void handleWallSliding(float delta, List<GameObject> mapObjects, GameObject colX, GameObject colY) {
+        float SLIDE_THRESHOLD = 8.0f; // User requested 8.0f
+        float slideSpeed = 100f; 
+
+        // Case 1: Hitting Vertical Wall (X-Collision), trying to move Horizontally
+        if (colX instanceof Wall && Math.abs(inputVector.x) > 0 && Math.abs(inputVector.y) == 0) {
+            Rectangle wallBounds = colX.getBounds();
+            float overlapY = Math.min(bounds.y + bounds.height, wallBounds.y + wallBounds.height) - Math.max(bounds.y, wallBounds.y);
+            
+            if (overlapY > 0 && overlapY <= SLIDE_THRESHOLD) {
+                float centerY = bounds.y + bounds.height/2;
+                float wallCenterY = wallBounds.y + wallBounds.height/2;
+                float slideAmount = slideSpeed * delta;
+                
+                float newY = position.y;
+                boolean slidingDown = centerY < wallCenterY;
+                
+                // Continuity Check: Is there a wall in the direction we want to slide?
+                // If sliding down, check directly below the current wall.
+                // If sliding up, check directly above.
+                float checkY = slidingDown ? wallBounds.y - 1 : wallBounds.y + wallBounds.height + 1;
+                // Check a thin strip along the wall's vertical seam
+                Rectangle neighborCheck = new Rectangle(wallBounds.x, checkY, wallBounds.width, 1);
+                
+                if (!isWallAt(neighborCheck, mapObjects, colX)) { // Only slide if NO wall there
+                    if (slidingDown) newY -= slideAmount;
+                    else newY += slideAmount;
+
+                    if (isPositionFree(position.x, newY, mapObjects, this)) {
+                        position.y = newY;
+                        updateBounds();
+                    }
+                }
+            }
+        }
+
+        // Case 2: Hitting Horizontal Wall (Y-Collision), trying to move Vertically
+        if (colY instanceof Wall && Math.abs(inputVector.y) > 0 && Math.abs(inputVector.x) == 0) {
+            Rectangle wallBounds = colY.getBounds();
+            float overlapX = Math.min(bounds.x + bounds.width, wallBounds.x + wallBounds.width) - Math.max(bounds.x, wallBounds.x);
+            
+            if (overlapX > 0 && overlapX <= SLIDE_THRESHOLD) {
+                float centerX = bounds.x + bounds.width/2;
+                float wallCenterX = wallBounds.x + wallBounds.width/2;
+                float slideAmount = slideSpeed * delta;
+                
+                float newX = position.x;
+                boolean slidingLeft = centerX < wallCenterX;
+                
+                // Continuity Check
+                float checkX = slidingLeft ? wallBounds.x - 1 : wallBounds.x + wallBounds.width + 1;
+                Rectangle neighborCheck = new Rectangle(checkX, wallBounds.y, 1, wallBounds.height);
+                
+                if (!isWallAt(neighborCheck, mapObjects, colY)) {
+                    if (slidingLeft) newX -= slideAmount;
+                    else newX += slideAmount;
+
+                    if (isPositionFree(newX, position.y, mapObjects, this)) {
+                        position.x = newX;
+                        updateBounds();
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isWallAt(Rectangle area, List<GameObject> mapObjects, GameObject ignoreSelf) {
+        for (GameObject obj : mapObjects) {
+            if (obj == ignoreSelf) continue;
+            if (obj instanceof Wall) {
+                if (area.overlaps(obj.getBounds())) return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isPositionFree(float x, float y, List<GameObject> mapObjects, GameObject ignoreSelf) {
+        // Temporarily move bounds to check collision
+        Rectangle testBounds = new Rectangle(x+4, y+4, 8, 8); // Match constructor logic
+        for (GameObject obj : mapObjects) {
+            if (obj == ignoreSelf) continue;
+            if (obj instanceof Wall || obj instanceof Exit) {
+                 if (obj instanceof Exit && hasKey) continue; // Passable if has key
+                 
+                 if (testBounds.overlaps(obj.getBounds())) {
+                     return false;
+                 }
+            }
+        }
+        return true;
     }
 
 
