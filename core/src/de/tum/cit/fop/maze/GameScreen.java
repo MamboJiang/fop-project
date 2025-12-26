@@ -79,6 +79,7 @@ public class GameScreen implements Screen {
         
         shapeRenderer = new ShapeRenderer();
         hud = new HUD(game.getSpriteBatch(), this, game.getSkin());
+        screenShake = new de.tum.cit.fop.maze.VFX.ScreenShake();
 
         setupPauseMenu();
         setupLevel();
@@ -240,6 +241,9 @@ public class GameScreen implements Screen {
     }
 
 
+        // Camera Shake
+    private de.tum.cit.fop.maze.VFX.ScreenShake screenShake;
+
     // Screen interface methods with necessary functionality
     @Override
     public void render(float delta) {
@@ -258,6 +262,12 @@ public class GameScreen implements Screen {
         // Logic update
         if (!isPaused && !isGameOver && !isLevelCompleted) {
             if (character != null) {
+                // Check if shake is requested
+                if (character.isScreenShakeRequested()) {
+                    if (screenShake != null) screenShake.start(0.3f, 0.8f);
+                    character.clearScreenShakeRequest();
+                }
+
                 character.update(delta, mapObjects, game.getConfigManager());
 
                 // Camera follow character with smooth lerp
@@ -269,8 +279,12 @@ public class GameScreen implements Screen {
                 camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
                 camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
                 
-                camera.update(); 
-                // Note: viewport.apply() sets the projection matrix of the camera effectively
+                // Apply Shake (Post-Lerp)
+                if (screenShake != null) {
+                    screenShake.update(delta, camera);
+                } else {
+                    camera.update();
+                }
             }
             if(mapObjects != null){
                 mapObjects.removeIf(GameObject::isMarkedForRemoval);
@@ -300,22 +314,7 @@ public class GameScreen implements Screen {
 
         // Draw character
         if (character != null) {
-            if (character.isDamaged()) {
-                game.getSpriteBatch().setColor(1, 0, 0, 1); // Red tint
-            }
-
-            game.getSpriteBatch().draw(
-                    character.getTextureRegion(),
-                    character.getPosition().x,
-                    character.getPosition().y,
-                    character.getWidth(),
-                    character.getHeight()
-            );
-
-            game.getSpriteBatch().setColor(1, 1, 1, 1); // Reset color
-            
-            // Draw Navigation Arrow
-            character.drawArrow(game.getSpriteBatch());
+            character.draw(game.getSpriteBatch());
         }
         
         // Draw Enemies

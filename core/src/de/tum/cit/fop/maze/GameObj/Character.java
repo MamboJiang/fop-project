@@ -30,7 +30,7 @@ public class Character extends MovableObject {
     
     // Damage VFX
     private float damageFlashTime = 0f;
-    private static final float DAMAGE_DURATION = 1.0f;
+    private static final float DAMAGE_DURATION = 0.1f;
 
     // Navigation Arrow
     private TextureRegion arrowRegion;
@@ -203,8 +203,43 @@ public class Character extends MovableObject {
         if (damageFlashTime > 0) {
             damageFlashTime -= delta;
         }
+        
+        // Handle Invincibility
+        if (invincibleTime > 0) {
+            invincibleTime -= delta;
+        }
 
         updateTarget(mapObjects);
+    }
+    
+    public void draw(SpriteBatch batch) {
+        boolean isFlashing = damageFlashTime > 0;
+        
+        // Damage Flash Effect (Additive Blending)
+        if (isFlashing) {
+            batch.setBlendFunction(com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA, com.badlogic.gdx.graphics.GL20.GL_ONE);
+            batch.setColor(1, 1, 1, 1);
+        }
+        
+        // Flicker effect during invincibility (after flash output)
+//        if (invincibleTime > 0 && !isFlashing) {
+//             // Toggle visibility every 0.1s
+//             if (((int)(invincibleTime * 10) % 2) == 0) {
+//                 // Skip drawing to simulate flicker
+//             } else {
+//                 batch.draw(textureRegion, position.x, position.y, width, height);
+//             }
+//        } else {
+        batch.draw(textureRegion, position.x, position.y, width, height);
+        //}
+
+        if (isFlashing) {
+            // Reset Blending
+            batch.setBlendFunction(com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA, com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA);
+            batch.setColor(1, 1, 1, 1);
+        }
+        
+        drawArrow(batch);
     }
     
     // approach helper removed as it is now in MovableObject
@@ -304,12 +339,28 @@ public class Character extends MovableObject {
         return null;
     }
 
+    private boolean screenShakeRequested = false;
+    private float invincibleTime = 0f;
+    private static final float INVINCIBLE_DURATION = 1.0f;
+
     public void takeDamage() {
+        if (invincibleTime > 0) return; // Prevent damage if invincible
+        
         if (damageFlashTime <= 0) {
             lives--;
             damageFlashTime = DAMAGE_DURATION;
+            invincibleTime = INVINCIBLE_DURATION; // Grant Invincibility
+            screenShakeRequested = true;
             // Play sound if possible
         }
+    }
+
+    public boolean isScreenShakeRequested() {
+        return screenShakeRequested;
+    }
+
+    public void clearScreenShakeRequest() {
+        this.screenShakeRequested = false;
     }
 
     public int getLives() {
