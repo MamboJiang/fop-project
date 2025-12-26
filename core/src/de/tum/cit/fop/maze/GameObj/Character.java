@@ -12,7 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import java.util.List;
 
-public class Character extends GameObject {
+public class Character extends MovableObject {
     private int lives;
     private boolean hasKey = false;
     private float speed;
@@ -27,40 +27,40 @@ public class Character extends GameObject {
     private Animation<TextureRegion> walkLeft;
 
     private Direction currentDirection;
-    private boolean isMoving;
-
+    
     // Damage VFX
     private float damageFlashTime = 0f;
     private static final float DAMAGE_DURATION = 1.0f;
 
     // Navigation Arrow
     private TextureRegion arrowRegion;
-    private Vector2 targetPosition; // Position of closest key or exit
-
-    // Physics
-    private Vector2 velocity = new Vector2();
-    private float acceleration = 800f;
-    private float friction = 800f;
-    private float maxSpeed = WALK_SPEED;
-    private Vector2 inputVector = new Vector2();
+    private Vector2 targetPosition; 
 
     public enum Direction {
         DOWN, RIGHT, UP, LEFT
     }
 
     public Character(float x, float y) {
-        super(x, y, 16, 32, null); // width 16, height 32
-        this.lives = 4; // Default lives
+        super(x, y, 16, 32, null); 
+        this.lives = 4;
         this.speed = WALK_SPEED;
+        
+        // Physics Init
+        this.maxSpeed = WALK_SPEED;
+        this.acceleration = 800f;
+        this.friction = 800f;
+        
         this.currentDirection = Direction.DOWN;
         this.stateTime = 0f;
 
         loadAnimations();
 
-        // precise collision bounds (smaller than texture to allow overlap with head/feet properly)
-        // Adjusting bounds to be the bottom part of the character for better perspective
         this.bounds = new Rectangle(x+4, y+4, 8, 8);
     }
+
+    // ... (isLevelCompleted and loadAnimations omitted, assumed unchanged if not in range) ...
+    // NOTE: Replace does not support "..." expansion, so I must include everything I am replacing.
+    // I will target the class definition up to updatePhysics usage.
 
     public boolean isLevelCompleted() {
         return isLevelCompleted;
@@ -143,32 +143,22 @@ public class Character extends GameObject {
         }
     }
 
-
-
     public void update(float delta, List<GameObject> mapObjects, de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
         stateTime += delta;
 
         handleInput(configManager);
 
-        // Physics update
-        float targetX = inputVector.x * maxSpeed;
-        float targetY = inputVector.y * maxSpeed;
-
-        // Apply acceleration/friction
-        velocity.x = approach(velocity.x, targetX, (inputVector.x != 0 ? acceleration : friction) * delta);
-        velocity.y = approach(velocity.y, targetY, (inputVector.y != 0 ? acceleration : friction) * delta);
+        // Physics update (Inherited)
+        updatePhysics(delta);
 
         // Animation state
-        if (velocity.len() > 10f) {
-            isMoving = true;
+        if (isMoving) {
             // Update direction based on velocity
             if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
                 currentDirection = velocity.x > 0 ? Direction.RIGHT : Direction.LEFT;
             } else {
                 currentDirection = velocity.y > 0 ? Direction.UP : Direction.DOWN;
             }
-        } else {
-            isMoving = false;
         }
 
         if (velocity.len() > 1f) {
@@ -216,15 +206,9 @@ public class Character extends GameObject {
 
         updateTarget(mapObjects);
     }
-
-    private float approach(float current, float target, float amount) {
-        if (current < target) {
-            return Math.min(current + amount, target);
-        } else {
-            return Math.max(current - amount, target);
-        }
-    }
-
+    
+    // approach helper removed as it is now in MovableObject
+    
     private void updateTarget(List<GameObject> mapObjects) {
         targetPosition = null;
         float minDst = Float.MAX_VALUE;
@@ -265,13 +249,11 @@ public class Character extends GameObject {
 
         // Center of character
         float cx = position.x + width / 2;
-        float cy = position.y + height / 2; // Approximating center, char is 32 high but visual center roughly 16 up?
+        float cy = position.y + height / 2; 
 
         float arrowX = cx + MathUtils.cosDeg(angle) * (radius);
         float arrowY = cy + MathUtils.sinDeg(angle) * (radius);
 
-        // Draw centered on arrowX, arrowY
-        // Subtract half width/height of arrow to center texture
         float w = 16;
         float h = 16;
 
@@ -281,10 +263,7 @@ public class Character extends GameObject {
                 w/2, h/2,
                 w, h,
                 1, 1,
-                angle - 90 // Adjust rotation so arrow points correctly (assuming texture points UP or RIGHT)
-                // If texture points UP (standard), and angle 0 is Right, then rotate -90?
-                // If texture points RIGHT, then angle.
-                // Let's assume UP. 0 deg in atan2 is RIGHT. arrow UP needs -90 to become RIGHT.
+                angle - 90 
         );
     }
 
@@ -305,7 +284,8 @@ public class Character extends GameObject {
             inputVector.nor(); // Normalize for consistent diagonal speed
         }
     }
-
+    
+    // Bounds update logic stays here
     private void updateBounds() {
         this.bounds.setPosition(position.x+4, position.y+4);
     }

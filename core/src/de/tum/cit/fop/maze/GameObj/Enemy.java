@@ -12,7 +12,7 @@ import de.tum.cit.fop.maze.AI.PathFinder;
 
 import java.util.List;
 
-public class Enemy extends GameObject {
+public class Enemy extends MovableObject {
 
     private enum State {
         PATROL, CHASE, RETREAT, CONFUSED 
@@ -29,7 +29,7 @@ public class Enemy extends GameObject {
     private int pathIndex = 0;
     private float pathTimer = 0;
     private static final float PATH_UPDATE_INTERVAL = 0.5f;
-    private float detectionRange = 48f; // 3 Tiles (16 * 3)
+    private float detectionRange = 64f; // 4 Tiles (16 * 4)
     
     private float confusedTimer = 0f;
     
@@ -48,6 +48,15 @@ public class Enemy extends GameObject {
         // Match Character Hitbox: 8x8 centered
         this.bounds = new Rectangle(x+4, y+4, 8, 8);
         
+        // Physics Setup
+        this.maxSpeed = speed; // speed is 20f
+        
+        // Acceleration = 50f means it takes 20/50 = 0.4 seconds to reach full speed.
+        this.acceleration = 50f; 
+        
+        // Friction = 50f means it takes 0.4 seconds to stop from full speed.
+        this.friction = 50f;   
+        
         // Simple animation
         TextureRegion[] frames = new TextureRegion[1];
         frames[0] = region;
@@ -57,6 +66,20 @@ public class Enemy extends GameObject {
     public void update(float delta) {
         stateTime += delta;
         
+        // Reset input vector every frame (AI drives input)
+        inputVector.set(0, 0);
+
+        // Adjust Speed based on State
+        if (currentState == State.CHASE) {
+            this.maxSpeed = speed * 4f; 
+            this.acceleration = 500f;
+            this.friction = 500f;
+        } else {
+            this.maxSpeed = speed;
+            this.acceleration = 50f;
+            this.friction = 50f;
+        }
+
         switch (currentState) {
             case PATROL:
                 updatePatrol(delta);
@@ -72,7 +95,7 @@ public class Enemy extends GameObject {
                 break;
         }
         
-        // Follow Path with Physics
+        // Follow Path with Input Vector logic
         if (currentPath != null && pathIndex < currentPath.size() && currentState != State.CONFUSED) {
             Vector2 targetNode = currentPath.get(pathIndex);
             
@@ -86,35 +109,43 @@ public class Enemy extends GameObject {
             if (dist < 5f) {
                 pathIndex++;
             } else {
-                Vector2 dir = new Vector2(targetX, targetY).sub(position.x, position.y).nor();
-                
-                // Physics Movement
-                float velocityX = dir.x * speed;
-                float velocityY = dir.y * speed;
-                
-                // Move X
-                float oldX = position.x;
-                position.x += velocityX * delta;
-                updateBounds();
-                GameObject colX = checkCollision();
-                if (colX != null) {
-                    position.x = oldX; // Revert
-                    updateBounds();
-                }
-
-                // Move Y
-                float oldY = position.y;
-                position.y += velocityY * delta;
-                updateBounds();
-                GameObject colY = checkCollision();
-                if (colY != null) {
-                    position.y = oldY; // Revert
-                    updateBounds();
-                }
-                
-                // Wall Sliding
-                handleWallSliding(delta, dir, colX, colY);
+                // Set Input Vector towards target (Normalized)
+                inputVector.set(targetX, targetY).sub(position.x, position.y).nor();
             }
+        }
+        
+        // Apply Physics (Acceleration/Friction/Velocity)
+        updatePhysics(delta);
+        
+        // Apply Movement & Collision
+        if (velocity.len() > 1f) {
+            Vector2 dir = velocity.cpy().nor(); // Used for sliding
+            
+             // Move X
+            float oldX = position.x;
+            position.x += velocity.x * delta;
+            updateBounds();
+            GameObject colX = checkCollision();
+            if (colX != null) {
+                position.x = oldX; // Revert
+                updateBounds();
+            }
+
+            // Move Y
+            float oldY = position.y;
+            position.y += velocity.y * delta;
+            updateBounds();
+            GameObject colY = checkCollision();
+            if (colY != null) {
+                position.y = oldY; // Revert
+                updateBounds();
+            }
+            
+            // Wall Sliding
+            // We use the VELOCITY direction for sliding logic, or the Input Vector?
+            // Input vector is better for "intent", velocity is better for "momentum".
+            // Let's use velocity direction as it persists a bit.
+            handleWallSliding(delta, inputVector.len() > 0 ? inputVector : dir, colX, colY);
         }
         
         updateBounds();
@@ -166,23 +197,9 @@ public class Enemy extends GameObject {
              float jitterY = MathUtils.random(-4f, 4f);
              
              Vector2 combatTarget = getTargetCenter().add(jitterX, jitterY);
-             Vector2 dir = combatTarget.sub(getCenter()).nor();
              
-             // Apply Physics Movement directly for jitter
-             float velocityX = dir.x * speed;
-             float velocityY = dir.y * speed;
-             
-             // Move X
-             float oldX = position.x;
-             position.x += velocityX * delta;
-             updateBounds();
-             if (checkCollision() != null) { position.x = oldX; updateBounds(); }
-             
-             // Move Y
-             float oldY = position.y;
-             position.y += velocityY * delta;
-             updateBounds();
-             if (checkCollision() != null) { position.y = oldY; updateBounds(); }
+             // Set Input Vector for jitter
+             inputVector.set(combatTarget).sub(getCenter()).nor();
              
              return; // Skip normal pathfinding while fighting
         }
