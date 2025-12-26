@@ -1,6 +1,6 @@
 {
-musicVolume: 0.1
-soundVolume: 0.1
+musicVolume: 0
+soundVolume: 0
 keyBindings: {
 	class: java.util.HashMap
 	PAUSE: 111

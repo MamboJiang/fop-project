@@ -135,6 +135,11 @@ public class Character extends GameObject {
                     updateBounds();
                 }
             }
+            else if (hitObject instanceof Trap) {
+                // 1. 扣血
+                this.takeDamage();
+                System.out.println("Stepped on a trap! Lives left: " + getLives());
+            }
         }
     }
 
@@ -310,7 +315,7 @@ public class Character extends GameObject {
             if (obj == this) continue;
 
             // Wall collision
-            if (obj instanceof Wall || obj instanceof Key || obj instanceof Exit) {
+            if (obj instanceof Wall || obj instanceof Key || obj instanceof Exit || obj instanceof Trap) {
                 if (bounds.overlaps(obj.getBounds())) {
                     return obj;
                 }

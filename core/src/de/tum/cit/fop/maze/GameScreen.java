@@ -199,6 +199,10 @@ public class GameScreen implements Screen {
                 game.goToMenu(); // 调用主类的切换屏幕方法
                 return; // 直接结束当前帧，避免后续不必要的渲染
             }
+            if(character.isDead()){
+                game.goToMenu();
+                return;
+            }
         }
 
         // Render
