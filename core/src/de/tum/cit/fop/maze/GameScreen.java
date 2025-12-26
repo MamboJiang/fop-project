@@ -55,6 +55,7 @@ public class GameScreen implements Screen {
     private List<de.tum.cit.fop.maze.GameObj.Enemy> enemies;
     private FileHandle mapFile;
     private de.tum.cit.fop.maze.AI.Grid grid;
+    private List<de.tum.cit.fop.maze.VFX.DamageNumber> damageNumbers;
 
     /**
      * Constructor for GameScreen. Sets up the camera and font.
@@ -138,6 +139,8 @@ public class GameScreen implements Screen {
         
         // Remove spawn points from mapObjects so they don't render twice or collide
         mapObjects.removeAll(toRemove);
+        
+        damageNumbers = new java.util.ArrayList<>();
     }
 
     private void setupPauseMenu() {
@@ -267,6 +270,12 @@ public class GameScreen implements Screen {
                     if (screenShake != null) screenShake.start(0.3f, 0.8f);
                     character.clearScreenShakeRequest();
                 }
+                
+                // Check if damage number requested
+                if (character.isDamageNumberRequested()) {
+                     damageNumbers.add(new de.tum.cit.fop.maze.VFX.DamageNumber(character, 1));
+                     character.clearDamageNumberRequest();
+                }
 
                 character.update(delta, mapObjects, game.getConfigManager());
 
@@ -322,6 +331,23 @@ public class GameScreen implements Screen {
             game.getSpriteBatch().draw(enemy.getTextureRegion(), enemy.getPosition().x, enemy.getPosition().y, 16, 16);
             // Draw Status Icon
             enemy.drawStatus(game.getSpriteBatch(), font);
+        }
+        
+        // Draw Damage Numbers
+        if (damageNumbers != null) {
+            java.util.Iterator<de.tum.cit.fop.maze.VFX.DamageNumber> iter = damageNumbers.iterator();
+            while (iter.hasNext()) {
+                de.tum.cit.fop.maze.VFX.DamageNumber dn = iter.next();
+                dn.render(game.getSpriteBatch(), font);
+                
+                if (!isPaused) {
+                    dn.update(delta);
+                }
+                
+                if (dn.isFinished()) {
+                    iter.remove();
+                }
+            }
         }
 
         game.getSpriteBatch().end(); // Important to call this after drawing everything

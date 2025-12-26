@@ -340,6 +340,7 @@ public class Character extends MovableObject {
     }
 
     private boolean screenShakeRequested = false;
+    private boolean damageNumberRequested = false;
     private float invincibleTime = 0f;
     private static final float INVINCIBLE_DURATION = 1.0f;
 
@@ -351,8 +352,17 @@ public class Character extends MovableObject {
             damageFlashTime = DAMAGE_DURATION;
             invincibleTime = INVINCIBLE_DURATION; // Grant Invincibility
             screenShakeRequested = true;
+            damageNumberRequested = true;
             // Play sound if possible
         }
+    }
+    
+    public boolean isDamageNumberRequested() {
+        return damageNumberRequested;
+    }
+    
+    public void clearDamageNumberRequest() {
+        this.damageNumberRequested = false;
     }
 
     public boolean isScreenShakeRequested() {
