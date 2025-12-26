@@ -79,6 +79,16 @@ public class MenuScreen implements Screen {
                 game.setScreen(new de.tum.cit.fop.maze.Conversation.DialogueScreen(game));
             }
         });
+        
+        // Create and add a "VFX Demo" button
+        TextButton vfxButton = new TextButton("VFX Demo", game.getSkin());
+        table.add(vfxButton).width(300).padBottom(15).row();
+        vfxButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.setScreen(new de.tum.cit.fop.maze.VFX.VFXDemoScreen(game));
+            }
+        });
 
         TextButton exitButton = new TextButton("Exit", game.getSkin());
         table.add(exitButton).width(300).row();
