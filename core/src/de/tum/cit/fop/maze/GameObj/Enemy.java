@@ -193,7 +193,7 @@ public class Enemy extends MovableObject {
         return new Vector2(tBounds.x + tBounds.width/2, tBounds.y + tBounds.height/2);
     }
 
-    private void updateCombat(float delta) {
+    protected void updateCombat(float delta) {
         
         // Attack/Combat Logic
         if (bounds.overlaps(target.getBounds())) {

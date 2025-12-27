@@ -22,9 +22,30 @@ public class Ghost extends Enemy {
         // Wake up distance: 5 tiles = 80 pixels
         // Give up distance: 10 tiles = 160 pixels
         float dist = com.badlogic.gdx.math.Vector2.dst(getCenter().x, getCenter().y, getTargetCenter().x, getTargetCenter().y);
-        
+
         // Logic: Hysteresis
-        if (currentState == State.CHASE) {
+        // Logic: Hysteresis & State Machine
+        
+        // 1. Check for Retreat Condition
+        // Only retreat if we are currently fighting (CHASE). 
+        // Prevents loop where PATROL -> RETREAT instantly because health is low.
+//        if (health <= 40 && currentState == State.CHASE) {
+//             currentState = State.RETREAT;
+//        }
+
+        if (currentState == State.RETREAT) {
+             // Run away!
+             // Fly directly away from target
+             inputVector.set(getCenter()).sub(getTargetCenter()).nor();
+             this.maxSpeed = 40f; // Faster than chase?
+             
+             // Stop retreating if far enough
+             if (dist > 160f) { // ~12 tiles
+                 currentState = State.PATROL; // Go back to sleep/patrol
+                 this.maxSpeed = 0f;
+             }
+             
+        } else if (currentState == State.CHASE) {
             // Give up if too far
             if (dist > 160f) {
                 currentState = State.PATROL; // Go back to sleep
@@ -39,7 +60,13 @@ public class Ghost extends Enemy {
             this.maxSpeed = 0f;
             // Wake up if close
             if (dist < 80f) {
+                // Only chase if healthy? 
+                // If health is low, maybe don't wake up? Or wake up and immediately retreat?
+                // if (health <= 40) {
+                //    currentState = State.RETREAT;
+                // } else {
                 currentState = State.CHASE;
+                // }
             }
         }
         
@@ -53,10 +80,16 @@ public class Ghost extends Enemy {
         // Update Hitbox Position
         bounds.setPosition(position.x+4, position.y+4);
         
-        // Damage Check
-        if (bounds.overlaps(target.getBounds())) {
-             target.takeDamage();
-        }
+        // Update Combat Input (Must be before Physics? Or separate?)
+        // Enemy.java calls it before Physics to set inputVector.
+        // Ghost doesn't really use inputVector for combat jitter same way?
+        // But it needs the damage logic.
+        updateCombat(delta);
+        
+        // Damage Check (Handled by updateCombat now!)
+//        if (bounds.overlaps(target.getBounds())) {
+//             target.takeDamage();
+//        }
         
         // Animation
         com.badlogic.gdx.graphics.g2d.Animation<com.badlogic.gdx.graphics.g2d.TextureRegion> currentAnim = walkDown;
