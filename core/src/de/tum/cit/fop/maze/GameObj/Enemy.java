@@ -14,17 +14,17 @@ import java.util.List;
 
 public class Enemy extends MovableObject {
 
-    private enum State {
+    protected enum State {
         PATROL, CHASE, RETREAT, CONFUSED 
     }
 
-    private State currentState;
+    protected State currentState;
     private float speed = 20f;
     private int health = 100;
     
     // AI
     private Grid grid;
-    private Character target;
+    protected Character target;
     private List<Vector2> currentPath;
     private int pathIndex = 0;
     private float pathTimer = 0;
@@ -34,13 +34,25 @@ public class Enemy extends MovableObject {
     private float confusedTimer = 0f;
     
     // Animation
-    private Animation<TextureRegion> anim;
-    private float stateTime;
+    protected Animation<TextureRegion> walkDown;
+    protected Animation<TextureRegion> walkLeft;
+    protected Animation<TextureRegion> walkRight;
+    protected Animation<TextureRegion> walkUp;
+    
+    protected float stateTime; // Renamed from animTime to stateTime (check if field existed)
+    // Wait, stateTime field existed in line 38. Use that.
 
     private float waitTimer = 0f;
 
-    public Enemy(float x, float y, TextureRegion region, Grid grid, Character target) {
-        super(x, y, 16, 16, region);
+    public Enemy(float x, float y, Animation<TextureRegion>[] animations, Grid grid, Character target) {
+        // Init with first frame of Down animation
+        super(x, y, 16, 16, animations[0].getKeyFrame(0)); 
+        
+        this.walkDown = animations[0];
+        this.walkLeft = animations[1];
+        this.walkRight = animations[2];
+        this.walkUp = animations[3];
+        
         this.grid = grid;
         this.target = target;
         this.currentState = State.PATROL;
@@ -49,18 +61,9 @@ public class Enemy extends MovableObject {
         this.bounds = new Rectangle(x+4, y+4, 8, 8);
         
         // Physics Setup
-        this.maxSpeed = speed; // speed is 20f
-        
-        // Acceleration = 50f means it takes 20/50 = 0.4 seconds to reach full speed.
+        this.maxSpeed = speed; 
         this.acceleration = 50f; 
-        
-        // Friction = 50f means it takes 0.4 seconds to stop from full speed.
         this.friction = 50f;   
-        
-        // Simple animation
-        TextureRegion[] frames = new TextureRegion[1];
-        frames[0] = region;
-        anim = new Animation<>(0.1f, frames);
     }
     
     public void update(float delta) {
@@ -121,7 +124,7 @@ public class Enemy extends MovableObject {
         if (velocity.len() > 1f) {
             Vector2 dir = velocity.cpy().nor(); // Used for sliding
             
-             // Move X
+            // Move X
             float oldX = position.x;
             position.x += velocity.x * delta;
             updateBounds();
@@ -141,24 +144,35 @@ public class Enemy extends MovableObject {
                 updateBounds();
             }
             
-            // Wall Sliding
-            // We use the VELOCITY direction for sliding logic, or the Input Vector?
-            // Input vector is better for "intent", velocity is better for "momentum".
-            // Let's use velocity direction as it persists a bit.
             handleWallSliding(delta, inputVector.len() > 0 ? inputVector : dir, colX, colY);
+            
+            // Animation Selection
+            Animation<TextureRegion> currentAnim = walkDown;
+            if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
+                if (velocity.x > 0) currentAnim = walkRight;
+                else currentAnim = walkLeft;
+            } else {
+                if (velocity.y > 0) currentAnim = walkUp;
+                else currentAnim = walkDown;
+            }
+            this.textureRegion = currentAnim.getKeyFrame(stateTime, true);
+            
+        } else {
+            // Idle
+            this.textureRegion = walkDown.getKeyFrame(0.2f, true);
         }
         
         updateBounds();
     }
     
     // Helper to get Center
-    private Vector2 getCenter() {
+    protected Vector2 getCenter() {
         return new Vector2(position.x + width/2, position.y + height/2);
     }
     
     // Fix: Target the actual HITBOX center (Feet), not the Sprite center (Chest)
     // Character Hitbox is 8x8, at x+4, y+4.
-    private Vector2 getTargetCenter() {
+    protected Vector2 getTargetCenter() {
         Rectangle tBounds = target.getBounds();
         return new Vector2(tBounds.x + tBounds.width/2, tBounds.y + tBounds.height/2);
     }

@@ -96,7 +96,7 @@ public class GameScreen implements Screen {
             // If this fails, we might need to look in "assets/maps" or similar depending on working dir
         if(this.mapFile ==null || !this.mapFile.exists()){
             Gdx.app.error("GameScreen", "Map file is null or does not exist!");
-            this.mapFile = Gdx.files.internal("maps/level-1.properties");
+            this.mapFile = Gdx.files.internal("maps/level-6.properties");
         }
 
 
@@ -129,7 +129,15 @@ public class GameScreen implements Screen {
                  enemies.add(new de.tum.cit.fop.maze.GameObj.Enemy(
                      obj.getPosition().x, 
                      obj.getPosition().y, 
-                     obj.getTextureRegion(), 
+                     de.tum.cit.fop.maze.MapLoader.getMobAnimations(0, 0), // Base Enemy: Col 0, Row 0
+                     grid, 
+                     character
+                 ));
+                 toRemove.add(obj);
+             } else if (obj instanceof de.tum.cit.fop.maze.GameObj.GhostSpawnPoint) {
+                 enemies.add(new de.tum.cit.fop.maze.GameObj.Ghost(
+                     obj.getPosition().x, 
+                     obj.getPosition().y, 
                      grid, 
                      character
                  ));

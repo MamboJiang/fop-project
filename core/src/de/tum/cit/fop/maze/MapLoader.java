@@ -74,6 +74,11 @@ public class MapLoader {
                         case 5: // 钥匙/宝箱
                             obj = new Key(worldX, worldY, 16, 16, regions[4][4]);
                             break;
+                        case 6: // 幽灵 (Ghost)
+                            // Use same marker as Enemy for now, or maybe [3][7] if valid? 
+                            // Let's safe pick Enemy marker [3][6] for map editor visibility
+                            obj = new GhostSpawnPoint(worldX, worldY, 16, 16, regions[3][6]);
+                            break;
                         default:
                             // 如果 type 是 -1 (props里没有定义)，说明这里是纯地板
                             // 前面已经铺过地板了，所以这里不用做任何事
@@ -90,6 +95,61 @@ public class MapLoader {
         }
 
         return objects;
+    }
+
+    private static Texture mobsTexture;
+
+    /**
+     * Extracts animation frames for a character from mobs.png.
+     * The spritesheet is assumed to be a grid of characters.
+     * Each character block is 3 columns x 4 rows of 16x16 tiles.
+     * 
+     * @param blockCol  Transformation grid column (0-3)
+     * @param blockRow  Transformation grid row (0-1)
+     * @return Array of Animations: [0]=Down, [1]=Left, [2]=Right, [3]=Up
+     */
+    public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getMobAnimations(int blockCol, int blockRow) {
+        if (mobsTexture == null) {
+            mobsTexture = new Texture(Gdx.files.internal("mobs.png"));
+        }
+        
+        TextureRegion[][] tmp = TextureRegion.split(mobsTexture, 16, 16);
+        com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] anims = new com.badlogic.gdx.graphics.g2d.Animation[4];
+        
+        int gridRow = blockRow * 4;
+        int gridCol = blockCol * 3;
+        
+        float frameDuration = 0.2f;
+        
+        // 0: Down
+        TextureRegion[] downFrames = new TextureRegion[3];
+        downFrames[0] = tmp[gridRow][gridCol];
+        downFrames[1] = tmp[gridRow][gridCol+1];
+        downFrames[2] = tmp[gridRow][gridCol+2];
+        anims[0] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, downFrames);
+        
+        // 1: Left
+        TextureRegion[] leftFrames = new TextureRegion[3];
+        leftFrames[0] = tmp[gridRow+1][gridCol];
+        leftFrames[1] = tmp[gridRow+1][gridCol+1];
+        leftFrames[2] = tmp[gridRow+1][gridCol+2];
+        anims[1] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, leftFrames);
+        
+        // 2: Right
+        TextureRegion[] rightFrames = new TextureRegion[3];
+        rightFrames[0] = tmp[gridRow+2][gridCol];
+        rightFrames[1] = tmp[gridRow+2][gridCol+1];
+        rightFrames[2] = tmp[gridRow+2][gridCol+2];
+        anims[2] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, rightFrames);
+        
+        // 3: Up
+        TextureRegion[] upFrames = new TextureRegion[3];
+        upFrames[0] = tmp[gridRow+3][gridCol];
+        upFrames[1] = tmp[gridRow+3][gridCol+1];
+        upFrames[2] = tmp[gridRow+3][gridCol+2];
+        anims[3] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, upFrames);
+        
+        return anims;
     }
 
     public static List<FileHandle> getMapFiles() {

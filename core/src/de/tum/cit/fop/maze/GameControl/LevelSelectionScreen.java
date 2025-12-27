@@ -25,6 +25,8 @@ public class LevelSelectionScreen implements Screen {
     private final MazeRunnerGame game;
     private final Stage stage;
 
+    private ScrollPane scrollPane;
+
     public LevelSelectionScreen(MazeRunnerGame game) {
         this.game = game;
         this.stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), game.getSpriteBatch());
@@ -60,8 +62,9 @@ public class LevelSelectionScreen implements Screen {
         }
 
         // ScrollPane for levels
-        ScrollPane scrollPane = new ScrollPane(levelsTable, game.getSkin());
+        scrollPane = new ScrollPane(levelsTable, game.getSkin());
         scrollPane.setFadeScrollBars(false);
+        scrollPane.setScrollingDisabled(true, false); // Disable horizontal scrolling
         container.add(scrollPane).width(400).height(400).padBottom(20).row();
 
         // Back Button
@@ -90,6 +93,10 @@ public class LevelSelectionScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        // Enable scroll focus
+        if (scrollPane != null) {
+            stage.setScrollFocus(scrollPane);
+        }
     }
 
     @Override
