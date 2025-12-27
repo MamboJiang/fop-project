@@ -28,6 +28,7 @@ public class HUD {
     private Table table;
     private Table debugTable;
     private Label debugInfoLabel;
+    private TextButton infiniteHpBtn;
     
     // Dependencies
     private final GameScreen gameScreen;
@@ -151,11 +152,25 @@ public class HUD {
             }
         });
         
+        // Infinite HP Toggle Button
+        infiniteHpBtn = new TextButton("Infinite HP: OFF", skin);
+        infiniteHpBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (character != null) {
+                     boolean newState = !character.isInfiniteHP();
+                     character.setInfiniteHP(newState);
+                     infiniteHpBtn.setText("Infinite HP: " + (newState ? "ON" : "OFF"));
+                }
+            }
+        });
+        
         // Add buttons to content table vertically
         contentTable.add(debugBtn).left().pad(5).row();
         contentTable.add(hpPlusBtn).left().pad(5).row();
         contentTable.add(hpMinusBtn).left().pad(5).row();
         contentTable.add(keyBtn).left().pad(5).row();
+        contentTable.add(infiniteHpBtn).left().pad(5).row();
         
         // Zoom In Button
         TextButton zoomInBtn = new TextButton("Zoom +", skin);
@@ -213,6 +228,16 @@ public class HUD {
         if (debugInfoLabel != null) {
             float speed = character.getVelocity().len();
             debugInfoLabel.setText(String.format("Speed: %.2f\nHP: %d\nKey: %b", speed, lives, character.hasKey()));
+        }
+        
+        // Sync Infinite HP State (HUD is Truth - wait, no, Character is Truth now for toggle button)
+        if (infiniteHpBtn != null) {
+            boolean isInfinite = character.isInfiniteHP();
+            // Only update text if needed to avoid spamming layout updates? no, setText is cheap if same
+            infiniteHpBtn.setText("Infinite HP: " + (isInfinite ? "ON" : "OFF"));
+            
+            // Set Color for visual feedback
+            infiniteHpBtn.setColor(isInfinite ? Color.GREEN : Color.WHITE);
         }
     }
     

@@ -343,18 +343,29 @@ public class Character extends MovableObject {
     private boolean damageNumberRequested = false;
     private float invincibleTime = 0f;
     private static final float INVINCIBLE_DURATION = 1.0f;
+    private boolean infiniteHP = false;
 
     public void takeDamage() {
         if (invincibleTime > 0) return; // Prevent damage if invincible
         
         if (damageFlashTime <= 0) {
-            lives--;
+            if (!infiniteHP) {
+                lives--;
+            }
             damageFlashTime = DAMAGE_DURATION;
             invincibleTime = INVINCIBLE_DURATION; // Grant Invincibility
             screenShakeRequested = true;
             damageNumberRequested = true;
             // Play sound if possible
         }
+    }
+    
+    public void setInfiniteHP(boolean enabled) {
+        this.infiniteHP = enabled;
+    }
+    
+    public boolean isInfiniteHP() {
+        return infiniteHP;
     }
     
     public boolean isDamageNumberRequested() {
