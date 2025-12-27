@@ -14,6 +14,9 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+
 /**
  * The MenuScreen class is responsible for displaying the main menu of the game.
  * It extends the LibGDX Screen class and sets up the UI components for the menu.
@@ -66,7 +69,8 @@ public class MenuScreen implements Screen {
         endlessButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.goToEndlessMode();
+                //game.goToEndlessMode();
+                showNameInputDialog(game);
             }
         });
 
@@ -145,5 +149,28 @@ public class MenuScreen implements Screen {
 
     @Override
     public void hide() {
+    }
+
+    private void showNameInputDialog(MazeRunnerGame game) {
+        TextField nameField = new TextField("Player", game.getSkin());
+
+        Dialog dialog = new Dialog("", game.getSkin()) {
+            @Override
+            protected void result(Object object) {
+                if ((Boolean) object) {
+                    String name = nameField.getText();
+                    if (name.trim().isEmpty()) name = "Unknown";
+                    // 调用修改后的 goToEndlessMode
+                    game.goToEndlessMode(name);
+                }
+            }
+        };
+
+        dialog.text("Who is challenging the maze?");
+        dialog.getContentTable().row();
+        dialog.getContentTable().add(nameField).width(200);
+        dialog.button("Go!", true); // true 传递给 result 方法
+        dialog.button("Cancel", false);
+        dialog.show(stage);
     }
 }

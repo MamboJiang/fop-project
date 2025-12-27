@@ -6,9 +6,6 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -17,6 +14,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import de.tum.cit.fop.maze.GameControl.LeaderboardManager;
 import de.tum.cit.fop.maze.GameObj.Character;
 import de.tum.cit.fop.maze.GameObj.EntryPoint;
 import de.tum.cit.fop.maze.GameObj.GameObject;
@@ -65,7 +63,10 @@ public class GameScreen implements Screen {
     private int score = 0;         // 当前得分
     private static final int BASE_SCORE_PER_LEVEL = 1000; // 每关基础分
     private static final int PENALTY_PER_SECOND = 10;     // 每秒扣除的分数
+    private static final int SCORE_PER_LIFE = 500;
 
+    private String playerName;
+    private int totalRunScore = 0; // 记录无尽模式累计总分
     /**
      * Constructor for GameScreen (File Mode).
      */
@@ -81,10 +82,13 @@ public class GameScreen implements Screen {
     /**
      * Constructor for GameScreen (Procedural Mode).
      */
-    public GameScreen(MazeRunnerGame game, boolean isProcedural) {
+    public GameScreen(MazeRunnerGame game, boolean isProcedural, String playerName) {
         this.game = game;
         this.isProcedural = isProcedural;
         this.currentDifficulty = 1;
+
+        this.playerName = playerName; // 保存名字
+        this.totalRunScore = 0;       // 初始化总分
         
         initCommon();
         setupLevel();
@@ -208,6 +212,8 @@ public class GameScreen implements Screen {
 
     private void loadNextLevel() {
         if (isProcedural) {
+            totalRunScore += calculateScore();
+
             // Increase Difficulty
             currentDifficulty++;
             
@@ -264,7 +270,9 @@ public class GameScreen implements Screen {
         isGameOver = true;
 
         // 创建结果菜单
-        int finalScore = win ? calculateScore() : 0;
+
+        int currentLevelScore = win ? calculateScore() : 0;
+        int finalDisplayScore = isProcedural ? (totalRunScore + currentLevelScore) : currentLevelScore;
         int waves = isProcedural ? currentDifficulty - 1 : -1;
         GameOverMenu = new GameOverMenu(game,
                 () -> {
@@ -273,7 +281,7 @@ public class GameScreen implements Screen {
                     // Currently we hid retry for procedural lose.
                     // But if we passed null as retry action, that would be safer.
                     if (isProcedural) {
-                        game.goToEndlessMode(); // Restart run
+                        game.goToEndlessMode(playerName); // Restart run
                     } else {
                         game.goToGame(this.mapFile);
                     }
@@ -286,8 +294,21 @@ public class GameScreen implements Screen {
                 },
                 win,
                 waves,
-                finalScore
+                finalDisplayScore
         );
+
+        if (isProcedural) {
+            // 只有在输了 (!win) 的时候才保存分数
+            // 这样通关每一层时不会生成新记录，只有死掉时才算 "Run Ended"
+            if (!win) {
+                LeaderboardManager.saveScore(playerName, finalDisplayScore);
+            }
+
+            // 只有在输了的时候才加载/显示排行榜 (可选，如果你想通关界面也看榜，就把这行移到 if (!win) 外面)
+            if (!win) {
+                GameOverMenu.loadLeaderboard();
+            }
+        }
 
         pauseStage.addActor(GameOverMenu);
         GameOverMenu.show();
@@ -536,15 +557,23 @@ public class GameScreen implements Screen {
     }
 
     public int calculateScore() {
+        int lifeScore = 0;
+        if (character != null) {
+            // character.getLives() 返回当前剩余生命数
+            lifeScore = character.getLives() * SCORE_PER_LIFE;
+        }
+
         int timePenalty = (int) (levelTimer * PENALTY_PER_SECOND);
-        int currentLevelScore = BASE_SCORE_PER_LEVEL - timePenalty;
+        int totalScore = BASE_SCORE_PER_LEVEL - timePenalty;
 
         // 如果是无尽模式，可以在这里加上难度系数乘数
         if (isProcedural) {
-            currentLevelScore *= currentDifficulty;
+            totalScore *= currentDifficulty;
         }
 
-        return Math.max(0, currentLevelScore);
+        totalScore += lifeScore;
+
+        return Math.max(0, totalScore);
     }
 
     // 获取格式化后的时间字符串 (例如 "01:23")

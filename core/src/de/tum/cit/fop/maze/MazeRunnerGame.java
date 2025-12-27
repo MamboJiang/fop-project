@@ -116,8 +116,8 @@ public class MazeRunnerGame extends Game {
     /**
      * Switches to the procedural endless mode.
      */
-    public void goToEndlessMode() {
-        this.setScreen(new GameScreen(this, true));
+    public void goToEndlessMode(String playerName) {
+        this.setScreen(new GameScreen(this, true, playerName));
         if (menuScreen != null) {
             menuScreen.dispose();
             menuScreen = null;

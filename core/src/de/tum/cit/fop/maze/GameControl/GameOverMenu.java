@@ -9,6 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 
+import java.util.ArrayList;
+
 public class GameOverMenu extends Table{
     private final MazeRunnerGame game;
     private int wavesCleared = -1; // -1 means standard mode
@@ -17,6 +19,7 @@ public class GameOverMenu extends Table{
     private boolean isWin;
     private Runnable onNextLevel;
     private int finalScore;
+    private Table leaderboardTable;
 
     public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int finalScore) {
         this(game, onRetry, onExit, onNextLevel, isWin, -1, finalScore);
@@ -49,6 +52,9 @@ public class GameOverMenu extends Table{
         Label titleLabelWin = new Label("LEVEL CLEARED!", skin, "title");
 
         Label scoreLabel = new Label("Score: " + finalScore, skin);
+
+        leaderboardTable = new Table();
+        content.add(leaderboardTable).pad(10).row();
 
         // Endless Mode Label
         Label wavesLabel = null;
@@ -110,11 +116,9 @@ public class GameOverMenu extends Table{
             // Win
             // 胜利时显示分数
             content.add(titleLabelWin).pad(20).row();
-
             // --- 将分数显示在按钮之前 ---
             content.add(scoreLabel).pad(10).row();
 
-            content.add(titleLabelWin).pad(20).row();
             content.add(nextLevelBtn).pad(20).row();
             if (wavesCleared == -1) {
                 // Standard Win - Allow replaying/retrying this level?
@@ -133,5 +137,30 @@ public class GameOverMenu extends Table{
 
     public void hide() {
         setVisible(false);
+    }
+
+    public void loadLeaderboard() {
+        leaderboardTable.clear(); // 清空旧数据
+
+        Label title = new Label("Leaderboard", game.getSkin(), "title");
+        leaderboardTable.add(title).padBottom(10).colspan(2).row();
+
+        ArrayList<LeaderboardManager.ScoreEntry> scores = LeaderboardManager.loadScores();
+
+        if (scores.isEmpty()) {
+            leaderboardTable.add(new Label("No records yet!", game.getSkin())).colspan(2);
+        } else {
+            for (int i = 0; i < scores.size(); i++) {
+                LeaderboardManager.ScoreEntry entry = scores.get(i);
+
+                // 排名 #1, #2...
+                Label rankLabel = new Label("#" + (i + 1), game.getSkin());
+                // 名字: 分数
+                Label entryLabel = new Label(entry.name + ": " + entry.score, game.getSkin());
+
+                leaderboardTable.add(rankLabel).left().padRight(10);
+                leaderboardTable.add(entryLabel).left().row();
+            }
+        }
     }
 }
