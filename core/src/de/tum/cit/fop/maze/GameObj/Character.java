@@ -3,6 +3,7 @@ package de.tum.cit.fop.maze.GameObj;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -13,7 +14,7 @@ import com.badlogic.gdx.math.MathUtils;
 import java.util.List;
 
 public class Character extends MovableObject {
-    private int lives;
+    // private int lives; // Removed, using health
     private boolean hasKey = false;
     private float speed;
     private static final float WALK_SPEED = 100f;
@@ -28,9 +29,9 @@ public class Character extends MovableObject {
 
     private Direction currentDirection;
     
-    // Damage VFX
-    private float damageFlashTime = 0f;
-    private static final float DAMAGE_DURATION = 0.1f;
+    // Damage VFX (Moved to MovableObject, but local fields removed)
+    // private float damageFlashTime = 0f; 
+    // private static final float DAMAGE_DURATION = 0.1f;
 
     // Navigation Arrow
     private TextureRegion arrowRegion;
@@ -42,7 +43,7 @@ public class Character extends MovableObject {
 
     public Character(float x, float y) {
         super(x, y, 16, 32, null); 
-        this.lives = 4;
+        this.health = 4; // Use inherited health
         this.speed = WALK_SPEED;
         
         // Physics Init
@@ -129,6 +130,9 @@ public class Character extends MovableObject {
                 this.hasKey = true;
                 hitObject.setMarkedForRemoval(true);
                 System.out.println("Key collected!");
+            }
+            else if(hitObject instanceof Collectable){
+                ((Collectable) hitObject).collect(this);
             }
             else if(hitObject instanceof Exit){
                 if(this.hasKey){
@@ -219,39 +223,82 @@ public class Character extends MovableObject {
         if (invincibleTime > 0) {
             invincibleTime -= delta;
         }
+        
+        // Handle Shield
+        if (shieldTime > 0) {
+            shieldTime -= delta;
+        }
 
         updateTarget(mapObjects);
     }
     
-    public void draw(SpriteBatch batch) {
-        boolean isFlashing = damageFlashTime > 0;
-        
-        // Damage Flash Effect (Additive Blending)
-        if (isFlashing) {
-            batch.setBlendFunction(com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA, com.badlogic.gdx.graphics.GL20.GL_ONE);
-            batch.setColor(1, 1, 1, 1);
+    // Shield Logic
+    private float shieldTime = 0f;
+    private Animation<TextureRegion> shieldAnimation;
+    
+    public void activateShield(float duration) {
+        if (shieldAnimation == null) {
+            loadShieldAnimation();
         }
-        
-        // Flicker effect during invincibility (after flash output)
-//        if (invincibleTime > 0 && !isFlashing) {
-//             // Toggle visibility every 0.1s
-//             if (((int)(invincibleTime * 10) % 2) == 0) {
-//                 // Skip drawing to simulate flicker
-//             } else {
-//                 batch.draw(textureRegion, position.x, position.y, width, height);
-//             }
-//        } else {
-        batch.draw(textureRegion, position.x, position.y, width, height);
-        //}
+        this.shieldTime = duration;
+    }
+    
+    private void loadShieldAnimation() {
+         Texture texture = new Texture(Gdx.files.internal("objects.png"));
+         TextureRegion[][] tmp = TextureRegion.split(texture, 16, 16);
+         TextureRegion[] frames = new TextureRegion[7];
+         for (int i = 0; i < 7; i++) {
+             frames[i] = tmp[3][4 + i];
+         }
+         shieldAnimation = new Animation<>(0.1f, frames);
+         shieldAnimation.setPlayMode(Animation.PlayMode.LOOP);
+    }
+    
+    public boolean isShielded() {
+        return shieldTime > 0;
+    }
 
-        if (isFlashing) {
-            // Reset Blending
-            batch.setBlendFunction(com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA, com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA);
-            batch.setColor(1, 1, 1, 1);
-        }
+    public void draw(SpriteBatch batch) {
+        // boolean isFlashing = damageFlashTime > 0; // inherited
+        
+        setupDamageFlash(batch);
+        
+        batch.draw(textureRegion, position.x, position.y, width, height);
+
+        endDamageFlash(batch);
         
         drawArrow(batch);
+        
+        // Reset Color (Important! Otherwise everything else becomes transparent/tinted)
+        batch.setColor(Color.WHITE);
+        
+            // Draw Shield Overlay
+            if (shieldTime > 0 && shieldAnimation != null) {
+                TextureRegion shieldFrame = shieldAnimation.getKeyFrame(stateTime, true);
+                
+                // Semi-transparent
+                batch.setColor(1, 1, 1, 0.5f); // 50% opacity
+                
+                // User Request: Allow slight stretching and manual scale adjustment
+                float scaleX = 1.2f; // Adjust this for horizontal stretch (e.g. 1.2f)
+                float scaleY = 1.5f; // Adjust this for vertical stretch (e.g. 1.1f)
+                
+                float actualWidth = 16f * scaleX;
+                float actualHeight = 16f * scaleY;
+                
+                // Center X: SpriteCenter (pos.x + 8) - HalfNewWidth
+                float drawX = (position.x + 8) - (actualWidth / 2);
+                
+                // Bottom Y: Aligned with Hitbox Bottom (pos.y + 4) or slightly offset (+6)
+                // Growing height keeps bottom fixed.
+                float drawY = position.y + 5; 
+                
+                batch.draw(shieldFrame, drawX, drawY, actualWidth, actualHeight);
+                
+                batch.setColor(Color.WHITE);
+            }
     }
+
     
     // approach helper removed as it is now in MovableObject
     
@@ -341,7 +388,7 @@ public class Character extends MovableObject {
             if (obj == this) continue;
 
             // Wall collision
-            if (obj instanceof Wall || obj instanceof Key || obj instanceof Exit || obj instanceof Trap) {
+            if (obj instanceof Wall || obj instanceof Key || obj instanceof Exit || obj instanceof Trap || obj instanceof Collectable) {
                 if (bounds.overlaps(obj.getBounds())) {
                     return obj;
                 }
@@ -355,20 +402,32 @@ public class Character extends MovableObject {
     private float invincibleTime = 0f;
     private static final float INVINCIBLE_DURATION = 1.0f;
     private boolean infiniteHP = false;
-
-    public void takeDamage() {
+    
+    // Override takeDamage to add invincibility and specific effects
+    @Override
+    public void takeDamage(int amount) {
         if (invincibleTime > 0) return; // Prevent damage if invincible
         
         if (damageFlashTime <= 0) {
             if (!infiniteHP) {
-                lives--;
+                // Character damage is usually 1 "life" regardless of amount unless specified
+                // But let's respect amount if needed. For now default is 1.
+                // Assuming amount is 1 for traps/enemies usually.
+                super.takeDamage(amount);
+            } else {
+                 // Even with infinite HP, show flash? 
+                 damageFlashTime = FLASH_DURATION;
             }
-            damageFlashTime = DAMAGE_DURATION;
-            invincibleTime = INVINCIBLE_DURATION; // Grant Invincibility
+            
+            // On top of base logic:
+            invincibleTime = INVINCIBLE_DURATION; 
             screenShakeRequested = true;
             damageNumberRequested = true;
-            // Play sound if possible
         }
+    }
+
+    public void takeDamage() {
+        takeDamage(1);
     }
     
     public void setInfiniteHP(boolean enabled) {
@@ -386,26 +445,21 @@ public class Character extends MovableObject {
     public void clearDamageNumberRequest() {
         this.damageNumberRequested = false;
     }
-
+    
     public boolean isScreenShakeRequested() {
         return screenShakeRequested;
     }
-
+    
     public void clearScreenShakeRequest() {
         this.screenShakeRequested = false;
     }
 
     public int getLives() {
-        return lives;
+        return health; // In Character, health = lives
     }
-
-    public boolean isDead() {
-        return lives <= 0;
-    }
-
-    public boolean isDamaged() {
-        return damageFlashTime > 0;
-    }
+    
+    // isDead() inherited
+    // isDamaged() inherited
 
     public boolean hasKey() {
         return hasKey;
@@ -414,18 +468,18 @@ public class Character extends MovableObject {
     public void setHasKey(boolean hasKey) {
         this.hasKey = hasKey;
     }
-
+    
     // Debug methods
     public void setLives(int lives) {
-        this.lives = lives;
-        if (this.lives > 4) this.lives = 4;
-        if (this.lives < 0) this.lives = 0;
+        this.health = lives;
+        if (this.health > 4) this.health = 4;
+        if (this.health < 0) this.health = 0;
     }
-
+    
     public void addLives(int amount) {
-        this.lives += amount;
-        if (this.lives > 4) this.lives = 4;
-        if (this.lives < 0) this.lives = 0;
+        this.health += amount;
+        if (this.health > 4) this.health = 4;
+        if (this.health < 0) this.health = 0;
     }
 
     public Vector2 getVelocity() {

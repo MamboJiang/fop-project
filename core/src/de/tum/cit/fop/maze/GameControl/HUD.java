@@ -30,6 +30,7 @@ public class HUD {
     private Table debugTable;
     private Label debugInfoLabel;
     private TextButton infiniteHpBtn;
+    private TextButton shieldBtn;
     private Label timeLabel;
     
     // Dependencies
@@ -201,6 +202,22 @@ public class HUD {
         contentTable.add(zoomInBtn).left().pad(5).row();
         contentTable.add(zoomOutBtn).left().pad(5).row();
         
+        // Shield Toggle Button
+        shieldBtn = new TextButton("Shield: OFF", skin);
+        shieldBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (character != null) {
+                    if (character.isShielded()) {
+                        character.activateShield(0); // Deactivate
+                    } else {
+                        character.activateShield(9999f); // Activate infinite shield
+                    }
+                }
+            }
+        });
+        contentTable.add(shieldBtn).left().pad(5).row();
+        
         // Add content table and toggle button to main table
         // We want the toggle button at the bottom, and content above it
         debugTable.add(contentTable).left().pad(5).row();
@@ -250,6 +267,13 @@ public class HUD {
             
             // Set Color for visual feedback
             infiniteHpBtn.setColor(isInfinite ? Color.GREEN : Color.WHITE);
+        }
+        
+        // Sync Shield State
+        if (shieldBtn != null) {
+            boolean isShielded = character.isShielded();
+            shieldBtn.setText("Shield: " + (isShielded ? "ON" : "OFF"));
+            shieldBtn.setColor(isShielded ? Color.CYAN : Color.WHITE);
         }
     }
     

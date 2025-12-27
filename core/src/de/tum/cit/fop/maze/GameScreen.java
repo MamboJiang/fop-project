@@ -197,6 +197,42 @@ public class GameScreen implements Screen {
         // Remove spawn points from mapObjects so they don't render twice or collide
         mapObjects.removeAll(toRemove);
         
+        // Spawn Hearts (Chunk-based: 0-1 per 16x16 tile area)
+        java.util.Map<String, java.util.List<GameObject>> chunks = new java.util.HashMap<>();
+        int chunkSize = 16 * 16; // 16 tiles * 16 pixels = 256 pixels
+        
+        // 1. Group paths into chunks
+        for (GameObject obj : mapObjects) {
+            if (obj instanceof de.tum.cit.fop.maze.GameObj.Path) {
+                int cx = (int) (obj.getPosition().x / chunkSize);
+                int cy = (int) (obj.getPosition().y / chunkSize);
+                String key = cx + "," + cy;
+                
+                if (!chunks.containsKey(key)) {
+                    chunks.put(key, new java.util.ArrayList<>());
+                }
+                chunks.get(key).add(obj);
+            }
+        }
+        
+        // 2. Spawn per chunk
+        for (java.util.List<GameObject> chunkPaths : chunks.values()) {
+            if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.5f)) { 
+                GameObject randomPath = chunkPaths.get(com.badlogic.gdx.math.MathUtils.random(chunkPaths.size() - 1));
+                de.tum.cit.fop.maze.GameObj.Heart heart = new de.tum.cit.fop.maze.GameObj.Heart(randomPath.getPosition().x, randomPath.getPosition().y);
+                mapObjects.add(heart);
+            }
+            
+            // Chance to spawn 1 Shield (Lower chance, e.g. 20%)
+            if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.2f)) {
+                GameObject randomPath = chunkPaths.get(com.badlogic.gdx.math.MathUtils.random(chunkPaths.size() - 1));
+                // Avoid stacking heart and shield?
+                // For simplicity, just add. overlap is rare or acceptable.
+                de.tum.cit.fop.maze.GameObj.ShieldItem shield = new de.tum.cit.fop.maze.GameObj.ShieldItem(randomPath.getPosition().x, randomPath.getPosition().y);
+                mapObjects.add(shield);
+            }
+        }
+        
         damageNumbers = new java.util.ArrayList<>();
     }
 
@@ -429,6 +465,12 @@ public class GameScreen implements Screen {
         // Draw map objects
         if (mapObjects != null) {
             for (GameObject obj : mapObjects) {
+                if (obj instanceof de.tum.cit.fop.maze.GameObj.Heart) {
+                     ((de.tum.cit.fop.maze.GameObj.Heart) obj).update(delta);
+                } else if (obj instanceof de.tum.cit.fop.maze.GameObj.ShieldItem) {
+                     ((de.tum.cit.fop.maze.GameObj.ShieldItem) obj).update(delta);
+                }
+                
                 if (obj.getTextureRegion() != null) {
                     game.getSpriteBatch().draw(obj.getTextureRegion(), obj.getPosition().x, obj.getPosition().y, obj.getWidth(), obj.getHeight());
                 }
@@ -442,9 +484,9 @@ public class GameScreen implements Screen {
         
         // Draw Enemies
         for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
-            game.getSpriteBatch().draw(enemy.getTextureRegion(), enemy.getPosition().x, enemy.getPosition().y, 16, 16);
-            // Draw Status Icon
-            enemy.drawStatus(game.getSpriteBatch(), font);
+            enemy.draw(game.getSpriteBatch());
+            // Draw Status Icon and/or HP
+            enemy.drawStatus(game.getSpriteBatch(), font, debugEnabled);
         }
         
         // Draw Damage Numbers
@@ -468,8 +510,13 @@ public class GameScreen implements Screen {
         
         // Update Enemies
         if (!isPaused && !isGameOver && !character.isLevelCompleted()) {
-            for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
+            java.util.Iterator<de.tum.cit.fop.maze.GameObj.Enemy> enemyIter = enemies.iterator();
+            while (enemyIter.hasNext()) {
+                de.tum.cit.fop.maze.GameObj.Enemy enemy = enemyIter.next();
                 enemy.update(delta);
+                if (enemy.isMarkedForRemoval()) {
+                    enemyIter.remove();
+                }
             }
         }
         

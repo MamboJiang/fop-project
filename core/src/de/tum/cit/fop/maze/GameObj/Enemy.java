@@ -1,7 +1,10 @@
 package de.tum.cit.fop.maze.GameObj;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
@@ -20,7 +23,7 @@ public class Enemy extends MovableObject {
 
     protected State currentState;
     private float speed = 20f;
-    private int health = 100;
+    // private int health = 100; // REMOVED: Shadowing MovableObject.health
     
     // AI
     private Grid grid;
@@ -73,7 +76,7 @@ public class Enemy extends MovableObject {
         inputVector.set(0, 0);
 
         // Adjust Speed based on State
-        if (currentState == State.CHASE) {
+        if (currentState == State.CHASE || currentState == State.RETREAT) {
             this.maxSpeed = speed * 4f; 
             this.acceleration = 500f;
             this.friction = 500f;
@@ -98,6 +101,9 @@ public class Enemy extends MovableObject {
                 break;
         }
         
+        // Update Combat Input (Must be before Physics!)
+        updateCombat(delta);
+
         // Follow Path with Input Vector logic
         if (currentPath != null && pathIndex < currentPath.size() && currentState != State.CONFUSED) {
             Vector2 targetNode = currentPath.get(pathIndex);
@@ -113,7 +119,16 @@ public class Enemy extends MovableObject {
                 pathIndex++;
             } else {
                 // Set Input Vector towards target (Normalized)
-                inputVector.set(targetX, targetY).sub(position.x, position.y).nor();
+                // If combat is active (overlapping), combat input takes priority? 
+                // Or blend them? For now, if overlapping, combat logic returns early so path logic skipped?
+                // Wait, updateCombat doesn't return from the whole method, just itself.
+                // But updateCombat sets inputVector. If we overwrite it here, jitter is lost.
+                // So only follow path if NOT in close combat (jittering).
+                
+                // Let's rely on updateCombat setting inputVector. If it did, inputVector is non-zero.
+                if (inputVector.len2() == 0) { // Only use path if no combat input
+                    inputVector.set(targetX, targetY).sub(position.x, position.y).nor();
+                }
             }
         }
         
@@ -163,6 +178,7 @@ public class Enemy extends MovableObject {
         }
         
         updateBounds();
+        // updateCombat(delta); // MOVED UP
     }
     
     // Helper to get Center
@@ -175,6 +191,51 @@ public class Enemy extends MovableObject {
     protected Vector2 getTargetCenter() {
         Rectangle tBounds = target.getBounds();
         return new Vector2(tBounds.x + tBounds.width/2, tBounds.y + tBounds.height/2);
+    }
+
+    private void updateCombat(float delta) {
+        
+        // Attack/Combat Logic
+        if (bounds.overlaps(target.getBounds())) {
+             // Play damage sound if file exists
+             FileHandle damageSoundFile = Gdx.files.internal("assets/damage.mp3");
+             if (damageSoundFile.exists()) {
+                 Gdx.audio.newSound(damageSoundFile).play();
+             }
+
+             Rectangle rect = getBounds();
+             if (rect.overlaps(target.getBounds())) { // Changed character.getBounds() to target.getBounds()
+                 if (target.isShielded()) { // Changed character.isShielded() to target.isShielded()
+                     // Shield Effect: Enemy takes damage, Player is safe
+                     this.takeDamage(20);
+                     // Pushback enemy slightly to avoid instant multi-hit?
+                     // Simple pushback: reverse velocity?
+                     // For now, takeDamage logic usually handles death or stats.
+                     // We should invoke damage number on enemy?
+                     // Enemy doesn't have HP system yet? "takeDamage" method exists?
+                     // Enemy.java DOES NOT have takeDamage() currently! I need to check Enemy.java first!
+                 } else {
+                     target.takeDamage(); // Changed character.takeDamage() to target.takeDamage()
+                 }
+             }
+
+             if (health <= 40) {
+                 currentState = State.RETREAT;
+                 return;
+             }
+             
+             // "Combat Jitter": Move randomly around the player to simulate fighting
+             // Don't stop moving just because we reached the target!
+             float jitterX = MathUtils.random(-4f, 4f);
+             float jitterY = MathUtils.random(-4f, 4f);
+             
+             Vector2 combatTarget = getTargetCenter().add(jitterX, jitterY);
+             
+             // Set Input Vector for jitter
+             inputVector.set(combatTarget).sub(getCenter()).nor();
+             
+             return; // Skip normal pathfinding while fighting
+        }
     }
     
     private void updatePatrol(float delta) {
@@ -201,23 +262,6 @@ public class Enemy extends MovableObject {
     }
     
     private void updateChase(float delta) {
-        // Attack/Combat Logic
-        if (bounds.overlaps(target.getBounds())) {
-             target.takeDamage();
-             
-             // "Combat Jitter": Move randomly around the player to simulate fighting
-             // Don't stop moving just because we reached the target!
-             float jitterX = MathUtils.random(-4f, 4f);
-             float jitterY = MathUtils.random(-4f, 4f);
-             
-             Vector2 combatTarget = getTargetCenter().add(jitterX, jitterY);
-             
-             // Set Input Vector for jitter
-             inputVector.set(combatTarget).sub(getCenter()).nor();
-             
-             return; // Skip normal pathfinding while fighting
-        }
-    
         pathTimer += delta;
         if (pathTimer > PATH_UPDATE_INTERVAL) {
             pathTimer = 0;
@@ -227,7 +271,7 @@ public class Enemy extends MovableObject {
         
         float distToPlayer = Vector2.dst(getCenter().x, getCenter().y, getTargetCenter().x, getTargetCenter().y);
         
-        if (health < 30) {
+        if (health <= 40) {
             currentState = State.RETREAT;
             return;
         }
@@ -243,24 +287,82 @@ public class Enemy extends MovableObject {
     
     private void updateRetreat(float delta) {
         pathTimer += delta;
-        if (pathTimer > PATH_UPDATE_INTERVAL) {
+        
+        // Don't repath too often to avoid "jittery" movement where they constantly change mind
+        // Only repath if timer expired OR path is finished
+        boolean pathFinished = currentPath == null || pathIndex >= currentPath.size();
+        
+        if (pathTimer > 1.5f || pathFinished) { // Increased interval to 1.5s
             pathTimer = 0;
-            Vector2 dirToPlayer = new Vector2(getTargetCenter()).sub(getCenter()).nor();
+            
+            Vector2 center = getCenter();
+            Vector2 playerCenter = getTargetCenter();
+            Vector2 dirToPlayer = new Vector2(playerCenter).sub(center).nor();
             Vector2 fleeDir = dirToPlayer.scl(-1); 
-            Vector2 fleeTarget = new Vector2(getCenter()).mulAdd(fleeDir, 100f);
-            currentPath = PathFinder.findPath(grid, getCenter(), fleeTarget);
+            
+            // Try explicit flee target first
+            Vector2 fleeTarget = new Vector2(center).mulAdd(fleeDir, 64f); // 4 tiles away
+            
+            if (isWalkable(fleeTarget)) {
+                 currentPath = PathFinder.findPath(grid, center, fleeTarget);
+            } else {
+                 currentPath = findRetreatPathFallback();
+            }
             pathIndex = 0;
         }
         
         float distToPlayer = Vector2.dst(getCenter().x, getCenter().y, getTargetCenter().x, getTargetCenter().y);
-        if (distToPlayer > detectionRange * 2f || health > 50) {
+        
+        // Only stop retreating if VERY far away (2x range)
+        if (distToPlayer > detectionRange * 2f) {
             currentState = State.CONFUSED;
             confusedTimer = 3.0f;
         }
     }
     
+    // Helper to check walkability of a vector position
+    private boolean isWalkable(Vector2 pos) {
+        return grid.isWalkable((int)(pos.x / 16), (int)(pos.y / 16));
+    }
+    
+    private List<Vector2> findRetreatPathFallback() {
+        int cx = (int)(getCenter().x / 16);
+        int cy = (int)(getCenter().y / 16);
+        float currentDist = Vector2.dst2(getCenter().x, getCenter().y, getTargetCenter().x, getTargetCenter().y);
+        
+        // Reduced iterations to 8 to improve performance
+        for (int i = 0; i < 8; i++) {
+             int tx = cx + MathUtils.random(-6, 6); // Slightly larger range
+             int ty = cy + MathUtils.random(-6, 6);
+             
+             if (tx >= 0 && ty >= 0 && tx < grid.getWidth() && ty < grid.getHeight() && grid.isWalkable(tx, ty)) {
+                 Vector2 targetPos = new Vector2(tx*16+8, ty*16+8);
+                 float newDist = Vector2.dst2(targetPos.x, targetPos.y, getTargetCenter().x, getTargetCenter().y);
+                 
+                 // Only move if it increases distance (or at least maintains it significantly)
+                 if (newDist > currentDist + 256) { // 16*16 = 256
+                     List<Vector2> path = PathFinder.findPath(grid, getCenter(), targetPos);
+                     if (path != null) return path;
+                 }
+             }
+        }
+        return null; // Keep moving if current path valid, or just stop briefly
+    }
+    
     private void updateConfused(float delta) {
          confusedTimer -= delta;
+         
+         // If player gets close while confused, WAKE UP!
+         float distToPlayer = Vector2.dst(getCenter().x, getCenter().y, getTargetCenter().x, getTargetCenter().y);
+         if (distToPlayer < detectionRange) {
+             if (health <= 40) {
+                 currentState = State.RETREAT;
+             } else {
+                 currentState = State.CHASE;
+             }
+             return;
+         }
+
          if (confusedTimer <= 0) {
              currentState = State.PATROL;
          }
@@ -405,7 +507,13 @@ public class Enemy extends MovableObject {
         }
     }
 
-    public void drawStatus(com.badlogic.gdx.graphics.g2d.SpriteBatch batch, com.badlogic.gdx.graphics.g2d.BitmapFont font) {
+    public void draw(SpriteBatch batch) {
+        setupDamageFlash(batch);
+        batch.draw(getTextureRegion(), getPosition().x, getPosition().y, 16, 16);
+        endDamageFlash(batch);
+    }
+
+    public void drawStatus(SpriteBatch batch, com.badlogic.gdx.graphics.g2d.BitmapFont font, boolean showHP) {
         String statusText = null;
         Color color = Color.WHITE;
 
@@ -419,7 +527,13 @@ public class Enemy extends MovableObject {
                 color = Color.YELLOW;
                 break;
             default:
-                return; // Don't draw anything for Patrol/Retreat (or maybe '!' for Retreat too?)
+                break;
+        }
+        
+        // If Debug HP is on
+        if (showHP) {
+            statusText = (statusText != null ? statusText + " " : "") + health;
+            color = Color.CYAN; // Distinct color for debug
         }
 
         if (statusText != null) {
@@ -439,5 +553,6 @@ public class Enemy extends MovableObject {
             font.getData().setScale(oldScaleX, oldScaleY); // Reset scale
         }
     }
+
 }
 
