@@ -76,6 +76,17 @@ public class Character extends MovableObject {
         this.isLevelCompleted = false;
         this.hasKey = false;
         this.targetPosition = null;
+        
+        // Reset Status Effects
+        this.shieldTime = 0f;
+        this.invincibleTime = 0f;
+        this.damageFlashTime = 0f;
+        this.screenShakeRequested = false;
+        this.damageNumberRequested = false;
+        
+        // Reset physical state
+        this.velocity.set(0, 0);
+        this.acceleration = 800f; // Reset accel in case it was modified? (Not usually, but safe)
     }
 
     private void loadAnimations() {

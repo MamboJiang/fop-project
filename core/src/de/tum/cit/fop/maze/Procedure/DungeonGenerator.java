@@ -111,26 +111,41 @@ public class DungeonGenerator {
             }
         }
         
+        // Helper to track occupied tiles (to prevent stacking traps on keys/exits)
+        boolean[][] occupied = new boolean[width][height];
+        
         // 4. Place Special Items
         if (!rooms.isEmpty()) {
             // First Room: Entry
             Room startRoom = rooms.get(0);
             Vector2 entryPos = startRoom.getCenter();
             objects.add(new EntryPoint(entryPos.x * 16, entryPos.y * 16, 16, 16, entryRegion));
+            occupied[(int)entryPos.x][(int)entryPos.y] = true;
             
             // Last Room: Exit
             Room endRoom = rooms.get(rooms.size() - 1);
             Vector2 exitPos = endRoom.getCenter();
             objects.add(new Exit(exitPos.x * 16, exitPos.y * 16, 16, 16, exitRegion));
+            occupied[(int)exitPos.x][(int)exitPos.y] = true;
             
             // Key (Random Room except Start/End)
             if (rooms.size() > 2) {
                 Room keyRoom = rooms.get(MathUtils.random(1, rooms.size() - 2));
                 Vector2 keyPos = keyRoom.getCenter();
                 objects.add(new Key(keyPos.x * 16, keyPos.y * 16, 16, 16, chestRegion));
+                occupied[(int)keyPos.x][(int)keyPos.y] = true;
             } else {
                 // Determine fallback if few rooms
-                objects.add(new Key(exitPos.x * 16 + 32, exitPos.y * 16, 16, 16, chestRegion));
+                // Try to find a spot near exit but not ON exit
+                int ex = (int)exitPos.x;
+                int ey = (int)exitPos.y;
+                // Just shifted by 2 tiles
+                int kx = ex + 2; 
+                int ky = ey;
+                if (kx >= width) kx = ex - 2;
+                
+                objects.add(new Key(kx * 16, ky * 16, 16, 16, chestRegion));
+                if (kx > 0 && kx < width) occupied[kx][ky] = true;
             }
             
             // 5. Populate Enemies & Traps
@@ -143,21 +158,15 @@ public class DungeonGenerator {
                 
                 // Enemies
                 for (int j = 0; j < enemyCountPerRoom; j++) {
-                     Vector2 pos = r.getRandomPoint();
-                     // Avoid placing on walls (already handled by room bounds x+1, w-2)
-                     // But verify? Room provides valid floor coords.
+                     // Try to find free spot
+                     Vector2 pos = getFreeRandomPoint(r, occupied);
+                     if (pos == null) continue; // Room too full
                      
-                     // 50% Chance Ghost vs Enemy
-                     // But we return SpawnPoints or real Enemies?
-                     // GameScreen expects us to return SpawnPoints if it runs its setup logic,
-                     // OR we can return real enemies if we pass 'grid' and 'character' later?
-                     // BUT: GameScreen instantiates enemies. It looks for EnemySpawnPoints.
-                     // So we should return EnemySpawnPoints.
+                     occupied[(int)pos.x][(int)pos.y] = true; 
                      
                      boolean isGhost = MathUtils.randomBoolean();
                      if (isGhost) {
-                         // Type 6 logic from MapLoader/GameScreen refactor
-                          objects.add(new GhostSpawnPoint(pos.x * 16, pos.y * 16, 16, 16, MapLoader.getMobAnimations(2, 1)[0].getKeyFrame(0))); // Use frame/region for marker
+                          objects.add(new GhostSpawnPoint(pos.x * 16, pos.y * 16, 16, 16, MapLoader.getMobAnimations(2, 1)[0].getKeyFrame(0))); 
                      } else {
                           objects.add(new EnemySpawnPoint(pos.x * 16, pos.y * 16, 16, 16, MapLoader.getMobAnimations(0, 0)[0].getKeyFrame(0)));
                      }
@@ -165,13 +174,29 @@ public class DungeonGenerator {
                 
                 // Traps
                 for (int j = 0; j < trapCountPerRoom; j++) {
-                     Vector2 pos = r.getRandomPoint();
+                     Vector2 pos = getFreeRandomPoint(r, occupied);
+                     if (pos == null) continue;
+                     
+                     occupied[(int)pos.x][(int)pos.y] = true;
                      objects.add(new Trap(pos.x * 16, pos.y * 16, 16, 16, trapRegion));
                 }
             }
         }
         
         return objects;
+    }
+    
+    // Helper to find valid point in room that isn't occupied
+    private Vector2 getFreeRandomPoint(Room r, boolean[][] occupied) {
+        for(int k=0; k<10; k++) {
+            Vector2 p = r.getRandomPoint();
+            int ix = (int)p.x;
+            int iy = (int)p.y;
+            if (!occupied[ix][iy]) {
+                return p;
+            }
+        }
+        return null; // Describe failure to find spot
     }
     
     private void carveRoom(Room room) {
