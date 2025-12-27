@@ -50,13 +50,23 @@ public class MenuScreen implements Screen {
             }
         });
 
-        // Create and add a "Settings" button
+    // Create and add a "Settings" button
         TextButton settingsButton = new TextButton("Settings", game.getSkin());
         table.add(settingsButton).width(300).padBottom(15).row();
         settingsButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.goToSettings();
+            }
+        });
+        
+        // Create and add a "Endless Mode" button
+        TextButton endlessButton = new TextButton("Endless Mode", game.getSkin());
+        table.add(endlessButton).width(300).padBottom(15).row();
+        endlessButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.goToEndlessMode();
             }
         });
 

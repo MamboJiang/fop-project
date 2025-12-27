@@ -114,6 +114,17 @@ public class MazeRunnerGame extends Game {
     }
     
     /**
+     * Switches to the procedural endless mode.
+     */
+    public void goToEndlessMode() {
+        this.setScreen(new GameScreen(this, true));
+        if (menuScreen != null) {
+            menuScreen.dispose();
+            menuScreen = null;
+        }
+    }
+    
+    /**
      * Updates the music volume based on configuration.
      */
     public void updateMusicVolume() {

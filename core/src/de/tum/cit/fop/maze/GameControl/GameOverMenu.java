@@ -11,44 +11,49 @@ import de.tum.cit.fop.maze.MazeRunnerGame;
 
 public class GameOverMenu extends Table{
     private final MazeRunnerGame game;
+    private int wavesCleared = -1; // -1 means standard mode
     private Runnable onRetry;
     private Runnable onExit;
     private boolean isWin;
     private Runnable onNextLevel;
 
+    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin) {
+        this(game, onRetry, onExit, onNextLevel, isWin, -1);
+    }
 
-    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit,Runnable onNextLevel, boolean isWin) {
+    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int wavesCleared) {
         this.game = game;
         this.onRetry = onRetry;
         this.onExit = onExit;
         this.isWin  = isWin;
         this.onNextLevel = onNextLevel;
+        this.wavesCleared = wavesCleared;
 
         setFillParent(true);
-        setVisible(false); // 默认隐藏
+        setVisible(false);
 
         setupUI();
     }
 
     private void setupUI(){
         Skin skin = game.getSkin();
-        // 1. 半透明背景 (Semi-transparent background)
         Drawable bg = skin.newDrawable("white", 0, 0, 0, 0.8f);
         setBackground(bg);
 
-        // 2. 内容窗口 (Window container)
         Table content = new Table();
         content.setBackground(skin.getDrawable("window"));
 
-        // 3. 标题 (You Lose / Game Over)
-        Label titleLabelLose = new Label("YOU LOSE!", skin, "title");
-        Label titleLabelWin = new Label("YOU WIN!", skin, "title");
-        // 你可以根据需要改变颜色，例如红色
-        // titleLabel.setColor(Color.RED);
+        Label titleLabelLose = new Label("GAME OVER", skin, "title");
+        Label titleLabelWin = new Label("LEVEL CLEARED!", skin, "title");
 
+        // Endless Mode Label
+        Label wavesLabel = null;
+        if (wavesCleared >= 0) {
+            wavesLabel = new Label("Waves Cleared: " + wavesCleared, skin);
+            titleLabelLose.setText("run ended"); // Stylish lower case or CAPS
+        }
 
-        // 4. 重试按钮 (Retry Button)
-        TextButton retryBtn = new TextButton("Retry", skin);
+        TextButton retryBtn = new TextButton(wavesCleared >= 0 ? "Restart Run" : "Retry Level", skin);
         retryBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -57,8 +62,6 @@ public class GameOverMenu extends Table{
             }
         });
 
-
-        // 5. 返回主菜单按钮 (Exit to Menu Button)
         TextButton exitBtn = new TextButton("Main Menu", skin);
         exitBtn.addListener(new ClickListener() {
             @Override
@@ -67,9 +70,11 @@ public class GameOverMenu extends Table{
                 game.goToMenu();
             }
         });
-        content.add(exitBtn).width(300).pad(10).row();
 
         TextButton nextLevelBtn = new TextButton("Next Level", skin);
+        if (wavesCleared >= 0) {
+            nextLevelBtn.setText("Next Wave");
+        }
         nextLevelBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -80,29 +85,43 @@ public class GameOverMenu extends Table{
             }
         });
 
-        if(!isWin){
+        if (!isWin) {
             content.add(titleLabelLose).pad(20).row();
-            content.add(retryBtn).width(300).pad(10).row();
-            content.add(exitBtn).width(300).pad(10).row();
-        }
-        else{
+            
+            if (wavesCleared >= 0) {
+                // Endless Mode Loss
+                if (wavesLabel != null) content.add(wavesLabel).pad(10).row();
+                // User explicitly said: NO RETRY.
+                // So only Main Menu?
+                // Or maybe "Restart Run" is okay?
+                // "Endless mode end after showing cleared waves" -> "don't show RETRY".
+                // I will hide Retry button completely for Endless Mode Loss.
+                content.add(exitBtn).width(300).pad(10).row();
+            } else {
+                // Standard Loss
+                content.add(retryBtn).width(300).pad(10).row();
+                content.add(exitBtn).width(300).pad(10).row();
+            }
+        } else {
+            // Win
             content.add(titleLabelWin).pad(20).row();
             content.add(nextLevelBtn).pad(20).row();
-            content.add(retryBtn).width(300).pad(10).row();
+            if (wavesCleared == -1) {
+                // Standard Win - Allow replaying/retrying this level?
+                content.add(retryBtn).width(300).pad(10).row();
+            }
             content.add(exitBtn).width(300).pad(10).row();
         }
-
 
         add(content);
     }
+    
     public void show() {
         setVisible(true);
-        toFront(); // 确保它显示在最上层
+        toFront();
     }
 
     public void hide() {
         setVisible(false);
     }
-
-
 }

@@ -57,6 +57,11 @@ public class Character extends MovableObject {
 
         this.bounds = new Rectangle(x+4, y+4, 8, 8);
     }
+    
+    public void setPosition(float x, float y) {
+        this.position.set(x, y);
+        updateBounds();
+    }
 
     // ... (isLevelCompleted and loadAnimations omitted, assumed unchanged if not in range) ...
     // NOTE: Replace does not support "..." expansion, so I must include everything I am replacing.
@@ -64,6 +69,12 @@ public class Character extends MovableObject {
 
     public boolean isLevelCompleted() {
         return isLevelCompleted;
+    }
+    
+    public void resetForNewLevel() {
+        this.isLevelCompleted = false;
+        this.hasKey = false;
+        this.targetPosition = null;
     }
 
     private void loadAnimations() {

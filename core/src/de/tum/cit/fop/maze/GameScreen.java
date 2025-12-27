@@ -33,9 +33,9 @@ import java.util.List;
 public class GameScreen implements Screen {
 
     private final MazeRunnerGame game;
-    private final OrthographicCamera camera;
-    private final Viewport viewport; // Added Viewport
-    private final BitmapFont font;
+    private OrthographicCamera camera;
+    private Viewport viewport; // Added Viewport
+    private BitmapFont font;
     private ShapeRenderer shapeRenderer;
     private HUD hud;
     
@@ -56,23 +56,40 @@ public class GameScreen implements Screen {
     private FileHandle mapFile;
     private de.tum.cit.fop.maze.AI.Grid grid;
     private List<de.tum.cit.fop.maze.VFX.DamageNumber> damageNumbers;
+    
+    // Procedural Generation
+    private boolean isProcedural = false;
+    private int currentDifficulty = 1;
 
     /**
-     * Constructor for GameScreen. Sets up the camera and font.
-     *
-     * @param game The main game class, used to access global resources and methods.
+     * Constructor for GameScreen (File Mode).
      */
     public GameScreen(MazeRunnerGame game, FileHandle mapFile) {
         this.game = game;
         this.mapFile = mapFile;
+        this.isProcedural = false;
 
+        initCommon();
+        setupLevel();
+    }
+    
+    /**
+     * Constructor for GameScreen (Procedural Mode).
+     */
+    public GameScreen(MazeRunnerGame game, boolean isProcedural) {
+        this.game = game;
+        this.isProcedural = isProcedural;
+        this.currentDifficulty = 1;
+        
+        initCommon();
+        setupLevel();
+    }
+    
+    private void initCommon() {
         // Create and configure the camera for the game view
         camera = new OrthographicCamera();
-        camera.zoom = 0.7f; // Removed manual zoom, let viewport handle it
+        camera.zoom = 0.7f; 
         
-        // Use ExtendViewport: (minWidth, minHeight, camera)
-        // 640x360 guarantees a 16:9 view at least.
-        // If window is bigger, it scales up.
         viewport = new ExtendViewport(640, 360, camera);
 
         // Get the font from the game's skin
@@ -83,10 +100,14 @@ public class GameScreen implements Screen {
         screenShake = new de.tum.cit.fop.maze.VFX.ScreenShake();
 
         setupPauseMenu();
-        setupLevel();
     }
 
     private void setupLevel() {
+        if (isProcedural) {
+             generateProceduralLevel();
+             return;
+        }
+
         // Load map
         // Ideally we should select levels, for now load level 1
         //FileHandle mapHandle = Gdx.files.internal("maps/level-1.properties");
@@ -99,10 +120,23 @@ public class GameScreen implements Screen {
             this.mapFile = Gdx.files.internal("maps/level-6.properties");
         }
 
-
-
         mapObjects = MapLoader.loadMap(this.mapFile);
 
+        initMapObjects();
+    }
+
+    private void generateProceduralLevel() {
+        // Size scales slightly with difficulty? Or static 50x50
+        int size = 40 + (currentDifficulty * 2);
+        if (size > 100) size = 100;
+        
+        de.tum.cit.fop.maze.Procedure.DungeonGenerator generator = new de.tum.cit.fop.maze.Procedure.DungeonGenerator(size, size);
+        mapObjects = generator.generate(currentDifficulty);
+        
+        initMapObjects();
+    }
+    
+    private void initMapObjects() {
         // Initialize AI Grid
         grid = new de.tum.cit.fop.maze.AI.Grid(0, 0, mapObjects);
 
@@ -117,7 +151,13 @@ public class GameScreen implements Screen {
             }
         }
 
-        character = new Character(spawnX+16, spawnY);
+        if (character == null) {
+            character = new Character(spawnX+16, spawnY);
+        } else {
+             // Reset character position for new level
+             character.setPosition(spawnX+16, spawnY);
+             // Maybe retain health/key in procedural mode?
+        }
         
         // Create Enemy List
         enemies = new java.util.ArrayList<>();
@@ -162,6 +202,33 @@ public class GameScreen implements Screen {
     }
 
     private void loadNextLevel() {
+        if (isProcedural) {
+            // Increase Difficulty
+            currentDifficulty++;
+            
+            // Reset Game State
+            isGameOver = false;
+            isPaused = false;
+            if (character != null) {
+                character.resetForNewLevel();
+            }
+            
+            // Hide Menu if open
+            if (GameOverMenu != null) {
+                GameOverMenu.remove();
+            }
+            if (pauseMenu != null) {
+                pauseMenu.hide();
+            }
+            
+            // Reset Input
+            updateInputProcessor();
+            
+            // Generate next level
+            generateProceduralLevel();
+            return;
+        }
+
         // 1. 获取所有地图文件
         List<FileHandle> maps = MapLoader.getMapFiles(); //
         int currentIndex = -1;
@@ -191,18 +258,27 @@ public class GameScreen implements Screen {
         isGameOver = true;
 
         // 创建结果菜单
+        int waves = isProcedural ? currentDifficulty - 1 : -1;
         GameOverMenu = new GameOverMenu(game,
                 () -> {
                     // Retry 逻辑: 重新加载当前地图
-                    game.goToGame(this.mapFile);
+                    // If procedural, this restarts the run? Or restarts the level?
+                    // Currently we hid retry for procedural lose.
+                    // But if we passed null as retry action, that would be safer.
+                    if (isProcedural) {
+                        game.goToEndlessMode(); // Restart run
+                    } else {
+                        game.goToGame(this.mapFile);
+                    }
                 },
                 () -> {
-                    // Exit 逻辑: 实际上 ResultMenu 里已经调用 goToMenu 了，这里可以留空或做清理
+                    // Exit 逻辑
                 },
                 () -> {
                     loadNextLevel();
                 },
-                win
+                win,
+                waves
         );
 
         pauseStage.addActor(GameOverMenu);
@@ -348,7 +424,7 @@ public class GameScreen implements Screen {
                 de.tum.cit.fop.maze.VFX.DamageNumber dn = iter.next();
                 dn.render(game.getSpriteBatch(), font);
                 
-                if (!isPaused) {
+                if (!isPaused && !isGameOver && !character.isLevelCompleted()) {
                     dn.update(delta);
                 }
                 
@@ -361,7 +437,7 @@ public class GameScreen implements Screen {
         game.getSpriteBatch().end(); // Important to call this after drawing everything
         
         // Update Enemies
-        if (!isPaused) {
+        if (!isPaused && !isGameOver && !character.isLevelCompleted()) {
             for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
                 enemy.update(delta);
             }
