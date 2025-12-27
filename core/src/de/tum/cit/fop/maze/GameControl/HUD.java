@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -29,6 +30,7 @@ public class HUD {
     private Table debugTable;
     private Label debugInfoLabel;
     private TextButton infiniteHpBtn;
+    private Label timeLabel;
     
     // Dependencies
     private final GameScreen gameScreen;
@@ -86,8 +88,14 @@ public class HUD {
         // Re-reading: "Show whether key is NOT there" or "Show key status".
         // Let's implement: Show Key Image always for now.
         keyImage = new Image(keyRegion);
+        timeLabel = new Label("Time: 00:00\nScore: 1000", skin);
+        timeLabel.setAlignment(Align.center); // 让文字居中对齐
+
+        // 添加到表格中间
+
         
         table.add(heartImage).expandX().left().pad(10).size(64, 64);
+        table.add(timeLabel).expandX().center().padTop(10);
         table.add(keyImage).expandX().right().pad(10).size(64, 64);
         
         stage.addActor(table);
@@ -203,7 +211,11 @@ public class HUD {
 
     public void update(Character character) {
         this.character = character;
-        
+
+
+        String timeStr = gameScreen.getFormattedTime();
+        timeLabel.setText(timeStr);
+
         // Update Heart
         int lives = character.getLives();
         // 4 lives -> index 0

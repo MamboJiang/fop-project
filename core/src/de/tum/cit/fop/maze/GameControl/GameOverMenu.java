@@ -16,18 +16,20 @@ public class GameOverMenu extends Table{
     private Runnable onExit;
     private boolean isWin;
     private Runnable onNextLevel;
+    private int finalScore;
 
-    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin) {
-        this(game, onRetry, onExit, onNextLevel, isWin, -1);
+    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int finalScore) {
+        this(game, onRetry, onExit, onNextLevel, isWin, -1, finalScore);
     }
 
-    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int wavesCleared) {
+    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int wavesCleared, int finalScore) {
         this.game = game;
         this.onRetry = onRetry;
         this.onExit = onExit;
         this.isWin  = isWin;
         this.onNextLevel = onNextLevel;
         this.wavesCleared = wavesCleared;
+        this.finalScore = finalScore;
 
         setFillParent(true);
         setVisible(false);
@@ -45,6 +47,8 @@ public class GameOverMenu extends Table{
 
         Label titleLabelLose = new Label("GAME OVER", skin, "title");
         Label titleLabelWin = new Label("LEVEL CLEARED!", skin, "title");
+
+        Label scoreLabel = new Label("Score: " + finalScore, skin);
 
         // Endless Mode Label
         Label wavesLabel = null;
@@ -104,6 +108,12 @@ public class GameOverMenu extends Table{
             }
         } else {
             // Win
+            // 胜利时显示分数
+            content.add(titleLabelWin).pad(20).row();
+
+            // --- 将分数显示在按钮之前 ---
+            content.add(scoreLabel).pad(10).row();
+
             content.add(titleLabelWin).pad(20).row();
             content.add(nextLevelBtn).pad(20).row();
             if (wavesCleared == -1) {

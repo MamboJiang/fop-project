@@ -61,6 +61,11 @@ public class GameScreen implements Screen {
     private boolean isProcedural = false;
     private int currentDifficulty = 1;
 
+    private float levelTimer = 0f; // 记录当前关卡耗时（秒）
+    private int score = 0;         // 当前得分
+    private static final int BASE_SCORE_PER_LEVEL = 1000; // 每关基础分
+    private static final int PENALTY_PER_SECOND = 10;     // 每秒扣除的分数
+
     /**
      * Constructor for GameScreen (File Mode).
      */
@@ -209,6 +214,7 @@ public class GameScreen implements Screen {
             // Reset Game State
             isGameOver = false;
             isPaused = false;
+            levelTimer = 0f;
             if (character != null) {
                 character.resetForNewLevel();
             }
@@ -258,6 +264,7 @@ public class GameScreen implements Screen {
         isGameOver = true;
 
         // 创建结果菜单
+        int finalScore = win ? calculateScore() : 0;
         int waves = isProcedural ? currentDifficulty - 1 : -1;
         GameOverMenu = new GameOverMenu(game,
                 () -> {
@@ -278,7 +285,8 @@ public class GameScreen implements Screen {
                     loadNextLevel();
                 },
                 win,
-                waves
+                waves,
+                finalScore
         );
 
         pauseStage.addActor(GameOverMenu);
@@ -346,6 +354,7 @@ public class GameScreen implements Screen {
 
         ScreenUtils.clear(0, 0, 0, 1); // Clear the screen
         boolean isLevelCompleted = character.isLevelCompleted();
+        levelTimer += delta;
         // Logic update
         if (!isPaused && !isGameOver && !isLevelCompleted) {
             if (character != null) {
@@ -524,5 +533,24 @@ public class GameScreen implements Screen {
         if (pauseStage != null) pauseStage.dispose();
         if (shapeRenderer != null) shapeRenderer.dispose();
         if (hud != null) hud.dispose();
+    }
+
+    public int calculateScore() {
+        int timePenalty = (int) (levelTimer * PENALTY_PER_SECOND);
+        int currentLevelScore = BASE_SCORE_PER_LEVEL - timePenalty;
+
+        // 如果是无尽模式，可以在这里加上难度系数乘数
+        if (isProcedural) {
+            currentLevelScore *= currentDifficulty;
+        }
+
+        return Math.max(0, currentLevelScore);
+    }
+
+    // 获取格式化后的时间字符串 (例如 "01:23")
+    public String getFormattedTime() {
+        int minutes = (int) levelTimer / 60;
+        int seconds = (int) levelTimer % 60;
+        return String.format("%02d:%02d", minutes, seconds);
     }
 }
