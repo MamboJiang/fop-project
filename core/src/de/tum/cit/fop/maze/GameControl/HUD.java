@@ -217,7 +217,34 @@ public class HUD {
             }
         });
         contentTable.add(shieldBtn).left().pad(5).row();
-        
+
+
+        // ---- Leaderboard Debug ----
+        contentTable.add(new Label("-- Leaderboard --", skin)).left().padTop(10).padBottom(5).row();
+
+        // 1. Clear Data
+        TextButton clearLdrBtn = new TextButton("Clear DB", skin);
+        clearLdrBtn.setColor(Color.RED);
+        clearLdrBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                de.tum.cit.fop.maze.GameControl.LeaderboardManager.clearOnlineLeaderboard(() -> {
+                     Gdx.app.log("HUD", "Leaderboard Cleared via Debug");
+                });
+            }
+        });
+        contentTable.add(clearLdrBtn).left().pad(5).row();
+
+        // 2. Add Dummy Data
+        TextButton addDataBtn = new TextButton("Add Dummy Data", skin);
+        addDataBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                 de.tum.cit.fop.maze.GameControl.LeaderboardManager.addDebugEntry();
+            }
+        });
+        contentTable.add(addDataBtn).left().pad(5).row();
+
         // Add content table and toggle button to main table
         // We want the toggle button at the bottom, and content above it
         debugTable.add(contentTable).left().pad(5).row();

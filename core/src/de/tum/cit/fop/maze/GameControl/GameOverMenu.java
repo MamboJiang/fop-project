@@ -142,25 +142,42 @@ public class GameOverMenu extends Table{
     public void loadLeaderboard() {
         leaderboardTable.clear(); // 清空旧数据
 
-        Label title = new Label("Leaderboard", game.getSkin(), "title");
-        leaderboardTable.add(title).padBottom(10).colspan(2).row();
+        leaderboardTable.add(new Label("Loading Leaderboard...", game.getSkin())).colspan(2).row();
 
-        ArrayList<LeaderboardManager.ScoreEntry> scores = LeaderboardManager.loadScores();
+        LeaderboardManager.fetchScores(new LeaderboardManager.LeaderboardCallback() {
+            @Override
+            public void onScoresLoaded(ArrayList<LeaderboardManager.ScoreEntry> scores) {
+                // Must run on UI thread (LibGDX usually handles this in postRunnable, 
+                // but our LeaderboardManager already does postRunnable).
+                leaderboardTable.clear();
+                
+                Label title = new Label("Leaderboard", game.getSkin(), "title");
+                leaderboardTable.add(title).padBottom(10).colspan(2).row();
+                
+                if (scores.isEmpty()) {
+                    leaderboardTable.add(new Label("No records yet!", game.getSkin())).colspan(2);
+                } else {
+                     for (int i = 0; i < scores.size(); i++) {
+                        LeaderboardManager.ScoreEntry entry = scores.get(i);
 
-        if (scores.isEmpty()) {
-            leaderboardTable.add(new Label("No records yet!", game.getSkin())).colspan(2);
-        } else {
-            for (int i = 0; i < scores.size(); i++) {
-                LeaderboardManager.ScoreEntry entry = scores.get(i);
+                        // 排名 #1, #2...
+                        Label rankLabel = new Label("#" + (i + 1), game.getSkin());
+                        // 名字: 分数
+                        Label entryLabel = new Label(entry.name + ": " + entry.score, game.getSkin());
 
-                // 排名 #1, #2...
-                Label rankLabel = new Label("#" + (i + 1), game.getSkin());
-                // 名字: 分数
-                Label entryLabel = new Label(entry.name + ": " + entry.score, game.getSkin());
-
-                leaderboardTable.add(rankLabel).left().padRight(10);
-                leaderboardTable.add(entryLabel).left().row();
+                        leaderboardTable.add(rankLabel).left().padRight(10);
+                        leaderboardTable.add(entryLabel).left().row();
+                    }
+                }
             }
-        }
+
+            @Override
+            public void onError(String message) {
+                 leaderboardTable.clear();
+                 leaderboardTable.add(new Label("Error: " + message, game.getSkin())).colspan(2);
+                 // Maybe load local as fallback explicit call? 
+                 // Manager already has fallback logic logic if we want, but currently manager returns callback.
+            }
+        });
     }
 }
