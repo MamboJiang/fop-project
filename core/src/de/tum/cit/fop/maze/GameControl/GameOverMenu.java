@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import de.tum.cit.fop.maze.MazeRunnerGame;
@@ -20,12 +21,13 @@ public class GameOverMenu extends Table{
     private Runnable onNextLevel;
     private int finalScore;
     private Table leaderboardTable;
+    private int xp;
 
-    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int finalScore) {
-        this(game, onRetry, onExit, onNextLevel, isWin, -1, finalScore);
+    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int finalScore, int xp) {
+        this(game, onRetry, onExit, onNextLevel, isWin, -1, finalScore, xp);
     }
 
-    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int wavesCleared, int finalScore) {
+    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int wavesCleared, int finalScore, int xp) {
         this.game = game;
         this.onRetry = onRetry;
         this.onExit = onExit;
@@ -33,6 +35,7 @@ public class GameOverMenu extends Table{
         this.onNextLevel = onNextLevel;
         this.wavesCleared = wavesCleared;
         this.finalScore = finalScore;
+        this.xp = xp;
 
         setFillParent(true);
         setVisible(false);
@@ -52,6 +55,7 @@ public class GameOverMenu extends Table{
         Label titleLabelWin = new Label("LEVEL CLEARED!", skin, "title");
 
         Label scoreLabel = new Label("Score: " + finalScore, skin);
+        Label xpLabel = new Label("XP gained: " + xp, skin);
 
         leaderboardTable = new Table();
         content.add(leaderboardTable).pad(10).row();
@@ -71,6 +75,9 @@ public class GameOverMenu extends Table{
                 setVisible(false);
             }
         });
+
+
+
 
         TextButton exitBtn = new TextButton("Main Menu", skin);
         exitBtn.addListener(new ClickListener() {
@@ -118,6 +125,7 @@ public class GameOverMenu extends Table{
             content.add(titleLabelWin).pad(20).row();
             // --- 将分数显示在按钮之前 ---
             content.add(scoreLabel).pad(10).row();
+            content.add(xpLabel).pad(10).row();
 
             content.add(nextLevelBtn).pad(20).row();
             if (wavesCleared == -1) {

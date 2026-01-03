@@ -35,14 +35,18 @@ public class Character extends MovableObject {
 
     // Navigation Arrow
     private TextureRegion arrowRegion;
-    private Vector2 targetPosition; 
+    private Vector2 targetPosition;
+    private PlayerState playerState;
+
+    private boolean blockEffectRequested = false;
 
     public enum Direction {
         DOWN, RIGHT, UP, LEFT
     }
 
-    public Character(float x, float y) {
-        super(x, y, 16, 32, null); 
+    public Character(float x, float y, PlayerState state) {
+        super(x, y, 16, 32, null);
+        this.playerState = state;
         this.health = 4; // Use inherited health
         this.speed = WALK_SPEED;
         
@@ -57,6 +61,14 @@ public class Character extends MovableObject {
         loadAnimations();
 
         this.bounds = new Rectangle(x+4, y+4, 8, 8);
+
+        int maxLives = state.getMaxLives();
+        this.health = maxLives;
+
+        float speedMult = state.getSpeedMultiplier();
+        this.speed = WALK_SPEED * speedMult;
+
+        this.maxSpeed = WALK_SPEED * speedMult;
     }
     
     public void setPosition(float x, float y) {
@@ -417,7 +429,15 @@ public class Character extends MovableObject {
     // Override takeDamage to add invincibility and specific effects
     @Override
     public void takeDamage(int amount) {
-        if (invincibleTime > 0) return; // Prevent damage if invincible
+        if (invincibleTime > 0) return;// Prevent damage if invincible
+
+        if (playerState != null && com.badlogic.gdx.math.MathUtils.random() < playerState.getDamageReductionChance()) {
+            System.out.println("Blocked!");
+            this.blockEffectRequested = true;// Request the visual
+            damageNumberRequested = false;
+            invincibleTime = 0.5f;
+            return; // Return early, taking NO damage
+        }
         
         if (damageFlashTime <= 0) {
             if (!infiniteHP) {
@@ -425,15 +445,16 @@ public class Character extends MovableObject {
                 // But let's respect amount if needed. For now default is 1.
                 // Assuming amount is 1 for traps/enemies usually.
                 super.takeDamage(amount);
+                damageNumberRequested = true;
             } else {
                  // Even with infinite HP, show flash? 
-                 damageFlashTime = FLASH_DURATION;
+                damageFlashTime = FLASH_DURATION;
+                damageNumberRequested = true;
             }
             
             // On top of base logic:
             invincibleTime = INVINCIBLE_DURATION; 
             screenShakeRequested = true;
-            damageNumberRequested = true;
         }
     }
 
@@ -589,6 +610,13 @@ public class Character extends MovableObject {
         return true;
     }
 
+    public boolean isBlockEffectRequested() {
+        return blockEffectRequested;
+    }
+
+    public void clearBlockEffectRequest() {
+        this.blockEffectRequested = false;
+    }
 
 }
 

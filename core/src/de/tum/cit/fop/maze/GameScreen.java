@@ -149,6 +149,8 @@ public class GameScreen implements Screen {
         // Initialize AI Grid
         grid = new de.tum.cit.fop.maze.AI.Grid(0, 0, mapObjects);
 
+
+
         // Find entry point to spawn character
         float spawnX = 0;
         float spawnY = 0;
@@ -161,12 +163,12 @@ public class GameScreen implements Screen {
         }
 
         if (character == null) {
-            character = new Character(spawnX+16, spawnY);
+            // Pass the global player state to the character
+            character = new Character(spawnX+16, spawnY, game.getPlayerState());
         } else {
-             // Reset character position for new level
-             character.setPosition(spawnX+16, spawnY);
-             // Maybe retain health/key in procedural mode?
+            character.setPosition(spawnX + 16, spawnY);
         }
+
         
         // Create Enemy List
         enemies = new java.util.ArrayList<>();
@@ -301,12 +303,28 @@ public class GameScreen implements Screen {
         }
     }
 
+    private int awardXP(boolean win) {
+        if (win) {
+            int xpEarned = 50; // Base XP for clearing a level
+
+            // Bonus for killing enemies (if you track kills)
+            // xpEarned += enemiesKilled * 10;
+
+            game.getPlayerState().addXP(xpEarned);
+            System.out.println("Awarded " + xpEarned + " XP");
+            return xpEarned;
+        }
+        return 0;
+    }
+
     private void showGameOverMenu(boolean win) {
         if (isGameOver) return; // 防止重复触发
         isGameOver = true;
 
-        // 创建结果菜单
+        int awardXP = awardXP(win);
 
+
+        // 创建结果菜单
         int currentLevelScore = win ? calculateScore() : 0;
         int finalDisplayScore = isProcedural ? (totalRunScore + currentLevelScore) : currentLevelScore;
         int waves = isProcedural ? currentDifficulty - 1 : -1;
@@ -330,7 +348,8 @@ public class GameScreen implements Screen {
                 },
                 win,
                 waves,
-                finalDisplayScore
+                finalDisplayScore,
+                awardXP
         );
 
         if (isProcedural) {
@@ -420,7 +439,18 @@ public class GameScreen implements Screen {
                     if (screenShake != null) screenShake.start(0.3f, 0.8f);
                     character.clearScreenShakeRequest();
                 }
-                
+
+                if (character.isBlockEffectRequested()) {
+                    System.out.println("Spawning BLOCK effect!"); // 添加这行调试打印
+                    damageNumbers.add(new de.tum.cit.fop.maze.VFX.DamageNumber(
+                            character,
+                            "BLOCK",
+                            com.badlogic.gdx.graphics.Color.CYAN // 确保使用了青色
+                    ));
+                    character.clearBlockEffectRequest();
+                }
+
+
                 // Check if damage number requested
                 if (character.isDamageNumberRequested()) {
                      damageNumbers.add(new de.tum.cit.fop.maze.VFX.DamageNumber(character, 1));

@@ -84,6 +84,15 @@ public class MenuScreen implements Screen {
             }
         });
 
+        TextButton skillsButton = new TextButton("Skills & Upgrades", game.getSkin());
+        table.add(skillsButton).width(300).padBottom(15).row();
+        skillsButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.goToSkillTree();
+            }
+        });
+
         // Create and add a "Dialogue Demo" button
         TextButton dialogueButton = new TextButton("Dialogue Demo", game.getSkin());
         table.add(dialogueButton).width(300).padBottom(15).row();
@@ -103,6 +112,7 @@ public class MenuScreen implements Screen {
                 game.setScreen(new de.tum.cit.fop.maze.VFX.VFXDemoScreen(game));
             }
         });
+
 
         TextButton exitButton = new TextButton("Exit", game.getSkin());
         table.add(exitButton).width(300).row();

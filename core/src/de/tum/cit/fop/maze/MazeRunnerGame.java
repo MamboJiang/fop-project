@@ -13,7 +13,10 @@ import com.badlogic.gdx.utils.Array;
 import de.tum.cit.fop.maze.GameControl.ConfigManager;
 import de.tum.cit.fop.maze.GameControl.LevelSelectionScreen;
 import de.tum.cit.fop.maze.GameControl.SettingsScreen;
+import de.tum.cit.fop.maze.GameControl.SkillTreeScreen;
 import games.spooky.gdx.nativefilechooser.NativeFileChooser;
+import de.tum.cit.fop.maze.GameObj.PlayerState;
+
 
 /**
  * The MazeRunnerGame class represents the core of the Maze Runner game.
@@ -37,6 +40,8 @@ public class MazeRunnerGame extends Game {
     private ConfigManager configManager;
     private Music backgroundMusic;
 
+    private PlayerState playerState;
+
     /**
      * Constructor for MazeRunnerGame.
      *
@@ -56,6 +61,7 @@ public class MazeRunnerGame extends Game {
         spriteBatch = new SpriteBatch(); // Create SpriteBatch
         skin = new Skin(Gdx.files.internal("craft/craftacular-ui.json")); // Load UI skin
         this.loadCharacterAnimation(); // Load character animation
+        playerState = new PlayerState();
 
         // Play some background music
         // Background sound
@@ -183,5 +189,18 @@ public class MazeRunnerGame extends Game {
 
     public SpriteBatch getSpriteBatch() {
         return spriteBatch;
+    }
+
+    // Add getter
+    public PlayerState getPlayerState() {
+        return playerState;
+    }
+
+    public void goToSkillTree() {
+        this.setScreen(new SkillTreeScreen(this));
+        if (menuScreen != null) {
+            menuScreen.dispose();
+            menuScreen = null;
+        }
     }
 }
