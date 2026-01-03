@@ -1,0 +1,21 @@
+{
+username: swt
+currentXP: 50
+completedLevels: [
+	level-1
+]
+unlockedAchievements: {
+	serial_killer: false
+	survivor_novice: true
+	escape_artist: true
+	rich: true
+	first_blood: false
+}
+achievementProgress: {
+	serial_killer: 0
+	survivor_novice: 3
+	escape_artist: 1
+	rich: 5
+	first_blood: 0
+}
+}

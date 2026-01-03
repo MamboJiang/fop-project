@@ -230,19 +230,20 @@ public class Character extends MovableObject {
             handleWallSliding(delta, mapObjects, colX, colY);
         }
 
+        float stepInterval = (maxSpeed > 150f) ? 0.25f : 0.35f;
+
+// 2. 更新计时器逻辑
         if (velocity.len() > 5f) {
             footstepTimer += delta;
-            // 0.35f 是时间间隔，如果觉得太慢可以改成 0.3f
-            if (footstepTimer > 0.35f) {
-                // 添加这行打印，看看控制台有没有输出，确认代码是否运行到了这里
-                System.out.println("Playing footstep sound!");
 
+            // 使用动态的 stepInterval 代替固定的 0.35f
+            if (footstepTimer >= stepInterval) {
                 game.playFootstepSound();
                 footstepTimer = 0f;
             }
         } else {
-            // 没移动时，重置计时器，保证下次一动就立刻响
-            footstepTimer = 0.35f;
+            // 没移动时，重置计时器为当前间隔，保证下次一动立刻响
+            footstepTimer = stepInterval;
         }
 
 
