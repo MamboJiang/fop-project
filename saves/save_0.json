@@ -1,6 +1,6 @@
 {
 username: Bababoi
-currentXP: 500
+currentXP: 550
 healthLevel: 6
 speedLevel: 10
 defenseLevel: 9
@@ -21,5 +21,8 @@ achievementProgress: {
 	rich: 5
 	first_blood: 1
 }
-currentRunXP: 50
+endlessWave: 3
+currentRunScore: 12490
+currentRunHealth: 9
+currentRunXP: 150
 }

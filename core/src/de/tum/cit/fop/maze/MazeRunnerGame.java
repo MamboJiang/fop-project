@@ -48,6 +48,7 @@ public class MazeRunnerGame extends Game {
     private Sound powerUpSound;
     private Sound footstepSound;
     private Sound gameOverSound;
+    private Sound blockSound;
 
     /**
      * Constructor for MazeRunnerGame.
@@ -68,6 +69,7 @@ public class MazeRunnerGame extends Game {
         powerUpSound = Gdx.audio.newSound(Gdx.files.internal("PowerUp.wav"));
         footstepSound = Gdx.audio.newSound(Gdx.files.internal("footstep.wav"));
         gameOverSound = Gdx.audio.newSound(Gdx.files.internal("gameover.wav"));
+        blockSound = Gdx.audio.newSound(Gdx.files.internal("block.wav"));
         configManager = new ConfigManager(); // Initialize config manager
 
         spriteBatch = new SpriteBatch(); // Create SpriteBatch
@@ -262,6 +264,10 @@ public class MazeRunnerGame extends Game {
 
     public void playGameOverSound() {
         gameOverSound.play(configManager.getSoundVolume());
+    }
+
+    public void playBlockSound(){
+        blockSound.play(configManager.getSoundVolume());
     }
 
 

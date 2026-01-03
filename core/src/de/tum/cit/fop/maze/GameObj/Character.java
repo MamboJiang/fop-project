@@ -462,6 +462,7 @@ public class Character extends MovableObject {
 
         if (playerState != null && com.badlogic.gdx.math.MathUtils.random() < playerState.getDamageReductionChance()) {
             System.out.println("Blocked!");
+            game.playBlockSound();
             this.blockEffectRequested = true;// Request the visual
             damageNumberRequested = false;
             invincibleTime = 0.5f;
