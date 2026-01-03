@@ -158,13 +158,16 @@ public class Character extends MovableObject {
             else if(hitObject instanceof Key){
                 this.hasKey = true;
                 hitObject.setMarkedForRemoval(true);
-                game.playPickupSound();
+                game.playPowerUpSound();
                 System.out.println("Key collected!");
                 de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.COLLECT_ITEM, 1);
             }
-            else if(hitObject instanceof Collectable){
+            else if(hitObject instanceof Collectable && !(hitObject instanceof Heart)){
                 ((Collectable) hitObject).collect(this);
                 game.playPowerUpSound();
+            }
+            else if(hitObject instanceof Heart){
+                ((Heart) hitObject).collect(this);
             }
             else if(hitObject instanceof Exit){
                 if(this.hasKey){
@@ -546,6 +549,7 @@ public class Character extends MovableObject {
     
     public void addLives(int amount) {
         this.health += amount;
+        game.playPowerUpSound();
         int max = getMaxLives();
         if (this.health > max) this.health = max;
         if (this.health < 0) this.health = 0;

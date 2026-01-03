@@ -21,4 +21,5 @@ achievementProgress: {
 	rich: 5
 	first_blood: 1
 }
+currentRunXP: 50
 }

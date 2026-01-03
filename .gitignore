@@ -3,6 +3,8 @@
 !src/**/build/
 target/
 
+saves/
+
 game_config.json
 
 # Taken from https://github.com/github/gitignore
