@@ -3,6 +3,7 @@ package de.tum.cit.fop.maze;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -41,6 +42,11 @@ public class MazeRunnerGame extends Game {
     private Music backgroundMusic;
 
     private PlayerState playerState;
+    private Sound hitSound;
+    private Sound pickupSound;
+    private Sound powerUpSound;
+    private Sound footstepSound;
+    private Sound gameOverSound;
 
     /**
      * Constructor for MazeRunnerGame.
@@ -56,6 +62,11 @@ public class MazeRunnerGame extends Game {
      */
     @Override
     public void create() {
+        hitSound = Gdx.audio.newSound(Gdx.files.internal("Hit.wav"));
+        pickupSound = Gdx.audio.newSound(Gdx.files.internal("Pickup.wav"));
+        powerUpSound = Gdx.audio.newSound(Gdx.files.internal("PowerUp.wav"));
+        footstepSound = Gdx.audio.newSound(Gdx.files.internal("footstep.wav"));
+        gameOverSound = Gdx.audio.newSound(Gdx.files.internal("gameover.wav"));
         configManager = new ConfigManager(); // Initialize config manager
 
         spriteBatch = new SpriteBatch(); // Create SpriteBatch
@@ -65,7 +76,7 @@ public class MazeRunnerGame extends Game {
 
         // Play some background music
         // Background sound
-        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("background.mp3"));
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Pixel Crypt Keep.mp3"));
         backgroundMusic.setLooping(true);
         backgroundMusic.setVolume(configManager.getMusicVolume());
         backgroundMusic.play();
@@ -176,6 +187,21 @@ public class MazeRunnerGame extends Game {
         if (backgroundMusic != null) {
             backgroundMusic.dispose();
         }
+        if(hitSound != null) {
+            hitSound.dispose();
+        }
+        if(pickupSound != null) {
+            pickupSound.dispose();
+        }
+        if(powerUpSound != null) {
+            powerUpSound.dispose();
+        }
+        if(footstepSound != null) {
+            footstepSound.dispose();
+        }
+        if(gameOverSound != null) {
+            gameOverSound.dispose();
+        }
     }
 
     // Getter methods
@@ -203,4 +229,29 @@ public class MazeRunnerGame extends Game {
             menuScreen = null;
         }
     }
+
+
+    public void playHitSound() {
+        hitSound.play(configManager.getSoundVolume()); // 使用设置里的音量
+    }
+
+    public void playPickupSound() {
+        pickupSound.play(configManager.getSoundVolume());
+    }
+
+    public void playPowerUpSound() {
+        powerUpSound.play(configManager.getSoundVolume());
+    }
+
+    public void playFootstepSound() {
+        // 脚步声通常需要小一点，可以乘以一个系数，例如 0.5f
+        footstepSound.play(configManager.getSoundVolume() * 0.6f);
+    }
+
+    public void playGameOverSound() {
+        gameOverSound.play(configManager.getSoundVolume());
+    }
+
+
+
 }

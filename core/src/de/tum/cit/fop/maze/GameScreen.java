@@ -164,7 +164,7 @@ public class GameScreen implements Screen {
 
         if (character == null) {
             // Pass the global player state to the character
-            character = new Character(spawnX+16, spawnY, game.getPlayerState());
+            character = new Character(spawnX+16, spawnY, game.getPlayerState(), game);
         } else {
             character.setPosition(spawnX + 16, spawnY);
         }
@@ -373,6 +373,7 @@ public class GameScreen implements Screen {
 
         pauseStage.addActor(GameOverMenu);
         GameOverMenu.show();
+        game.playGameOverSound();
 
         // 切换输入处理器到 UI
         Gdx.input.setInputProcessor(pauseStage);

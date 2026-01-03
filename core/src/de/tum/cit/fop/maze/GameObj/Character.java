@@ -11,6 +11,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import de.tum.cit.fop.maze.MazeRunnerGame;
+
 import java.util.List;
 
 public class Character extends MovableObject {
@@ -37,6 +39,8 @@ public class Character extends MovableObject {
     private TextureRegion arrowRegion;
     private Vector2 targetPosition;
     private PlayerState playerState;
+    private MazeRunnerGame game; // 添加这个引用
+    private float footstepTimer = 0f; // 用于控制脚步声频率
 
     private boolean blockEffectRequested = false;
 
@@ -44,7 +48,7 @@ public class Character extends MovableObject {
         DOWN, RIGHT, UP, LEFT
     }
 
-    public Character(float x, float y, PlayerState state) {
+    public Character(float x, float y, PlayerState state, MazeRunnerGame game) {
         super(x, y, 16, 32, null);
         this.playerState = state;
         this.health = 4; // Use inherited health
@@ -69,6 +73,8 @@ public class Character extends MovableObject {
         this.speed = WALK_SPEED * speedMult;
 
         this.maxSpeed = WALK_SPEED * speedMult;
+
+        this.game = game;
     }
     
     public void setPosition(float x, float y) {
@@ -152,11 +158,13 @@ public class Character extends MovableObject {
             else if(hitObject instanceof Key){
                 this.hasKey = true;
                 hitObject.setMarkedForRemoval(true);
+                game.playPickupSound();
                 System.out.println("Key collected!");
                 de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.COLLECT_ITEM, 1);
             }
             else if(hitObject instanceof Collectable){
                 ((Collectable) hitObject).collect(this);
+                game.playPowerUpSound();
             }
             else if(hitObject instanceof Exit){
                 if(this.hasKey){
@@ -221,6 +229,22 @@ public class Character extends MovableObject {
             // Corner Sliding Logic
             handleWallSliding(delta, mapObjects, colX, colY);
         }
+
+        if (velocity.len() > 5f) {
+            footstepTimer += delta;
+            // 0.35f 是时间间隔，如果觉得太慢可以改成 0.3f
+            if (footstepTimer > 0.35f) {
+                // 添加这行打印，看看控制台有没有输出，确认代码是否运行到了这里
+                System.out.println("Playing footstep sound!");
+
+                game.playFootstepSound();
+                footstepTimer = 0f;
+            }
+        } else {
+            // 没移动时，重置计时器，保证下次一动就立刻响
+            footstepTimer = 0.35f;
+        }
+
 
         // Update texture based on animation
         Animation<TextureRegion> currentAnim;
@@ -447,6 +471,7 @@ public class Character extends MovableObject {
                 // Assuming amount is 1 for traps/enemies usually.
                 super.takeDamage(amount);
                 damageNumberRequested = true;
+                game.playHitSound();
                 de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.TAKE_DAMAGE, 1);
             } else {
                  // Even with infinite HP, show flash? 
