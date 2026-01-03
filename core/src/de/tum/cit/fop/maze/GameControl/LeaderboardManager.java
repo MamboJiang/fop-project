@@ -37,7 +37,7 @@ public class LeaderboardManager {
     }
 
     // 保存分数
-    public static void saveScore(String name, int score) {
+    public static void saveScore(String name, int score, Runnable callbacks) {
         // 1. Local Save
         ArrayList<ScoreEntry> scores = loadScores();
         scores.add(new ScoreEntry(name, score));
@@ -47,14 +47,25 @@ public class LeaderboardManager {
         }
         Json json = new Json();
         FileHandle file = Gdx.files.local(FILE_NAME);
-        file.writeString(json.toJson(scores), false);
+        try {
+            file.writeString(json.toJson(scores), false);
+        } catch(Exception e) {
+            Gdx.app.error("Leaderboard", "Local Save Failed", e);
+        }
         
-        // 2. Cloud Upload (Fire and Forget)
-        uploadScoreToCloud(name, score);
+        // 2. Cloud Upload
+        uploadScoreToCloud(name, score, callbacks);
     }
 
-    public static void uploadScoreToCloud(String name, int score) {
-        if (CLOUD_URL.contains("YOUR_VERCEL_URL_HERE")) return; // Skip if not configured
+    public static void saveScore(String name, int score) {
+        saveScore(name, score, null);
+    }
+
+    public static void uploadScoreToCloud(String name, int score, Runnable onSuccess) {
+        if (CLOUD_URL.contains("YOUR_VERCEL_URL_HERE")) { // Offline fallback
+             if (onSuccess != null) Gdx.app.postRunnable(onSuccess);
+             return; 
+        }
 
         com.badlogic.gdx.Net.HttpRequest request = new com.badlogic.gdx.Net.HttpRequest(com.badlogic.gdx.Net.HttpMethods.POST);
         request.setUrl(CLOUD_URL);
@@ -71,13 +82,21 @@ public class LeaderboardManager {
                 String result = httpResponse.getResultAsString();
                 Gdx.app.log("Leaderboard", "Upload Response Code: " + statusCode);
                 Gdx.app.log("Leaderboard", "Upload Response Body: " + result);
+                
+                // If successful or even if failed (to avoid hanging), run callback
+                // But ideally only on success. For UX, let's run it so menu shows up.
+                if (onSuccess != null) Gdx.app.postRunnable(onSuccess);
             }
             @Override
             public void failed(Throwable t) {
                 Gdx.app.log("Leaderboard", "Upload Failed: " + t.getMessage());
+                // Still run callback to proceed? Yes.
+                if (onSuccess != null) Gdx.app.postRunnable(onSuccess);
             }
             @Override
-            public void cancelled() {}
+            public void cancelled() {
+                if (onSuccess != null) Gdx.app.postRunnable(onSuccess);
+            }
         });
     }
 

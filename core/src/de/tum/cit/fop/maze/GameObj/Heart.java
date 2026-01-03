@@ -38,7 +38,7 @@ public class Heart extends GameObject implements Collectable {
 
     @Override
     public void collect(Character character) {
-        if (character.getLives() < 4) {
+        if (character.getLives() < character.getMaxLives()) {
             character.addLives(1);
             setMarkedForRemoval(true);
             System.out.println("Heart Collected! Lives: " + character.getLives());

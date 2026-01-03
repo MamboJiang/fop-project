@@ -31,166 +31,215 @@ public class MenuScreen implements Screen {
      * @param game The main game class, used to access global resources and methods.
      */
     public MenuScreen(MazeRunnerGame game) {
-        // Use FitViewport with virtual resolution 1280x720
-        // This ensures the UI scales to fit the window while maintaining aspect ratio
         Viewport viewport = new FitViewport(2560, 1440);
-        stage = new Stage(viewport, game.getSpriteBatch()); // Create a stage for UI elements
+        stage = new Stage(viewport, game.getSpriteBatch());
 
-        Table table = new Table(); // Create a table for layout
-        table.setFillParent(true); // Make the table fill the stage
-        stage.addActor(table); // Add the table to the stage
+        Table table = new Table();
+        table.setFillParent(true);
+        stage.addActor(table);
 
-        // Add a label as a title
-        table.add(new Label("Hello World from the Menu!", game.getSkin(), "title")).padBottom(80).row();
+        // Check if game is loaded
+        boolean isLoaded = (game.getPlayerState() != null && game.getPlayerState().getUsername() != null);
 
-        // Create and add a "Start" button
-        TextButton startButton = new TextButton("Start", game.getSkin());
-        table.add(startButton).width(300).padBottom(15).row();
-        startButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.goToLevelSelect();
+        if (!isLoaded) {
+            // --- STATE 1: TITLE SCREEN ---
+            table.add(new Label("Maze Runner", game.getSkin(), "title")).padBottom(80).row();
+
+            // 1. Continue Game (if any save exists)
+            int latestSlot = de.tum.cit.fop.maze.GameControl.GameSaveManager.getLatestSaveSlot();
+            TextButton continueButton = new TextButton("Continue Game", game.getSkin());
+            if (latestSlot != -1) {
+                continueButton.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        if (game.loadGame(latestSlot)) {
+                             // Reload Menu to switch to Hub State
+                             game.goToMenu(); 
+                        }
+                    }
+                });
+            } else {
+                continueButton.setDisabled(true);
+                continueButton.setColor(0.5f, 0.5f, 0.5f, 1f);
             }
-        });
+            table.add(continueButton).width(300).padBottom(15).row();
 
-    // Create and add a "Settings" button
-        TextButton settingsButton = new TextButton("Settings", game.getSkin());
-        table.add(settingsButton).width(300).padBottom(15).row();
-        settingsButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.goToSettings();
-            }
-        });
-        
-        // Create and add a "Endless Mode" button
-        TextButton endlessButton = new TextButton("Endless Mode", game.getSkin());
-        table.add(endlessButton).width(300).padBottom(15).row();
-        endlessButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                //game.goToEndlessMode();
-                showNameInputDialog(game);
-            }
-        });
+            // 2. New Game
+            TextButton newGameButton = new TextButton("New Game", game.getSkin());
+            table.add(newGameButton).width(300).padBottom(15).row();
+            newGameButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    game.setScreen(new de.tum.cit.fop.maze.GameControl.SaveSlotScreen(game, false));
+                }
+            });
 
-        // Create and add a "Story Mode" button
-        TextButton storyButton = new TextButton("Story Mode", game.getSkin());
-        table.add(storyButton).width(300).padBottom(15).row();
-        storyButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.setScreen(new de.tum.cit.fop.maze.Conversation.StoryDialogueScreen(game));
-            }
-        });
+            // 3. Load Game
+            TextButton loadGameButton = new TextButton("Load Game", game.getSkin());
+            table.add(loadGameButton).width(300).padBottom(15).row();
+            loadGameButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    game.setScreen(new de.tum.cit.fop.maze.GameControl.SaveSlotScreen(game, true));
+                }
+            });
+            
+            // 4. Settings
+            TextButton settingsButton = new TextButton("Settings", game.getSkin());
+            table.add(settingsButton).width(300).padBottom(15).row();
+            settingsButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    game.goToSettings();
+                }
+            });
 
-        TextButton skillsButton = new TextButton("Skills & Upgrades", game.getSkin());
-        table.add(skillsButton).width(300).padBottom(15).row();
-        skillsButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.goToSkillTree();
-            }
-        });
+            // 5. Exit
+            TextButton exitButton = new TextButton("Exit", game.getSkin());
+            table.add(exitButton).width(300).row();
+            exitButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    Gdx.app.exit();
+                }
+            });
 
-        // Create and add a "Dialogue Demo" button
-        TextButton dialogueButton = new TextButton("Dialogue Demo", game.getSkin());
-        table.add(dialogueButton).width(300).padBottom(15).row();
-        dialogueButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.setScreen(new de.tum.cit.fop.maze.Conversation.DialogueScreen(game));
-            }
-        });
-        
-        // Create and add a "VFX Demo" button
-        TextButton vfxButton = new TextButton("VFX Demo", game.getSkin());
-        table.add(vfxButton).width(300).padBottom(15).row();
-        vfxButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.setScreen(new de.tum.cit.fop.maze.VFX.VFXDemoScreen(game));
-            }
-        });
+        } else {
+            // --- STATE 2: GAME HUB (Loaded) ---
+            String title = "Welcome, " + game.getPlayerState().getUsername();
+            table.add(new Label(title, game.getSkin(), "title")).padBottom(50).row();
+            
+            // 1. Select Level (was Continue/Play)
+            TextButton playButton = new TextButton("Select Level", game.getSkin());
+            table.add(playButton).width(300).padBottom(15).row();
+            playButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    game.goToLevelSelect();
+                }
+            });
 
+            // 2. Endless Mode
+            TextButton endlessButton = new TextButton("Endless Mode", game.getSkin());
+            table.add(endlessButton).width(300).padBottom(15).row();
+            endlessButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    boolean unlocked = !game.getPlayerState().getCompletedLevels().isEmpty();
+                    if (unlocked) {
+                        // Check for existing run
+                        de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
+                        boolean hasRun = state.getEndlessWave() > 1 || state.getCurrentRunScore() > 0;
+                        
+                        if (hasRun) {
+                            Dialog dialog = new Dialog("Resume Run?", game.getSkin()) {
+                                @Override
+                                protected void result(Object object) {
+                                    int choice = (Integer) object;
+                                    if (choice == 1) { // Resume
+                                        game.goToEndlessMode(state.getUsername());
+                                    } else if (choice == 2) { // New Run
+                                        state.resetEndlessWave();
+                                        state.resetRunState();
+                                        game.goToEndlessMode(state.getUsername());
+                                    }
+                                }
+                            };
+                            dialog.text("Continue from Wave " + state.getEndlessWave() + "?");
+                            dialog.button("Continue", 1);
+                            dialog.button("New Run", 2);
+                            dialog.button("Cancel", 0);
+                            dialog.show(stage);
+                        } else {
+                            game.goToEndlessMode(game.getPlayerState().getUsername());
+                        }
+                    } else {
+                        Dialog dialog = new Dialog("Locked", game.getSkin());
+                        dialog.text("Complete a level first!");
+                        dialog.button("OK");
+                        dialog.show(stage);
+                    }
+                }
+            });
 
-        // Create and add "Achievements" button
-        TextButton achButton = new TextButton("Achievements", game.getSkin());
-        table.add(achButton).width(300).padBottom(15).row();
-        achButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.setScreen(new de.tum.cit.fop.maze.GameControl.AchievementsScreen(game));
-            }
-        });
+            // 3. Skills
+            TextButton skillsButton = new TextButton("Skills & Upgrades", game.getSkin());
+            table.add(skillsButton).width(300).padBottom(15).row();
+            skillsButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    game.goToSkillTree();
+                }
+            });
 
-        TextButton exitButton = new TextButton("Exit", game.getSkin());
-        table.add(exitButton).width(300).row();
-        exitButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                Gdx.app.exit();
-            }
-        });
+            // 4. Achievements
+            TextButton achButton = new TextButton("Achievements", game.getSkin());
+            table.add(achButton).width(300).padBottom(15).row();
+            achButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    game.setScreen(new de.tum.cit.fop.maze.GameControl.AchievementsScreen(game));
+                }
+            });
+            
+             // 5. Settings
+            TextButton settingsButton = new TextButton("Settings", game.getSkin());
+            table.add(settingsButton).width(300).padBottom(15).row();
+            settingsButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    game.goToSettings();
+                }
+            });
+
+            // 6. Return to Title
+            TextButton backButton = new TextButton("Return to Title", game.getSkin());
+            table.add(backButton).width(300).row();
+            backButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    // Unload game state
+                    game.unloadGame(); // Need to implement this method or manually nullify
+                    game.goToMenu();
+                }
+            });
+        }
     }
+
+    // ... render, resize, dispose ...
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); // Clear the screen
-        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f)); // Update the stage
-        stage.draw(); // Draw the stage
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); 
+        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+        stage.draw();
     }
 
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true); // Update the stage viewport on resize
+        stage.getViewport().update(width, height, true);
     }
 
     @Override
     public void dispose() {
-        // Dispose of the stage when screen is disposed
         stage.dispose();
     }
 
     @Override
     public void show() {
-        // Set the input processor so the stage can receive input events
         Gdx.input.setInputProcessor(stage);
-    }
-
-    // The following methods are part of the Screen interface but are not used in this screen.
-    @Override
-    public void pause() {
-    }
-
-    @Override
-    public void resume() {
+        
+        // Auto-load if we prefer? No, user choice is better.
+        // But we might want to refresh 'Continue' button if we returned from game?
+        // Note: New MenuScreen is created every time goToMenu is called, so constructor logic runs again.
     }
 
     @Override
-    public void hide() {
-    }
+    public void pause() {}
 
-    private void showNameInputDialog(MazeRunnerGame game) {
-        TextField nameField = new TextField("Player", game.getSkin());
+    @Override
+    public void resume() {}
 
-        Dialog dialog = new Dialog("", game.getSkin()) {
-            @Override
-            protected void result(Object object) {
-                if ((Boolean) object) {
-                    String name = nameField.getText();
-                    if (name.trim().isEmpty()) name = "Unknown";
-                    // 调用修改后的 goToEndlessMode
-                    game.goToEndlessMode(name);
-                }
-            }
-        };
-
-        dialog.text("Who is challenging the maze?");
-        dialog.getContentTable().row();
-        dialog.getContentTable().add(nameField).width(200);
-        dialog.button("Go!", true); // true 传递给 result 方法
-        dialog.button("Cancel", false);
-        dialog.show(stage);
-    }
+    @Override
+    public void hide() {}
 }

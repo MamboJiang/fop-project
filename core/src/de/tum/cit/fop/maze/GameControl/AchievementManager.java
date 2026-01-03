@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Array;
 import java.util.HashMap;
 import java.util.Map;
+import de.tum.cit.fop.maze.GameObj.PlayerState;
 
 public class AchievementManager {
     private static AchievementManager instance;
@@ -29,45 +30,54 @@ public class AchievementManager {
     }
 
     private void loadAchievements() {
-        Json json = new Json();
-        // Try local file first (editable/user persistence)
-        FileHandle file = Gdx.files.local("achievements.json");
+        // Load definitions (Name, Desc) only.
+        // For simple setup, we just create the defaults every time, 
+        // OR we load from read-only asset file if we have one.
+        // Assuming we rely on code-defined defaults for now as definitions source:
+        createDefaultAchievements();
         
-        if (!file.exists()) {
-             // Try internal assets as fallback source
-             FileHandle internalFile = Gdx.files.internal("achievements.json");
-             if (internalFile.exists()) {
-                 try {
-                     file.writeString(internalFile.readString(), false);
-                     Gdx.app.log("AchievementManager", "Copied internal achievements to local storage.");
-                 } catch (Exception e) {
-                     Gdx.app.error("AchievementManager", "Failed to copy internal achievements", e);
-                     createDefaultAchievements(); // Fallback to hardcoded defaults
-                     return;
-                 }
-             } else {
-                 Gdx.app.log("AchievementManager", "No internal achievements found. Creating defaults.");
-                 createDefaultAchievements();
-                 return; // createDefault calls save, so we are done or can reload
-             }
+        // Disable local loading of progress
+    }
+    
+    // Reset progress (Locks all)
+    public void resetAchievements() {
+        for (Achievement a : achievements.values()) {
+            a.setUnlocked(false);
+            a.setProgress(0);
         }
-
-        if (file.exists()) {
-            try {
-                @SuppressWarnings("unchecked")
-                Array<Achievement> list = json.fromJson(Array.class, Achievement.class, file);
-                
-                if (list != null) {
-                    for (Achievement a : list) {
-                        achievements.put(a.getId(), a);
-                    }
-                    Gdx.app.log("AchievementManager", "Loaded " + list.size + " achievements from " + file.path());
-                }
-            } catch (Exception e) {
-                Gdx.app.error("AchievementManager", "Error loading achievements, creating defaults", e);
-                createDefaultAchievements();
+    }
+    
+    // Sync GameConfig -> AchievementManager
+    public void syncFrom(PlayerState state) {
+        if (state == null) return;
+        
+        java.util.HashMap<String, Boolean> unlocked = state.getUnlockedAchievements();
+        java.util.HashMap<String, Integer> progress = state.getAchievementProgress();
+        
+        for (Achievement a : achievements.values()) {
+            if (unlocked.containsKey(a.getId())) {
+                a.setUnlocked(unlocked.get(a.getId()));
+            }
+            if (progress.containsKey(a.getId())) {
+                a.setProgress(progress.get(a.getId()));
             }
         }
+    }
+    
+    // Sync AchievementManager -> GameConfig
+    public void syncTo(PlayerState state) {
+        if (state == null) return;
+        
+        java.util.HashMap<String, Boolean> unlocked = new java.util.HashMap<>();
+        java.util.HashMap<String, Integer> progress = new java.util.HashMap<>();
+        
+        for (Achievement a : achievements.values()) {
+            unlocked.put(a.getId(), a.isUnlocked());
+            progress.put(a.getId(), a.getProgress());
+        }
+        
+        state.setUnlockedAchievements(unlocked);
+        state.setAchievementProgress(progress);
     }
 
     private void createDefaultAchievements() {
@@ -79,7 +89,7 @@ public class AchievementManager {
         addDefault("rich", "Treasure Hunter", "Collect 5 items.", EventType.COLLECT_ITEM, 5);
         addDefault("escape_artist", "Escape Artist", "Complete your first level.", EventType.LEVEL_COMPLETE, 1);
         
-        saveAchievements();
+        // No auto-save to file
     }
     
     private void addDefault(String id, String name, String desc, EventType type, int target) {
@@ -87,16 +97,9 @@ public class AchievementManager {
         achievements.put(id, a);
     }
 
+    // Removed global saveAchievements method or make it empty
     private void saveAchievements() {
-        Json json = new Json();
-        FileHandle file = Gdx.files.local("achievements.json");
-        // Convert map values to array
-        Array<Achievement> list = new Array<>();
-        for (Achievement a : achievements.values()) {
-            list.add(a);
-        }
-        file.writeString(json.prettyPrint(list), false);
-        Gdx.app.log("AchievementManager", "Saved achievements to " + file.path());
+        // No-op, handled by GameSaveManager
     }
 
     public void onEvent(EventType type, int amount) {

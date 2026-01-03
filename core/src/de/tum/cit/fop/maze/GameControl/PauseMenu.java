@@ -14,6 +14,10 @@ public class PauseMenu extends Table {
     private final MazeRunnerGame game;
     private Runnable onResume;
     private Runnable onExit;
+    
+    private Label scoreLabel;
+    private Label difficultyLabel;
+    private Label xpLabel;
 
     public PauseMenu(MazeRunnerGame game, Runnable onResume, Runnable onExit) {
         this.game = game;
@@ -43,6 +47,15 @@ public class PauseMenu extends Table {
         // Title
         content.add(new Label("PAUSED", skin, "title")).pad(20).row();
         
+        // Stats
+        scoreLabel = new Label("Score: 0", skin);
+        difficultyLabel = new Label("Difficulty: 1", skin);
+        xpLabel = new Label("XP: 0", skin);
+        
+        content.add(scoreLabel).pad(5).row();
+        content.add(difficultyLabel).pad(5).row();
+        content.add(xpLabel).pad(5).padBottom(20).row();
+        
         // Resume Button
         TextButton resumeBtn = new TextButton("Resume", skin);
         resumeBtn.addListener(new ClickListener() {
@@ -59,8 +72,11 @@ public class PauseMenu extends Table {
         exitBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (onExit != null) onExit.run();
-                game.goToMenu();
+                if (onExit != null) {
+                    onExit.run();
+                } else {
+                    game.goToMenu();
+                }
             }
         });
         content.add(exitBtn).width(300).pad(10).row();
@@ -75,5 +91,17 @@ public class PauseMenu extends Table {
     
     public void hide() {
         setVisible(false);
+    }
+    
+    public void updateStats(int score, int difficulty, int xp) {
+        if (scoreLabel != null) scoreLabel.setText("Score: " + score);
+        if (difficultyLabel != null) difficultyLabel.setText("Difficulty: " + difficulty);
+        if (xpLabel != null) xpLabel.setText("Total XP: " + xp);
+    }
+
+    public void setStatsVisible(boolean visible) {
+        if (scoreLabel != null) scoreLabel.setVisible(visible);
+        if (difficultyLabel != null) difficultyLabel.setVisible(visible);
+        if (xpLabel != null) xpLabel.setVisible(visible);
     }
 }

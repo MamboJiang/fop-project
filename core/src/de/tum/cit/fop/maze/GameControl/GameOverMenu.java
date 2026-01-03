@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class GameOverMenu extends Table{
     private Runnable onNextLevel;
     private int finalScore;
     private Table leaderboardTable;
+    private Table bottomRankTable; // Always visible footer for user rank
     private int xp;
 
     public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int finalScore, int xp) {
@@ -56,9 +58,39 @@ public class GameOverMenu extends Table{
 
         Label scoreLabel = new Label("Score: " + finalScore, skin);
         Label xpLabel = new Label("XP gained: " + xp, skin);
+        
+        // Stats table for rank
+        bottomRankTable = new Table();
 
-        leaderboardTable = new Table();
-        content.add(leaderboardTable).pad(10).row();
+        if (wavesCleared >= 0 && !isWin) {
+            Label lbTitle = new Label("Leaderboard", skin, "title");
+            content.add(lbTitle).padTop(10).row();
+
+            leaderboardTable = new Table();
+            leaderboardTable.top(); // Align content to top
+            
+            com.badlogic.gdx.scenes.scene2d.ui.ScrollPane scrollPane = new com.badlogic.gdx.scenes.scene2d.ui.ScrollPane(leaderboardTable, skin);
+            scrollPane.setFadeScrollBars(false);
+            scrollPane.setScrollingDisabled(true, false); // Cancel horizontal scroll
+            
+            // Allow mouse scroll
+            scrollPane.addListener(new com.badlogic.gdx.scenes.scene2d.utils.ClickListener() {
+               @Override
+               public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                   getStage().setScrollFocus(scrollPane);
+               }
+               @Override
+               public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                   getStage().setScrollFocus(null);
+               }
+            });
+
+            // Add scrollPane with limited height
+            content.add(scrollPane).width(500).height(200).pad(10).row();
+            
+            // Add fixed rank footer
+            content.add(bottomRankTable).growX().pad(5).row();
+        }
 
         // Endless Mode Label
         Label wavesLabel = null;
@@ -76,15 +108,12 @@ public class GameOverMenu extends Table{
             }
         });
 
-
-
-
-        TextButton exitBtn = new TextButton("Main Menu", skin);
+        TextButton exitBtn = new TextButton(wavesCleared >= 0 ? "Quit" : "Main Menu", skin);
         exitBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (onExit != null) onExit.run();
-                game.goToMenu();
+                else game.goToMenu();
             }
         });
 
@@ -108,11 +137,13 @@ public class GameOverMenu extends Table{
             if (wavesCleared >= 0) {
                 // Endless Mode Loss
                 if (wavesLabel != null) content.add(wavesLabel).pad(10).row();
-                // User explicitly said: NO RETRY.
-                // So only Main Menu?
-                // Or maybe "Restart Run" is okay?
-                // "Endless mode end after showing cleared waves" -> "don't show RETRY".
-                // I will hide Retry button completely for Endless Mode Loss.
+                
+                // Show Score and XP
+                content.add(scoreLabel).pad(5).row();
+                content.add(xpLabel).pad(5).row();
+                
+                // Leaderboard is added above locally if condition met
+                
                 content.add(exitBtn).width(300).pad(10).row();
             } else {
                 // Standard Loss
@@ -148,33 +179,64 @@ public class GameOverMenu extends Table{
     }
 
     public void loadLeaderboard() {
-        leaderboardTable.clear(); // 清空旧数据
-
-        leaderboardTable.add(new Label("Loading Leaderboard...", game.getSkin())).colspan(2).row();
+        if (leaderboardTable == null) return; // Should not happen if logic is correct
+        
+        leaderboardTable.clear(); // Clear old data
+        leaderboardTable.add(new Label("Loading...", game.getSkin())).expandX().center().row();
 
         LeaderboardManager.fetchScores(new LeaderboardManager.LeaderboardCallback() {
             @Override
             public void onScoresLoaded(ArrayList<LeaderboardManager.ScoreEntry> scores) {
-                // Must run on UI thread (LibGDX usually handles this in postRunnable, 
-                // but our LeaderboardManager already does postRunnable).
                 leaderboardTable.clear();
+                // NO TITLE HERE
                 
-                Label title = new Label("Leaderboard", game.getSkin(), "title");
-                leaderboardTable.add(title).padBottom(10).colspan(2).row();
-                
+                if (bottomRankTable != null) bottomRankTable.clear();
+
                 if (scores.isEmpty()) {
-                    leaderboardTable.add(new Label("No records yet!", game.getSkin())).colspan(2);
+                    leaderboardTable.add(new Label("No records yet!", game.getSkin())).expandX().center();
+                    if (bottomRankTable != null) bottomRankTable.add(new Label("You: " + finalScore, game.getSkin())).center();
                 } else {
+                    boolean userFound = false;
+                    String currentUserName = game.getPlayerState().getUsername();
+                    int myRank = -1;
+                    
                      for (int i = 0; i < scores.size(); i++) {
                         LeaderboardManager.ScoreEntry entry = scores.get(i);
 
-                        // 排名 #1, #2...
                         Label rankLabel = new Label("#" + (i + 1), game.getSkin());
-                        // 名字: 分数
                         Label entryLabel = new Label(entry.name + ": " + entry.score, game.getSkin());
+                        
+                         // Highlighting check
+                        boolean isHighlight = (entry.score == finalScore && entry.name.equals(currentUserName));
+                        if (isHighlight) {
+                            userFound = true;
+                            myRank = i + 1;
+                            rankLabel.setColor(com.badlogic.gdx.graphics.Color.GOLD);
+                            entryLabel.setColor(com.badlogic.gdx.graphics.Color.GOLD);
+                        }
+                        
+                        Table rowTable = new Table();
+                        rowTable.add(rankLabel).padRight(15).right().width(40);
+                        rowTable.add(entryLabel).left();
 
-                        leaderboardTable.add(rankLabel).left().padRight(10);
-                        leaderboardTable.add(entryLabel).left().row();
+                        // Add row to main table
+                        leaderboardTable.add(rowTable).expandX().center().padRight(20).padBottom(5).row();
+                    }
+                    
+                    // Populate Footer
+                    if (bottomRankTable != null) {
+                         Label footerRank;
+                         if (userFound) {
+                             footerRank = new Label("Your Rank: #" + myRank, game.getSkin());
+                         } else {
+                             footerRank = new Label("Your Rank: Not in Top " + scores.size(), game.getSkin());
+                         }
+                         Label footerScore = new Label("Score: " + finalScore, game.getSkin());
+                         footerRank.setColor(com.badlogic.gdx.graphics.Color.GOLD);
+                         footerScore.setColor(com.badlogic.gdx.graphics.Color.GOLD);
+                         
+                         bottomRankTable.add(footerRank).padRight(20);
+                         bottomRankTable.add(footerScore);
                     }
                 }
             }
@@ -182,9 +244,7 @@ public class GameOverMenu extends Table{
             @Override
             public void onError(String message) {
                  leaderboardTable.clear();
-                 leaderboardTable.add(new Label("Error: " + message, game.getSkin())).colspan(2);
-                 // Maybe load local as fallback explicit call? 
-                 // Manager already has fallback logic logic if we want, but currently manager returns callback.
+                 leaderboardTable.add(new Label("Error: " + message, game.getSkin())).expandX().center();
             }
         });
     }

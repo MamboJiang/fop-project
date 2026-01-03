@@ -68,6 +68,9 @@ public class SkillTreeScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (game.getPlayerState().upgradeSkill(type)) {
+                    // Update persistence immediately
+                    game.saveGame();
+                    
                     // Refresh screen logic simply by recreating it or updating labels
                     game.setScreen(new SkillTreeScreen(game));
                 }

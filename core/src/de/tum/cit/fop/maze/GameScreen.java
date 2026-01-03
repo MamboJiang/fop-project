@@ -21,6 +21,8 @@ import de.tum.cit.fop.maze.GameObj.GameObject;
 import de.tum.cit.fop.maze.GameControl.HUD;
 import de.tum.cit.fop.maze.GameControl.PauseMenu;
 import de.tum.cit.fop.maze.GameControl.GameOverMenu;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 
 import java.util.List;
 
@@ -65,8 +67,11 @@ public class GameScreen implements Screen {
     private static final int PENALTY_PER_SECOND = 10;     // 每秒扣除的分数
     private static final int SCORE_PER_LIFE = 500;
 
-    private String playerName;
-    private int totalRunScore = 0; // 记录无尽模式累计总分
+    private String playerName = "Player"; // For endless run leaderboard
+    private int totalRunScore = 0; // Cumulative score for endless run
+    
+    // Level Tracking
+    private String currentLevelName = "Unknown";
     /**
      * Constructor for GameScreen (File Mode).
      */
@@ -74,6 +79,9 @@ public class GameScreen implements Screen {
         this.game = game;
         this.mapFile = mapFile;
         this.isProcedural = false;
+        if (mapFile != null) {
+            this.currentLevelName = mapFile.nameWithoutExtension();
+        }
 
         initCommon();
         setupLevel();
@@ -92,6 +100,16 @@ public class GameScreen implements Screen {
         
         initCommon();
         setupLevel();
+    }
+    
+    public void setDifficulty(int difficulty) {
+        this.currentDifficulty = difficulty;
+        // If mapObjects already generated, we might need to regenerate? 
+        // But constructor calls setupLevel immediately.
+        // So we should probably call setupLevel() AFTER setting difficulty if we want to honor it.
+        // However, goToEndlessMode sets screen THEN calls this. 
+        // So we need to re-generate level.
+        generateProceduralLevel();
     }
     
     private void initCommon() {
@@ -169,6 +187,17 @@ public class GameScreen implements Screen {
             character.setPosition(spawnX + 16, spawnY);
         }
 
+        // Restore Endless Run State if applicable
+        if (isProcedural) {
+            de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
+            if (state.getCurrentRunScore() > 0) {
+                this.totalRunScore = state.getCurrentRunScore();
+            }
+            if (state.getCurrentRunHealth() > 0) {
+                character.setCurrentHealth(state.getCurrentRunHealth());
+            }
+        }
+
         
         // Create Enemy List
         enemies = new java.util.ArrayList<>();
@@ -243,7 +272,47 @@ public class GameScreen implements Screen {
         
         pauseMenu = new PauseMenu(game, 
             () -> togglePause(), // Resume action
-            null // Exit action (default)
+            () -> {
+                // Exit action
+                if (isProcedural) {
+                    Dialog dialog = new Dialog("Endless Mode", game.getSkin()) {
+                        @Override
+                        protected void result(Object object) {
+                            if (object instanceof Integer) {
+                                int choice = (Integer) object;
+                                if (choice == 1) {
+                                    // Save & Quit
+                                    game.getPlayerState().setEndlessWave(currentDifficulty); 
+                                    // Save Run State
+                                    game.getPlayerState().setCurrentRunScore(totalRunScore);
+                                    if (character != null) {
+                                        game.getPlayerState().setCurrentRunHealth(character.getCurrentHealth());
+                                    }
+                                    
+                                    game.saveGame();
+                                    game.goToMenu();
+                                } else if (choice == 2) {
+                                    // End Game (Submit Score) -> Treat as death
+                                    game.getPlayerState().resetEndlessWave(); 
+                                    game.getPlayerState().resetRunState(); // Reset run state
+                                    pauseMenu.hide();
+                                    isPaused = false; 
+                                    showGameOverMenu(false); 
+                                } else {
+                                    // Cancel -> Do nothing, dialog closes automaticallly
+                                }
+                            }
+                        }
+                    };
+                    dialog.text("Save Difficulty or End Run (Submit Score)?\nNew Run will be: Lv " + currentDifficulty);
+                    dialog.button("Save & Quit", 1);
+                    dialog.button("End Game (Submit Score)", 2);
+                    dialog.button("Cancel", 0);
+                    dialog.show(pauseStage);
+                } else {
+                    game.goToMenu();
+                }
+            }
         );
         pauseStage.addActor(pauseMenu);
     }
@@ -306,13 +375,27 @@ public class GameScreen implements Screen {
 
     private int awardXP(boolean win) {
         if (win) {
+            // Track level completion if not procedural
+            if (!isProcedural && currentLevelName != null) {
+                game.getPlayerState().addCompletedLevel(currentLevelName);
+            }
+            
             int xpEarned = 50; // Base XP for clearing a level
 
             // Bonus for killing enemies (if you track kills)
             // xpEarned += enemiesKilled * 10;
 
-            game.getPlayerState().addXP(xpEarned);
-            System.out.println("Awarded " + xpEarned + " XP");
+            if (isProcedural) {
+                game.getPlayerState().addCurrentRunXP(xpEarned);
+                System.out.println("Run XP: " + game.getPlayerState().getCurrentRunXP());
+            } else {
+                game.getPlayerState().addXP(xpEarned);
+                System.out.println("Awarded " + xpEarned + " XP");
+            }
+            
+            // Auto-save on win
+            game.saveGame();
+            
             return xpEarned;
         }
         return 0;
@@ -323,18 +406,33 @@ public class GameScreen implements Screen {
         isGameOver = true;
 
         int awardXP = awardXP(win);
+        
+        // Reset endless wave if it's a loss or end of run
+        if (isProcedural && !win) {
+            // Settle XP
+            int runXP = game.getPlayerState().getCurrentRunXP();
+            game.getPlayerState().addXP(runXP);
+            awardXP = runXP; // Update display value
+            
+            game.getPlayerState().resetEndlessWave();
+            game.getPlayerState().resetRunState();
+            game.saveGame(); // Save the reset state
+        }
 
 
         // 创建结果菜单
         int currentLevelScore = win ? calculateScore() : 0;
         int finalDisplayScore = isProcedural ? (totalRunScore + currentLevelScore) : currentLevelScore;
-        int waves = isProcedural ? currentDifficulty - 1 : -1;
+        
+        // precise waves logic: if win, we cleared currentDifficulty. if lose, we cleared currentDifficulty-1.
+        int waves = -1;
+        if (isProcedural) {
+            waves = win ? currentDifficulty : currentDifficulty - 1;
+        }
+        
         GameOverMenu = new GameOverMenu(game,
                 () -> {
                     // Retry 逻辑: 重新加载当前地图
-                    // If procedural, this restarts the run? Or restarts the level?
-                    // Currently we hid retry for procedural lose.
-                    // But if we passed null as retry action, that would be safer.
                     if (isProcedural) {
                         game.goToEndlessMode(playerName); // Restart run
                     } else {
@@ -342,7 +440,49 @@ public class GameScreen implements Screen {
                     }
                 },
                 () -> {
-                    // Exit 逻辑
+                    // Exit 逻辑 (Win case)
+                    if (isProcedural && win) {
+                         com.badlogic.gdx.scenes.scene2d.ui.Dialog dialog = new com.badlogic.gdx.scenes.scene2d.ui.Dialog("Endless Mode", game.getSkin()) {
+                            @Override
+                            protected void result(Object object) {
+                                if (object instanceof Integer) {
+                                    int choice = (Integer) object;
+                                    if (choice == 1) {
+                                        // Save & Quit
+                                        game.getPlayerState().setEndlessWave(currentDifficulty + 1); // Resume NEXT wave
+                                        // Save Run State (Score + Health)
+                                        // Accumulate current level score into total
+                                        game.getPlayerState().setCurrentRunScore(totalRunScore + calculateScore());
+                                        if (character != null) {
+                                            game.getPlayerState().setCurrentRunHealth(character.getCurrentHealth());
+                                        }
+                                        
+                                        game.saveGame();
+                                        game.goToMenu();
+                                    } else if (choice == 2) {
+                                        // End Game (Abandon Run) -> Trigger Game Over Logic
+                                        // Bank the current level's score since we technically beat it
+                                        totalRunScore += calculateScore();
+                                        game.getPlayerState().resetEndlessWave(); // Reset difficulty
+                                        game.getPlayerState().resetRunState(); // Reset run state persistence
+                                        
+                                        if (GameOverMenu != null) GameOverMenu.remove();
+                                        isGameOver = false; // Reset flag to allow re-entry
+                                        showGameOverMenu(false); // Show defeat screen (with leaderboard)
+                                    } else {
+                                        // Return (Cancel) -> Do nothing
+                                    }
+                                }
+                            }
+                        };
+                        dialog.text("Save Difficulty or End Run (Submit Score)?\nNew Run will be: Lv " + (currentDifficulty + 1));
+                        dialog.button("Save & Quit", 1);
+                        dialog.button("End Game (Submit Score)", 2);
+                        dialog.button("Cancel", 0);
+                        dialog.show(pauseStage); // Pop over the existing menu
+                    } else {
+                        game.goToMenu();
+                    }
                 },
                 () -> {
                     loadNextLevel();
@@ -357,13 +497,10 @@ public class GameScreen implements Screen {
             // 只有在输了 (!win) 的时候才保存分数
             // 这样通关每一层时不会生成新记录，只有死掉时才算 "Run Ended"
             if (!win) {
-                de.tum.cit.fop.maze.GameControl.LeaderboardManager.saveScore(playerName, finalDisplayScore);
+                de.tum.cit.fop.maze.GameControl.LeaderboardManager.saveScore(playerName, finalDisplayScore, () -> {
+                    if (GameOverMenu != null) GameOverMenu.loadLeaderboard();
+                });
                 de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.GAME_OVER, 1);
-            }
-
-            // 只有在输了的时候才加载/显示排行榜 (可选，如果你想通关界面也看榜，就把这行移到 if (!win) 外面)
-            if (!win) {
-                GameOverMenu.loadLeaderboard();
             }
         } else {
             if (!win) {
@@ -385,6 +522,13 @@ public class GameScreen implements Screen {
     private void togglePause() {
         isPaused = !isPaused;
         if (isPaused) {
+            if (isProcedural) {
+                pauseMenu.setStatsVisible(true);
+                int xpToShow = game.getPlayerState().getCurrentRunXP();
+                pauseMenu.updateStats(totalRunScore, currentDifficulty, xpToShow);
+            } else {
+                pauseMenu.setStatsVisible(false);
+            }
             pauseMenu.show();
         } else {
             pauseMenu.hide(); // Should already be hidden by Resume button, but safe to call

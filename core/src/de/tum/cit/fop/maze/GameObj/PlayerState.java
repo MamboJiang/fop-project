@@ -2,17 +2,97 @@ package de.tum.cit.fop.maze.GameObj;
 
 public class PlayerState {
     // 数据只存在于内存变量中
+    private String username;
     private int currentXP;
     private int healthLevel;
     private int speedLevel;
     private int defenseLevel;
+    
+    // Progress tracking
+    private java.util.ArrayList<String> completedLevels;
+    
+    // Stored Achievements
+    private java.util.HashMap<String, Boolean> unlockedAchievements;
+    private java.util.HashMap<String, Integer> achievementProgress;
+    private int endlessWave = 1; // Default to 1
 
     public PlayerState() {
         // 每次游戏启动初始化为 0
+        this.username = "Adventurer";
         this.currentXP = 0;
         this.healthLevel = 0;
         this.speedLevel = 0;
         this.defenseLevel = 0;
+        this.completedLevels = new java.util.ArrayList<>();
+        this.unlockedAchievements = new java.util.HashMap<>();
+        this.achievementProgress = new java.util.HashMap<>();
+        this.endlessWave = 1;
+    }
+    
+    public int getEndlessWave() { return endlessWave; }
+    public void setEndlessWave(int wave) { this.endlessWave = wave; }
+    public void resetEndlessWave() { this.endlessWave = 1; }
+    
+    // --- Run State Persistence ---
+    private int currentRunScore = 0;
+    private float currentRunHealth = -1; // -1 means use default/full, >0 means saved value
+    private int currentRunXP = 0; // Accumulates XP during current run
+
+    public int getCurrentRunScore() { return currentRunScore; }
+    public void setCurrentRunScore(int score) { this.currentRunScore = score; }
+
+    public float getCurrentRunHealth() { return currentRunHealth; }
+    public void setCurrentRunHealth(float health) { this.currentRunHealth = health; }
+    
+    public int getCurrentRunXP() { return currentRunXP; }
+    public void addCurrentRunXP(int amount) { this.currentRunXP += amount; }
+    public void setCurrentRunXP(int xp) { this.currentRunXP = xp; }
+
+    public void resetRunState() {
+        this.currentRunScore = 0;
+        this.currentRunHealth = -1;
+        this.currentRunXP = 0;
+    }
+    
+    public java.util.HashMap<String, Boolean> getUnlockedAchievements() {
+        return unlockedAchievements;
+    }
+    
+    public void setUnlockedAchievements(java.util.HashMap<String, Boolean> achievements) {
+        this.unlockedAchievements = achievements;
+    }
+    
+    public java.util.HashMap<String, Integer> getAchievementProgress() {
+        return achievementProgress;
+    }
+    
+    public void setAchievementProgress(java.util.HashMap<String, Integer> progress) {
+        this.achievementProgress = progress;
+    }
+    
+    public void unlockAchievement(String id) {
+        unlockedAchievements.put(id, true);
+    }
+    
+    public boolean isAchievementUnlocked(String id) {
+        return unlockedAchievements.getOrDefault(id, false);
+    }
+    
+    public void setUsername(String name) { this.username = name; }
+    public String getUsername() { return username; }
+    
+    public void addCompletedLevel(String levelName) {
+        if (!completedLevels.contains(levelName)) {
+            completedLevels.add(levelName);
+        }
+    }
+    
+    public boolean isLevelCompleted(String levelName) {
+        return completedLevels.contains(levelName);
+    }
+    
+    public java.util.ArrayList<String> getCompletedLevels() {
+        return completedLevels;
     }
 
     // --- XP 逻辑 ---

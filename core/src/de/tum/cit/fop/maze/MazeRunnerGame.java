@@ -2,6 +2,7 @@ package de.tum.cit.fop.maze;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
@@ -72,7 +73,7 @@ public class MazeRunnerGame extends Game {
         spriteBatch = new SpriteBatch(); // Create SpriteBatch
         skin = new Skin(Gdx.files.internal("craft/craftacular-ui.json")); // Load UI skin
         this.loadCharacterAnimation(); // Load character animation
-        playerState = new PlayerState();
+        playerState = null; // Start with no game loaded
 
         // Play some background music
         // Background sound
@@ -134,7 +135,16 @@ public class MazeRunnerGame extends Game {
      * Switches to the procedural endless mode.
      */
     public void goToEndlessMode(String playerName) {
-        this.setScreen(new GameScreen(this, true, playerName));
+        // Resume from saved wave if available in playerState
+        int startDifficulty = 1;
+        if (playerState != null) {
+            startDifficulty = playerState.getEndlessWave();
+        }
+
+        GameScreen gs = new GameScreen(this, true, playerName);
+        gs.setDifficulty(startDifficulty); // Helper method we will add or use constructor
+        this.setScreen(gs);
+
         if (menuScreen != null) {
             menuScreen.dispose();
             menuScreen = null;
@@ -222,6 +232,8 @@ public class MazeRunnerGame extends Game {
         return playerState;
     }
 
+    private int currentSlotIndex = -1; // -1 means no slot loaded
+
     public void goToSkillTree() {
         this.setScreen(new SkillTreeScreen(this));
         if (menuScreen != null) {
@@ -254,4 +266,44 @@ public class MazeRunnerGame extends Game {
 
 
 
+
+    public void saveGame() {
+        if (currentSlotIndex != -1) {
+            de.tum.cit.fop.maze.GameControl.GameSaveManager.saveGame(playerState, currentSlotIndex);
+        }
+    }
+
+    public boolean loadGame(int slotIndex) {
+        PlayerState loaded = de.tum.cit.fop.maze.GameControl.GameSaveManager.loadGame(slotIndex);
+        if (loaded != null) {
+            this.playerState = loaded;
+            this.currentSlotIndex = slotIndex;
+            return true;
+        }
+        return false;
+    }
+
+    public void startNewGame(String name, int slotIndex) {
+        this.playerState = new PlayerState();
+        this.playerState.setUsername(name);
+        this.currentSlotIndex = slotIndex;
+
+        // Reset achievements to ensure fresh start (clean singleton state)
+        de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().resetAchievements();
+
+        saveGame(); // Save immediately to persist the new profile
+        // User flow: New Game -> Name -> Hub (MenuScreen with loaded state)
+        goToMenu();
+    }
+
+    public void unloadGame() {
+        this.playerState = null;
+        this.currentSlotIndex = -1;
+    }
+
+    public void setScreen(Screen screen) {
+        super.setScreen(screen);
+        // Note: Existing screens might not be disposed automatically if reused.
+        // Logic handled in specific goTo methods.
+    }
 }

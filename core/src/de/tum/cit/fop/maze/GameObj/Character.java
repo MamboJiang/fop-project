@@ -538,13 +538,15 @@ public class Character extends MovableObject {
     // Debug methods
     public void setLives(int lives) {
         this.health = lives;
-        if (this.health > 4) this.health = 4;
+        int max = getMaxLives();
+        if (this.health > max) this.health = max;
         if (this.health < 0) this.health = 0;
     }
     
     public void addLives(int amount) {
         this.health += amount;
-        if (this.health > 4) this.health = 4;
+        int max = getMaxLives();
+        if (this.health > max) this.health = max;
         if (this.health < 0) this.health = 0;
     }
 
@@ -650,6 +652,19 @@ public class Character extends MovableObject {
 
     public void clearBlockEffectRequest() {
         this.blockEffectRequested = false;
+    }
+    
+    // --- Persistence Adapter Methods ---
+    public float getCurrentHealth() {
+        return (float) this.health;
+    }
+
+    public void setCurrentHealth(float health) {
+        this.health = (int) health;
+        // Clamp to max lives?
+        int max = getMaxLives();
+        if (this.health > max) this.health = max;
+        if (this.health < 0) this.health = 0;
     }
 
 }

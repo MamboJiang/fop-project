@@ -3,6 +3,7 @@ package de.tum.cit.fop.maze.GameControl;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -46,6 +47,18 @@ public class AchievementsScreen implements Screen {
         ScrollPane scrollPane = new ScrollPane(listTable, skin);
         scrollPane.setFadeScrollBars(false);
         scrollPane.setScrollingDisabled(true, false); // Cancel horizontal scroll
+        
+        // Add listeners for mouse scroll focus
+        scrollPane.addListener(new com.badlogic.gdx.scenes.scene2d.utils.ClickListener() {
+           @Override
+           public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+               stage.setScrollFocus(scrollPane);
+           }
+           @Override
+           public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+               stage.setScrollFocus(null);
+           }
+        });
         
         rootTable.add(scrollPane).width(800).height(500).padBottom(20).row();
 
