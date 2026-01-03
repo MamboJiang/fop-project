@@ -254,6 +254,7 @@ public class GameScreen implements Screen {
 
             // Increase Difficulty
             currentDifficulty++;
+            de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onStatusUpdate(de.tum.cit.fop.maze.GameControl.EventType.REACH_DIFFICULTY, currentDifficulty);
             
             // Reset Game State
             isGameOver = false;
@@ -356,12 +357,17 @@ public class GameScreen implements Screen {
             // 只有在输了 (!win) 的时候才保存分数
             // 这样通关每一层时不会生成新记录，只有死掉时才算 "Run Ended"
             if (!win) {
-                LeaderboardManager.saveScore(playerName, finalDisplayScore);
+                de.tum.cit.fop.maze.GameControl.LeaderboardManager.saveScore(playerName, finalDisplayScore);
+                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.GAME_OVER, 1);
             }
 
             // 只有在输了的时候才加载/显示排行榜 (可选，如果你想通关界面也看榜，就把这行移到 if (!win) 外面)
             if (!win) {
                 GameOverMenu.loadLeaderboard();
+            }
+        } else {
+            if (!win) {
+                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.GAME_OVER, 1);
             }
         }
 
@@ -479,6 +485,7 @@ public class GameScreen implements Screen {
                 mapObjects.removeIf(GameObject::isMarkedForRemoval);
             }
             if (character.isLevelCompleted()) {
+                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.LEVEL_COMPLETE, 1);
                 showGameOverMenu(true);
 
             }
@@ -545,6 +552,7 @@ public class GameScreen implements Screen {
                 de.tum.cit.fop.maze.GameObj.Enemy enemy = enemyIter.next();
                 enemy.update(delta);
                 if (enemy.isMarkedForRemoval()) {
+                    de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.KILL_ENEMY, 1);
                     enemyIter.remove();
                 }
             }
@@ -658,5 +666,9 @@ public class GameScreen implements Screen {
         int minutes = (int) levelTimer / 60;
         int seconds = (int) levelTimer % 60;
         return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    public MazeRunnerGame getGame() {
+        return game;
     }
 }

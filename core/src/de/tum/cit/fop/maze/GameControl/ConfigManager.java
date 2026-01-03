@@ -45,7 +45,9 @@ public class ConfigManager {
         keys.put("DOWN", Keys.S);
         keys.put("LEFT", Keys.A);
         keys.put("RIGHT", Keys.D);
+        keys.put("RIGHT", Keys.D);
         keys.put("PAUSE", Keys.ESCAPE);
+        keys.put("CONSOLE", Keys.GRAVE);
         saveConfig();
     }
     
@@ -56,6 +58,7 @@ public class ConfigManager {
         if (!keys.containsKey("LEFT")) keys.put("LEFT", Keys.A);
         if (!keys.containsKey("RIGHT")) keys.put("RIGHT", Keys.D);
         if (!keys.containsKey("PAUSE")) keys.put("PAUSE", Keys.ESCAPE);
+        if (!keys.containsKey("CONSOLE")) keys.put("CONSOLE", Keys.GRAVE);
     }
 
     public void saveConfig() {

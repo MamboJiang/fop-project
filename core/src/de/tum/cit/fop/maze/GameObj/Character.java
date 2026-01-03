@@ -153,6 +153,7 @@ public class Character extends MovableObject {
                 this.hasKey = true;
                 hitObject.setMarkedForRemoval(true);
                 System.out.println("Key collected!");
+                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.COLLECT_ITEM, 1);
             }
             else if(hitObject instanceof Collectable){
                 ((Collectable) hitObject).collect(this);
@@ -446,6 +447,7 @@ public class Character extends MovableObject {
                 // Assuming amount is 1 for traps/enemies usually.
                 super.takeDamage(amount);
                 damageNumberRequested = true;
+                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.TAKE_DAMAGE, 1);
             } else {
                  // Even with infinite HP, show flash? 
                 damageFlashTime = FLASH_DURATION;

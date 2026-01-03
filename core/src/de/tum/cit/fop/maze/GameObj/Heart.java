@@ -42,6 +42,7 @@ public class Heart extends GameObject implements Collectable {
             character.addLives(1);
             setMarkedForRemoval(true);
             System.out.println("Heart Collected! Lives: " + character.getLives());
+            de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.COLLECT_ITEM, 1);
         }
     }
 }

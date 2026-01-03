@@ -114,6 +114,16 @@ public class MenuScreen implements Screen {
         });
 
 
+        // Create and add "Achievements" button
+        TextButton achButton = new TextButton("Achievements", game.getSkin());
+        table.add(achButton).width(300).padBottom(15).row();
+        achButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.setScreen(new de.tum.cit.fop.maze.GameControl.AchievementsScreen(game));
+            }
+        });
+
         TextButton exitButton = new TextButton("Exit", game.getSkin());
         table.add(exitButton).width(300).row();
         exitButton.addListener(new ChangeListener() {

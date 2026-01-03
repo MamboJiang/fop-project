@@ -40,5 +40,6 @@ public class ShieldItem extends GameObject implements Collectable {
         character.activateShield(10.0f);
         setMarkedForRemoval(true);
         System.out.println("Shield Activated! Duration: 10s");
+        de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.COLLECT_ITEM, 1);
     }
 }

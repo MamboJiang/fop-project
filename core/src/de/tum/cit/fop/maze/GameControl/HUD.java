@@ -23,15 +23,18 @@ public class HUD {
     private final Texture objectsTexture;
     private final TextureRegion[] heartRegions;
     private final TextureRegion keyRegion;
+    private final com.badlogic.gdx.graphics.g2d.NinePatch achievementNinePatch;
     
     private Image heartImage;
     private Image keyImage;
     private Table table;
     private Table debugTable;
     private Label debugInfoLabel;
-    private TextButton infiniteHpBtn;
-    private TextButton shieldBtn;
     private Label timeLabel;
+    
+    // Console UI
+    private Table contentTable;
+    private com.badlogic.gdx.scenes.scene2d.ui.TextField consoleInput;
     
     // Dependencies
     private final GameScreen gameScreen;
@@ -47,23 +50,28 @@ public class HUD {
         objectsTexture = new Texture(Gdx.files.internal("objects.png"));
         TextureRegion[][] tmp = TextureRegion.split(objectsTexture, 16, 16);
         
-        // Hearts: Row 0, Cols 5-9 (5=4 lives, 6=3 lives, 7=2 lives, 8=1 life, 9=0 lives)
-        // Adjusting logic: The user said "5-9 respectively are 4, 3, 2, 1, 0 lives"
-        // Index 5: 4 lives
-        // Index 6: 3 lives
-        // Index 7: 2 lives
-        // Index 8: 1 lives
-        // Index 9: 0 lives
+        // Hearts logic omitted for brevity in diff...
         heartRegions = new TextureRegion[5];
         for (int i = 0; i < 5; i++) {
             heartRegions[i] = tmp[0][4 + i];
         }
         
-        // Key: Row 4, Col 0
         keyRegion = tmp[4][0];
+
+        // Achievement Background: "Rows 19 and 20, Columns 5-8" (Indices 18-19, 4-7)
+        // We use a NinePatch to stretch it properly.
+        // The region is 64x32 (4 tiles wide, 2 tiles high).
+        // 16px Left Cap, 16px Right Cap, 32px Center Body.
+        TextureRegion bgRegion = new TextureRegion(objectsTexture, 4 * 16, 18 * 16, 4 * 16, 2 * 16);
+        // NinePatch splits: Left, Right, Top, Bottom
+        achievementNinePatch = new com.badlogic.gdx.graphics.g2d.NinePatch(bgRegion, 16, 16, 0, 0);
+        achievementNinePatch.scale(4, 4); // Scale up to match the UI scale (4x)
         
         setupUI();
         setupDebugMenu();
+        
+        // Register HUD with AchievementManager
+        AchievementManager.getInstance().setHUD(this);
     }
 
     private void setupUI() {
@@ -109,148 +117,178 @@ public class HUD {
         debugTable.setFillParent(true);
         
         // Container for content buttons
-        final Table contentTable = new Table();
+        contentTable = new Table();
         contentTable.setVisible(false); // Initially hidden
         
         // Debug Info Label
         debugInfoLabel = new Label("Speed: 0\nHP: 4\nKey: false", skin);
         contentTable.add(debugInfoLabel).left().pad(5).row();
-        
+
+        // --- Console UI ---
+        // Output Log
+        final Label consoleLog = new Label("Console ready. Type 'help' for commands.", skin);
+        consoleLog.setWrap(true);
+        // We might want scroll pane but for simplicity just a label for last few lines or strictly current feedback
+        contentTable.add(consoleLog).width(300).left().pad(5).row();
+
+        // Input Field
+        consoleInput = new com.badlogic.gdx.scenes.scene2d.ui.TextField("", skin);
+        consoleInput.setMessageText("Enter command...");
+        consoleInput.setTextFieldListener(new com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener() {
+            @Override
+            public void keyTyped(com.badlogic.gdx.scenes.scene2d.ui.TextField textField, char c) {
+                if ((c == '\r' || c == '\n') && !textField.getText().trim().isEmpty()) {
+                    String cmd = textField.getText().trim();
+                    textField.setText(""); // Clear input
+                    String output = handleCommand(cmd);
+                    consoleLog.setText(output);
+                }
+            }
+        });
+        consoleInput.setTextFieldFilter(new com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter() {
+            @Override
+            public boolean acceptChar(com.badlogic.gdx.scenes.scene2d.ui.TextField textField, char c) {
+                // Reject the console toggle key character (if it matches default or common toggle keys)
+                if (c == '`' || c == '~') return false;
+                
+                // Also check configured key if possible mapping exists (hard to map int->char robustly without more logic)
+                // For now, hardcoding rejection of backtick/tilde is what the user asked for.
+                return true;
+            }
+        });
+        contentTable.add(consoleInput).width(300).left().pad(5).row();
+
         // Toggle Menu Button (Always visible)
         TextButton toggleMenuBtn = new TextButton("Debug", skin);
         toggleMenuBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                contentTable.setVisible(!contentTable.isVisible());
-            }
-        });
-        
-        // Debug Toggle Button
-        TextButton debugBtn = new TextButton("Debug Box", skin);
-        debugBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                gameScreen.toggleDebug();
-            }
-        });
-        
-        // HP + Button
-        TextButton hpPlusBtn = new TextButton("HP +", skin);
-        hpPlusBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (character != null) character.addLives(1);
-            }
-        });
-        
-        // HP - Button
-        TextButton hpMinusBtn = new TextButton("HP -", skin);
-        hpMinusBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (character != null) character.addLives(-1);
-            }
-        });
-        
-        // Key Toggle Button
-        TextButton keyBtn = new TextButton("Toggle Key", skin);
-        keyBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (character != null) character.setHasKey(!character.hasKey());
-            }
-        });
-        
-        // Infinite HP Toggle Button
-        infiniteHpBtn = new TextButton("Infinite HP: OFF", skin);
-        infiniteHpBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (character != null) {
-                     boolean newState = !character.isInfiniteHP();
-                     character.setInfiniteHP(newState);
-                     infiniteHpBtn.setText("Infinite HP: " + (newState ? "ON" : "OFF"));
+                boolean isVisible = !contentTable.isVisible();
+                contentTable.setVisible(isVisible);
+                if (isVisible) {
+                    stage.setKeyboardFocus(consoleInput);
+                } else {
+                    stage.setKeyboardFocus(null);
+                    Gdx.input.setOnscreenKeyboardVisible(false);
                 }
             }
         });
         
-        // Add buttons to content table vertically
-        contentTable.add(debugBtn).left().pad(5).row();
-        contentTable.add(hpPlusBtn).left().pad(5).row();
-        contentTable.add(hpMinusBtn).left().pad(5).row();
-        contentTable.add(keyBtn).left().pad(5).row();
-        contentTable.add(infiniteHpBtn).left().pad(5).row();
-        
-        // Zoom In Button
-        TextButton zoomInBtn = new TextButton("Zoom +", skin);
-        zoomInBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                gameScreen.zoomIn();
-            }
-        });
-        
-        // Zoom Out Button
-        TextButton zoomOutBtn = new TextButton("Zoom -", skin);
-        zoomOutBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                gameScreen.zoomOut();
-            }
-        });
-        
-        contentTable.add(zoomInBtn).left().pad(5).row();
-        contentTable.add(zoomOutBtn).left().pad(5).row();
-        
-        // Shield Toggle Button
-        shieldBtn = new TextButton("Shield: OFF", skin);
-        shieldBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (character != null) {
-                    if (character.isShielded()) {
-                        character.activateShield(0); // Deactivate
-                    } else {
-                        character.activateShield(9999f); // Activate infinite shield
-                    }
-                }
-            }
-        });
-        contentTable.add(shieldBtn).left().pad(5).row();
-
-
-        // ---- Leaderboard Debug ----
-        contentTable.add(new Label("-- Leaderboard --", skin)).left().padTop(10).padBottom(5).row();
-
-        // 1. Clear Data
-        TextButton clearLdrBtn = new TextButton("Clear DB", skin);
-        clearLdrBtn.setColor(Color.RED);
-        clearLdrBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                de.tum.cit.fop.maze.GameControl.LeaderboardManager.clearOnlineLeaderboard(() -> {
-                     Gdx.app.log("HUD", "Leaderboard Cleared via Debug");
-                });
-            }
-        });
-        contentTable.add(clearLdrBtn).left().pad(5).row();
-
-        // 2. Add Dummy Data
-        TextButton addDataBtn = new TextButton("Add Dummy Data", skin);
-        addDataBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                 de.tum.cit.fop.maze.GameControl.LeaderboardManager.addDebugEntry();
-            }
-        });
-        contentTable.add(addDataBtn).left().pad(5).row();
 
         // Add content table and toggle button to main table
-        // We want the toggle button at the bottom, and content above it
         debugTable.add(contentTable).left().pad(5).row();
         debugTable.add(toggleMenuBtn).left().pad(5);
         
         stage.addActor(debugTable);
+    }
+
+    private String handleCommand(String commandLine) {
+        String[] parts = commandLine.split("\\s+");
+        if (parts.length == 0) return "";
+        
+        String command = parts[0].toLowerCase();
+        
+        try {
+            switch (command) {
+                case "help":
+                    return "Commands: hp <add/set>, key <true/false>, god, shield, zoom <in/out>, debug, leaderboard <clear/add>";
+                
+                case "hp":
+                    if (parts.length < 3) return "Usage: hp <add/set> <value>";
+                    int val = Integer.parseInt(parts[2]);
+                    if (character != null) {
+                        if (parts[1].equalsIgnoreCase("add")) {
+                            character.addLives(val);
+                            return "Added " + val + " lives.";
+                        } else if (parts[1].equalsIgnoreCase("set")) {
+                            character.setLives(val);
+                            return "Set lives to " + val + ".";
+                        }
+                    }
+                    return "Character not found or invalid sub-command.";
+                    
+                case "key":
+                    if (parts.length < 2) return "Usage: key <true/false>";
+                    boolean hasKey = Boolean.parseBoolean(parts[1]);
+                    if (character != null) {
+                        character.setHasKey(hasKey);
+                        return "Key set to " + hasKey;
+                    }
+                    return "Character not found.";
+                    
+                case "god":
+                    if (character != null) {
+                         boolean newState = !character.isInfiniteHP();
+                         if (parts.length > 1) {
+                             newState = Boolean.parseBoolean(parts[1]);
+                         }
+                         character.setInfiniteHP(newState);
+                         return "Infinite HP: " + newState;
+                    }
+                    return "Character not found.";
+
+                case "shield":
+                     if (character != null) {
+                        if (character.isShielded()) {
+                            character.activateShield(0);
+                            return "Shield Deactivated";
+                        } else {
+                            character.activateShield(9999f);
+                            return "Infinite Shield Activated";
+                        }
+                     }
+                     return "Character not found.";
+
+                case "zoom":
+                    if (parts.length < 2) return "Usage: zoom <in/out>";
+                    if (parts[1].equalsIgnoreCase("in")) {
+                        gameScreen.zoomIn();
+                        return "Zoomed In";
+                    } else if (parts[1].equalsIgnoreCase("out")) {
+                        gameScreen.zoomOut();
+                        return "Zoomed Out";
+                    }
+                    return "Invalid zoom argument.";
+                    
+                case "debug":
+                    gameScreen.toggleDebug();
+                    return "Debug Mode Toggled";
+                    
+                case "achievement":
+                     if (parts.length < 2) return "Usage: achievement <unlock/list> [id]";
+                     if (parts[1].equalsIgnoreCase("unlock")) {
+                         if (parts.length < 3) return "Specify achievement ID.";
+                         // For testing UI, we can forcefully unlock or just show popup
+                         // But manager handles logic. Let's add a debug method in Manager or just simulate event?
+                         // Better: Force unlock by specific ID (bypass conditions)
+                         // Check AchievementManager implementation... it doesn't have public unlock or getAchievement.
+                         // Let's rely on simulated event if possible, or add a method.
+                         // Actually, I can use reflection or add a method to manager.
+                         // Let's assume I can call a method I'll add to Manager "debugUnlock(id)"
+                         AchievementManager.getInstance().debugUnlock(parts[2]);
+                         return "Attempting unlock: " + parts[2];
+                     }
+                     return "Unknown achievement command.";
+                    
+                case "leaderboard":
+                     if (parts.length < 2) return "Usage: leaderboard <clear/add>";
+                     if (parts[1].equalsIgnoreCase("clear")) {
+                         LeaderboardManager.clearOnlineLeaderboard(() -> Gdx.app.log("Console", "Leaderboard Cleared"));
+                         return "Clearing Leaderboard...";
+                     } else if (parts[1].equalsIgnoreCase("add")) {
+                         LeaderboardManager.addDebugEntry();
+                         return "Added dummy entry.";
+                     }
+                     return "Unknown leaderboard command.";
+                     
+                default:
+                    return "Unknown command: " + command;
+            }
+        } catch (NumberFormatException e) {
+            return "Invalid number format.";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
     }
 
     public void update(Character character) {
@@ -285,23 +323,6 @@ public class HUD {
             float speed = character.getVelocity().len();
             debugInfoLabel.setText(String.format("Speed: %.2f\nHP: %d\nKey: %b", speed, lives, character.hasKey()));
         }
-        
-        // Sync Infinite HP State (HUD is Truth - wait, no, Character is Truth now for toggle button)
-        if (infiniteHpBtn != null) {
-            boolean isInfinite = character.isInfiniteHP();
-            // Only update text if needed to avoid spamming layout updates? no, setText is cheap if same
-            infiniteHpBtn.setText("Infinite HP: " + (isInfinite ? "ON" : "OFF"));
-            
-            // Set Color for visual feedback
-            infiniteHpBtn.setColor(isInfinite ? Color.GREEN : Color.WHITE);
-        }
-        
-        // Sync Shield State
-        if (shieldBtn != null) {
-            boolean isShielded = character.isShielded();
-            shieldBtn.setText("Shield: " + (isShielded ? "ON" : "OFF"));
-            shieldBtn.setColor(isShielded ? Color.CYAN : Color.WHITE);
-        }
     }
     
     public Stage getStage() {
@@ -309,6 +330,19 @@ public class HUD {
     }
 
     public void render(float delta) {
+        // Check for Hotkey
+        int consoleKey = gameScreen.getGame().getConfigManager().getKey("CONSOLE");
+        if (Gdx.input.isKeyJustPressed(consoleKey)) {
+             boolean isVisible = !contentTable.isVisible();
+             contentTable.setVisible(isVisible);
+             if (isVisible) {
+                 stage.setKeyboardFocus(consoleInput);
+             } else {
+                 stage.setKeyboardFocus(null);
+                 Gdx.input.setOnscreenKeyboardVisible(false);
+             }
+        }
+        
         stage.act(delta);
         stage.draw();
     }
@@ -320,5 +354,44 @@ public class HUD {
     public void dispose() {
         stage.dispose();
         objectsTexture.dispose();
+    }
+
+    // --- Achievement Popup Logic ---
+    public void showAchievementPopup(Achievement achievement) {
+        Gdx.app.postRunnable(() -> {
+            AchievementPopup popup = new AchievementPopup(achievement, skin, achievementNinePatch);
+            stage.addActor(popup);
+            popup.animate();
+        });
+    }
+
+    private static class AchievementPopup extends Table {
+        public AchievementPopup(Achievement achievement, Skin skin, com.badlogic.gdx.graphics.g2d.NinePatch bgPatch) {
+            this.setBackground(new com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable(bgPatch));
+            
+            // Adjust size. User requested wider.
+            // Old was 256. Let's increase to 320 (5 * 64) or similar.
+            this.setSize(340, 128);
+            
+            // Align top-center of screen initially (off-screen)
+            this.setPosition((1920 - 340) / 2f, 1080 + 10);
+            
+            Label titleLabel = new Label("Achievement!", skin);
+            titleLabel.setFontScale(0.8f);
+            this.add(titleLabel).padTop(0).padLeft(100).row();
+            Label nameLabel = new Label(achievement.getName(), skin);
+            nameLabel.setFontScale(0.8f); 
+            this.add(nameLabel).padTop(-5).padLeft(100);
+        }
+
+        public void animate() {
+            // Slide down, wait, slide up, remove
+            this.addAction(com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence(
+                com.badlogic.gdx.scenes.scene2d.actions.Actions.moveTo(this.getX(), 1080 - 150, 0.5f, com.badlogic.gdx.math.Interpolation.swingOut),
+                com.badlogic.gdx.scenes.scene2d.actions.Actions.delay(3f),
+                com.badlogic.gdx.scenes.scene2d.actions.Actions.moveTo(this.getX(), 1080 + 10, 0.5f, com.badlogic.gdx.math.Interpolation.swingIn),
+                com.badlogic.gdx.scenes.scene2d.actions.Actions.removeActor()
+            ));
+        }
     }
 }

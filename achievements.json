@@ -1,0 +1,42 @@
+[
+    {
+        "id": "first_blood",
+        "name": "First Blood",
+        "description": "Kill your first enemy.",
+        "type": "KILL_ENEMY",
+        "target": 1,
+        "hidden": false
+    },
+    {
+        "id": "serial_killer",
+        "name": "Serial Killer",
+        "description": "Kill 10 enemies.",
+        "type": "KILL_ENEMY",
+        "target": 10,
+        "hidden": false
+    },
+    {
+        "id": "survivor_novice",
+        "name": "Survivor",
+        "description": "Reach Difficulty 3 in Infinite Mode.",
+        "type": "REACH_DIFFICULTY",
+        "target": 3,
+        "hidden": false
+    },
+    {
+        "id": "rich",
+        "name": "Treasure Hunter",
+        "description": "Collect 5 items.",
+        "type": "COLLECT_ITEM",
+        "target": 5,
+        "hidden": false
+    },
+    {
+        "id": "escape_artist",
+        "name": "Escape Artist",
+        "description": "Complete your first level.",
+        "type": "LEVEL_COMPLETE",
+        "target": 1,
+        "hidden": false
+    }
+]

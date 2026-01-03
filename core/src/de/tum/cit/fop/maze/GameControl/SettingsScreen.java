@@ -70,6 +70,7 @@ public class SettingsScreen implements Screen {
         addKeyBindingRow(table, skin, "Move Left", "LEFT");
         addKeyBindingRow(table, skin, "Move Right", "RIGHT");
         addKeyBindingRow(table, skin, "Pause/Menu", "PAUSE");
+        addKeyBindingRow(table, skin, "Open Console", "CONSOLE");
 
         // Back Button
         TextButton backButton = new TextButton("Back", skin);
