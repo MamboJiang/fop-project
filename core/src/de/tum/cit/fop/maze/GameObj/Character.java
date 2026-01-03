@@ -492,6 +492,13 @@ public class Character extends MovableObject {
         return health; // In Character, health = lives
     }
     
+    public int getMaxLives() {
+        if (playerState != null) {
+            return playerState.getMaxLives();
+        }
+        return 4; // Default fallback
+    }
+    
     // isDead() inherited
     // isDamaged() inherited
 

@@ -25,9 +25,10 @@ public class HUD {
     private final TextureRegion keyRegion;
     private final com.badlogic.gdx.graphics.g2d.NinePatch achievementNinePatch;
     
-    private Image heartImage;
     private Image keyImage;
     private Table table;
+    private Table heartsTable; // Container for heart images
+    private com.badlogic.gdx.utils.Array<Image> heartImages; // List of active heart actors
     private Table debugTable;
     private Label debugInfoLabel;
     private Label timeLabel;
@@ -50,7 +51,7 @@ public class HUD {
         objectsTexture = new Texture(Gdx.files.internal("objects.png"));
         TextureRegion[][] tmp = TextureRegion.split(objectsTexture, 16, 16);
         
-        // Hearts logic omitted for brevity in diff...
+        // Hearts logic
         heartRegions = new TextureRegion[5];
         for (int i = 0; i < 5; i++) {
             heartRegions[i] = tmp[0][4 + i];
@@ -58,14 +59,12 @@ public class HUD {
         
         keyRegion = tmp[4][0];
 
-        // Achievement Background: "Rows 19 and 20, Columns 5-8" (Indices 18-19, 4-7)
-        // We use a NinePatch to stretch it properly.
-        // The region is 64x32 (4 tiles wide, 2 tiles high).
-        // 16px Left Cap, 16px Right Cap, 32px Center Body.
+        // Achievement Background logic...
         TextureRegion bgRegion = new TextureRegion(objectsTexture, 4 * 16, 18 * 16, 4 * 16, 2 * 16);
-        // NinePatch splits: Left, Right, Top, Bottom
         achievementNinePatch = new com.badlogic.gdx.graphics.g2d.NinePatch(bgRegion, 16, 16, 0, 0);
-        achievementNinePatch.scale(4, 4); // Scale up to match the UI scale (4x)
+        achievementNinePatch.scale(4, 4); 
+        
+        heartImages = new com.badlogic.gdx.utils.Array<>();
         
         setupUI();
         setupDebugMenu();
@@ -79,35 +78,20 @@ public class HUD {
         table.top();
         table.setFillParent(true);
         
-        // Left: Heart
-        // Initial heart image (4 lives -> index 0)
-        heartImage = new Image(heartRegions[0]);
+        // Left: Hearts Container
+        heartsTable = new Table();
+        heartsTable.left();
         
         // Right: Key
-        // Initially invisible or specific icon? User said "show if key is there". 
-        // Let's assume we show the key icon if collected, or maybe a grayed out version?
-        // Requirement: "Top Right display if key is still there" (meaning present in map? or collected?)
-        // "右上角显示钥匙还在不在" -> "Display in top right whether key is still there (not collected yet?)"
-        // Or maybe "Display key if collected".
-        // Let's interpret "Key still there" as: Show Key icon if player DOES NOT have key yet? 
-        // Or logic: "If key is collected, show key".
-        // Let's stick to standard: Show empty slot or key when collected.
-        // Wait, "Display whether key is still there" sounds like "Key is on map".
-        // Let's try: Always show key, maybe dim it if not collected?
-        // Re-reading: "Show whether key is NOT there" or "Show key status".
-        // Let's implement: Show Key Image always for now.
         keyImage = new Image(keyRegion);
         timeLabel = new Label("Time: 00:00\nScore: 1000", skin);
-        timeLabel.setAlignment(Align.center); // 让文字居中对齐
+        timeLabel.setAlignment(Align.center); 
 
-        // 添加到表格中间
-
-        
-        table.add(heartImage).expandX().left().pad(10).size(64, 64);
+        // Layout
+        table.add(heartsTable).expandX().left().pad(10).height(64);
         table.add(timeLabel).expandX().center().padTop(10);
         table.add(keyImage).expandX().right().pad(10).size(64, 64);
         
-        stage.addActor(table);
         stage.addActor(table);
     }
     
@@ -294,22 +278,53 @@ public class HUD {
     public void update(Character character) {
         this.character = character;
 
-
         String timeStr = gameScreen.getFormattedTime();
         timeLabel.setText(timeStr);
 
-        // Update Heart
-        int lives = character.getLives();
-        // 4 lives -> index 0
-        // 3 lives -> index 1
-        // 2 lives -> index 2
-        // 1 lives -> index 3
-        // 0 lives -> index 4
-        int heartIndex = 4 - lives;
-        if (heartIndex < 0) heartIndex = 0;
-        if (heartIndex > 4) heartIndex = 4;
+        // Update Hearts
+        int currentLives = character.getLives();
+        int maxLives = character.getMaxLives();
         
-        heartImage.setDrawable(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(heartRegions[heartIndex]));
+        // Calculate needed hearts
+        // Each heart holds 4 HP.
+        int numHearts = (int)Math.ceil(maxLives / 4.0);
+        if (numHearts < 1) numHearts = 1; // At least one heart container (even if 0 HP)
+
+        // Resize heart list if needed
+        if (heartImages.size != numHearts) {
+            heartsTable.clearChildren();
+            heartImages.clear();
+            for (int i = 0; i < numHearts; i++) {
+                Image img = new Image(heartRegions[0]); // Default full
+                heartsTable.add(img).size(64, 64).padRight(5);
+                heartImages.add(img);
+            }
+        }
+        
+        // Update texture for each heart
+        for (int i = 0; i < heartImages.size; i++) {
+            Image img = heartImages.get(i);
+            
+            // Calculate health for this specific heart container
+            // Heart 0 covers HP 1-4
+            // Heart 1 covers HP 5-8
+            int heartStartHP = i * 4; // 0, 4, 8...
+            int hpForThisHeart = currentLives - heartStartHP;
+            
+            // Clamp to 0-4
+            if (hpForThisHeart > 4) hpForThisHeart = 4;
+            if (hpForThisHeart < 0) hpForThisHeart = 0;
+            
+            // Map 0-4 HP to Texture Index
+            // 4 HP -> Index 0
+            // 3 HP -> Index 1
+            // 2 HP -> Index 2
+            // 1 HP -> Index 3
+            // 0 HP -> Index 4
+            int textureIndex = 4 - hpForThisHeart;
+            
+            img.setDrawable(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(heartRegions[textureIndex]));
+        }
         
         // Update Key
         if (character.hasKey()) {
@@ -321,7 +336,7 @@ public class HUD {
         // Update Debug Label
         if (debugInfoLabel != null) {
             float speed = character.getVelocity().len();
-            debugInfoLabel.setText(String.format("Speed: %.2f\nHP: %d\nKey: %b", speed, lives, character.hasKey()));
+            debugInfoLabel.setText(String.format("Speed: %.2f\nHP: %d/%d\nKey: %b", speed, currentLives, maxLives, character.hasKey()));
         }
     }
     
