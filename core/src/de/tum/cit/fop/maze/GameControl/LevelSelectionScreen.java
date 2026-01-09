@@ -54,7 +54,11 @@ public class LevelSelectionScreen implements Screen {
                 levelButton.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        game.goToGame(mapFile);
+                        if (mapFile.nameWithoutExtension().equalsIgnoreCase("level-1")) {
+                            game.goToStory(mapFile);
+                        } else {
+                            game.goToGame(mapFile);
+                        }
                     }
                 });
                 levelsTable.add(levelButton).width(300).padBottom(10).row();

@@ -110,6 +110,18 @@ public class MazeRunnerGame extends Game {
             menuScreen = null;
         }
     }
+
+    /**
+     * Switches to the story screen.
+     * @param mapFile The map file to load after the story.
+     */
+    public void goToStory(FileHandle mapFile) {
+        this.setScreen(new StoryScreen(this, mapFile));
+        if (menuScreen != null) {
+            menuScreen.dispose();
+            menuScreen = null;
+        }
+    }
     
     /**
      * Switches to the level selection screen.
