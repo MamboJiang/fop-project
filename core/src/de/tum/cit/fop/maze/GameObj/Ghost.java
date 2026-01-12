@@ -9,7 +9,7 @@ import de.tum.cit.fop.maze.AI.Grid;
 public class Ghost extends Enemy {
 
     public Ghost(float x, float y, Grid grid, Character target) {
-        // Ghost is Row 2, Col 3 -> BlockCol=2, BlockRow=1 (Assuming 0-based)
+
         super(x, y, de.tum.cit.fop.maze.MapLoader.getMobAnimations(2, 1), grid, target);
     }
         
@@ -18,80 +18,51 @@ public class Ghost extends Enemy {
         stateTime += delta;
         inputVector.set(0, 0);
 
-        // Distance Check
-        // Wake up distance: 5 tiles = 80 pixels
-        // Give up distance: 10 tiles = 160 pixels
+
         float dist = com.badlogic.gdx.math.Vector2.dst(getCenter().x, getCenter().y, getTargetCenter().x, getTargetCenter().y);
 
-        // Logic: Hysteresis
-        // Logic: Hysteresis & State Machine
-        
-        // 1. Check for Retreat Condition
-        // Only retreat if we are currently fighting (CHASE). 
-        // Prevents loop where PATROL -> RETREAT instantly because health is low.
-//        if (health <= 40 && currentState == State.CHASE) {
-//             currentState = State.RETREAT;
-//        }
 
         if (currentState == State.RETREAT) {
-             // Run away!
-             // Fly directly away from target
+
              inputVector.set(getCenter()).sub(getTargetCenter()).nor();
-             this.maxSpeed = 40f; // Faster than chase?
-             
-             // Stop retreating if far enough
-             if (dist > 160f) { // ~12 tiles
-                 currentState = State.PATROL; // Go back to sleep/patrol
+             this.maxSpeed = 40f;
+
+             if (dist > 160f) {
+                 currentState = State.PATROL;
                  this.maxSpeed = 0f;
              }
              
         } else if (currentState == State.CHASE) {
-            // Give up if too far
+
             if (dist > 160f) {
-                currentState = State.PATROL; // Go back to sleep
+                currentState = State.PATROL;
                 this.maxSpeed = 0f;
             } else {
-                // Continue Chasing
+
                 inputVector.set(getTargetCenter()).sub(getCenter()).nor();
                 this.maxSpeed = 30f;
             }
         } else {
-            // Asleep / Patrol
+
             this.maxSpeed = 0f;
-            // Wake up if close
+
             if (dist < 80f) {
-                // Only chase if healthy? 
-                // If health is low, maybe don't wake up? Or wake up and immediately retreat?
-                // if (health <= 40) {
-                //    currentState = State.RETREAT;
-                // } else {
+
                 currentState = State.CHASE;
-                // }
+
             }
         }
-        
-        // Apply Physics
+
         updatePhysics(delta);
         
-        // Move without collision checks (Ghost!)
         position.x += velocity.x * delta;
         position.y += velocity.y * delta;
         
-        // Update Hitbox Position
+
         bounds.setPosition(position.x+4, position.y+4);
-        
-        // Update Combat Input (Must be before Physics? Or separate?)
-        // Enemy.java calls it before Physics to set inputVector.
-        // Ghost doesn't really use inputVector for combat jitter same way?
-        // But it needs the damage logic.
+
         updateCombat(delta);
-        
-        // Damage Check (Handled by updateCombat now!)
-//        if (bounds.overlaps(target.getBounds())) {
-//             target.takeDamage();
-//        }
-        
-        // Animation
+
         com.badlogic.gdx.graphics.g2d.Animation<com.badlogic.gdx.graphics.g2d.TextureRegion> currentAnim = walkDown;
         if (velocity.len() > 1f) {
             if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
@@ -109,20 +80,16 @@ public class Ghost extends Enemy {
     
     @Override
     public void drawDebug(com.badlogic.gdx.graphics.glutils.ShapeRenderer sr) {
-        // Draw Collision Box (Yellow)
+
         sr.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
         sr.rect(bounds.x, bounds.y, bounds.width, bounds.height);
-        
-        // Draw Ghost Range circles?
-        // Wake Up Radius (Green)
+
         sr.setColor(com.badlogic.gdx.graphics.Color.GREEN);
         sr.circle(getCenter().x, getCenter().y, 80f);
-        
-        // Chase Radius (Red)
+
         sr.setColor(com.badlogic.gdx.graphics.Color.RED);
         sr.circle(getCenter().x, getCenter().y, 160f);
 
-        // Draw Line to Target if Chasing
         if (currentState == State.CHASE) {
             sr.setColor(com.badlogic.gdx.graphics.Color.CYAN);
             sr.line(getCenter(), getTargetCenter());

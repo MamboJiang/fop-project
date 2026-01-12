@@ -13,7 +13,7 @@ public class GameConfig {
     private Map<String, Integer> keyBindings;
 
     public GameConfig() {
-        // Default values
+
         this.musicVolume = 1.0f;
         this.soundVolume = 1.0f;
         this.keyBindings = new HashMap<>();

@@ -21,15 +21,15 @@ public class StoryDialogueScreen implements Screen {
     private DialogueBox dialogueBox;
     private int conversationIndex = 0;
     
-    // Characters
+
     private Image leftChar;
     private Image rightChar;
     
-    // UI
+
     private boolean isAutoPlay = false;
     private boolean isPaused = false;
     
-    // History
+
     private List<String> historyLog;
     private Window logWindow;
     private Label logLabel;
@@ -44,17 +44,17 @@ public class StoryDialogueScreen implements Screen {
         "Enjoy the story!"
     };
     
-    // Associated speaker names for history
+
     private final String[] speakerNames = {
         "Hero", "Narrator", "Hero", "Narrator", "Hero", "Narrator", "Hero"
     };
     
     private final boolean[] speakers = { true, false, true, false, true, true, true };
 
-    // Pause
+
     private PauseMenu pauseMenu;
     
-    // ... (rest of class)
+
 
     public StoryDialogueScreen(MazeRunnerGame game) {
         this.game = game;
@@ -66,10 +66,7 @@ public class StoryDialogueScreen implements Screen {
         stage = new Stage(new FitViewport(1920, 1080));
         Gdx.input.setInputProcessor(stage);
         
-        // 1. Background
-        // ... (Keep existing layout)
-        
-        // 2. Characters Container
+
         Table charTable = new Table();
         charTable.setFillParent(true);
         stage.addActor(charTable);
@@ -94,7 +91,7 @@ public class StoryDialogueScreen implements Screen {
         charTable.add(leftChar).height(targetHeight).width(16*scale).padBottom(-100).expandX().left().padLeft(0);
         charTable.add(rightChar).height(targetHeight2).width(32*scale2).padBottom(-100).expandX().right().padRight(-100);
         
-        // 3. Dialogue Box Layer
+
         Table uiTable = new Table();
         uiTable.setFillParent(true);
         stage.addActor(uiTable);
@@ -108,7 +105,7 @@ public class StoryDialogueScreen implements Screen {
         
         uiTable.add(dialogueBox).width(1800).height(500).padBottom(50);
         
-        // 4. Top Right Menu
+
         Table menuTable = new Table();
         menuTable.setFillParent(true);
         menuTable.top().right();
@@ -143,17 +140,17 @@ public class StoryDialogueScreen implements Screen {
         menuTable.add(logBtn).pad(20);
         menuTable.add(menuBtn).pad(20);
         
-        // 5. Features
+
         createLogWindow();
-        createPauseMenu(); // Ensure created
+        createPauseMenu();
         
         updateDialogue();
         
-        // Click listener for advancement or skipping
+
         stage.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (logWindow.isVisible()) return; // Let log window handle its own clicks
+                if (logWindow.isVisible()) return;
                 if (pauseMenu.isVisible()) return;
 
                 if (!dialogueBox.isFinished()) {
@@ -197,11 +194,10 @@ public class StoryDialogueScreen implements Screen {
     
     private void createPauseMenu() {
         pauseMenu = new PauseMenu(game, 
-            () -> { // On Resume
+            () -> {
                 isPaused = false;
             }, 
-            null // On Exit (PauseMenu handles resizing/hiding itself mostly, but exit handles game state)
-                 // actually PauseMenu defaults to game.goToMenu() for exit, no callback needed for logic here unless cleanup
+            null
         );
         stage.addActor(pauseMenu);
     }
@@ -218,7 +214,7 @@ public class StoryDialogueScreen implements Screen {
         }
         logLabel.setText(sb.toString());
         logWindow.setVisible(true);
-        logWindow.toFront(); // Key fix for visibility
+        logWindow.toFront();
     }
     
     private void advanceDialogue() {
@@ -239,8 +235,7 @@ public class StoryDialogueScreen implements Screen {
         if (historyLog.isEmpty() || !historyLog.get(historyLog.size()-1).equals(logEntry)) {
             historyLog.add(logEntry);
         }
-        
-        // Use fixed width for typewriter mode to ensure it doesn't jump
+
         dialogueBox.show(text, DialogueBox.DialogueType.NORMAL, 1700f);
         
         if (isLeft) {

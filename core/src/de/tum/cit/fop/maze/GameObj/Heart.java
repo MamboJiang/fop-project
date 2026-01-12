@@ -11,15 +11,14 @@ public class Heart extends GameObject implements Collectable {
     private float stateTime;
 
     public Heart(float x, float y) {
-        super(x, y, 16, 16, null); // Texture set later
+        super(x, y, 16, 16, null);
         loadAnimation();
     }
     
     private void loadAnimation() {
         Texture texture = new Texture(Gdx.files.internal("objects.png"));
         TextureRegion[][] tmp = TextureRegion.split(texture, 16, 16);
-        
-        // Row 3, Cols 0-3
+
         TextureRegion[] frames = new TextureRegion[4];
         for (int i = 0; i < 4; i++) {
             frames[i] = tmp[3][i];

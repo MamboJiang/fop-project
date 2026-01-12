@@ -17,8 +17,7 @@ public class ShieldItem extends GameObject implements Collectable {
     private void loadAnimation() {
         Texture texture = new Texture(Gdx.files.internal("objects.png"));
         TextureRegion[][] tmp = TextureRegion.split(texture, 16, 16);
-        
-        // Row 3, Cols 4-10 (4,5,6,7,8,9,10 = 7 frames)
+
         TextureRegion[] frames = new TextureRegion[7];
         for (int i = 0; i < 7; i++) {
             frames[i] = tmp[3][4 + i];

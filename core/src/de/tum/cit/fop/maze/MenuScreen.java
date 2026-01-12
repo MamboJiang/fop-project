@@ -17,19 +17,12 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 
-/**
- * The MenuScreen class is responsible for displaying the main menu of the game.
- * It extends the LibGDX Screen class and sets up the UI components for the menu.
- */
+
 public class MenuScreen implements Screen {
 
     private final Stage stage;
 
-    /**
-     * Constructor for MenuScreen. Sets up the camera, viewport, stage, and UI elements.
-     *
-     * @param game The main game class, used to access global resources and methods.
-     */
+
     public MenuScreen(MazeRunnerGame game) {
         Viewport viewport = new FitViewport(2560, 1440);
         stage = new Stage(viewport, game.getSpriteBatch());
@@ -38,14 +31,14 @@ public class MenuScreen implements Screen {
         table.setFillParent(true);
         stage.addActor(table);
 
-        // Check if game is loaded
+
         boolean isLoaded = (game.getPlayerState() != null && game.getPlayerState().getUsername() != null);
 
         if (!isLoaded) {
-            // --- STATE 1: TITLE SCREEN ---
+
             table.add(new Label("Maze Runner", game.getSkin(), "title")).padBottom(80).row();
 
-            // 1. Continue Game (if any save exists)
+
             int latestSlot = de.tum.cit.fop.maze.GameControl.GameSaveManager.getLatestSaveSlot();
             TextButton continueButton = new TextButton("Continue Game", game.getSkin());
             if (latestSlot != -1) {
@@ -53,7 +46,7 @@ public class MenuScreen implements Screen {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         if (game.loadGame(latestSlot)) {
-                             // Reload Menu to switch to Hub State
+
                              game.goToMenu(); 
                         }
                     }
@@ -64,7 +57,7 @@ public class MenuScreen implements Screen {
             }
             table.add(continueButton).width(300).padBottom(15).row();
 
-            // 2. New Game
+
             TextButton newGameButton = new TextButton("New Game", game.getSkin());
             table.add(newGameButton).width(300).padBottom(15).row();
             newGameButton.addListener(new ChangeListener() {
@@ -74,7 +67,7 @@ public class MenuScreen implements Screen {
                 }
             });
 
-            // 3. Load Game
+
             TextButton loadGameButton = new TextButton("Load Game", game.getSkin());
             table.add(loadGameButton).width(300).padBottom(15).row();
             loadGameButton.addListener(new ChangeListener() {
@@ -84,7 +77,7 @@ public class MenuScreen implements Screen {
                 }
             });
             
-            // 4. Settings
+
             TextButton settingsButton = new TextButton("Settings", game.getSkin());
             table.add(settingsButton).width(300).padBottom(15).row();
             settingsButton.addListener(new ChangeListener() {
@@ -94,7 +87,7 @@ public class MenuScreen implements Screen {
                 }
             });
 
-            // 5. Exit
+
             TextButton exitButton = new TextButton("Exit", game.getSkin());
             table.add(exitButton).width(300).row();
             exitButton.addListener(new ChangeListener() {
@@ -105,11 +98,11 @@ public class MenuScreen implements Screen {
             });
 
         } else {
-            // --- STATE 2: GAME HUB (Loaded) ---
+
             String title = "Welcome, " + game.getPlayerState().getUsername();
             table.add(new Label(title, game.getSkin(), "title")).padBottom(50).row();
             
-            // 1. Select Level (was Continue/Play)
+
             TextButton playButton = new TextButton("Select Level", game.getSkin());
             table.add(playButton).width(300).padBottom(15).row();
             playButton.addListener(new ChangeListener() {
@@ -119,7 +112,7 @@ public class MenuScreen implements Screen {
                 }
             });
 
-            // 2. Endless Mode
+
             TextButton endlessButton = new TextButton("Endless Mode", game.getSkin());
             table.add(endlessButton).width(300).padBottom(15).row();
             endlessButton.addListener(new ChangeListener() {
@@ -127,7 +120,7 @@ public class MenuScreen implements Screen {
                 public void changed(ChangeEvent event, Actor actor) {
                     boolean unlocked = !game.getPlayerState().getCompletedLevels().isEmpty();
                     if (unlocked) {
-                        // Check for existing run
+
                         de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
                         boolean hasRun = state.getEndlessWave() > 1 || state.getCurrentRunScore() > 0;
                         
@@ -136,9 +129,9 @@ public class MenuScreen implements Screen {
                                 @Override
                                 protected void result(Object object) {
                                     int choice = (Integer) object;
-                                    if (choice == 1) { // Resume
+                                    if (choice == 1) {
                                         game.goToEndlessMode(state.getUsername());
-                                    } else if (choice == 2) { // New Run
+                                    } else if (choice == 2) {
                                         state.resetEndlessWave();
                                         state.resetRunState();
                                         game.goToEndlessMode(state.getUsername());
@@ -162,7 +155,7 @@ public class MenuScreen implements Screen {
                 }
             });
 
-            // 3. Skills
+
             TextButton skillsButton = new TextButton("Skills & Upgrades", game.getSkin());
             table.add(skillsButton).width(300).padBottom(15).row();
             skillsButton.addListener(new ChangeListener() {
@@ -172,7 +165,7 @@ public class MenuScreen implements Screen {
                 }
             });
 
-            // 4. Achievements
+
             TextButton achButton = new TextButton("Achievements", game.getSkin());
             table.add(achButton).width(300).padBottom(15).row();
             achButton.addListener(new ChangeListener() {
@@ -182,7 +175,7 @@ public class MenuScreen implements Screen {
                 }
             });
             
-             // 5. Settings
+
             TextButton settingsButton = new TextButton("Settings", game.getSkin());
             table.add(settingsButton).width(300).padBottom(15).row();
             settingsButton.addListener(new ChangeListener() {
@@ -192,21 +185,21 @@ public class MenuScreen implements Screen {
                 }
             });
 
-            // 6. Return to Title
+
             TextButton backButton = new TextButton("Return to Title", game.getSkin());
             table.add(backButton).width(300).row();
             backButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    // Unload game state
-                    game.unloadGame(); // Need to implement this method or manually nullify
+
+                    game.unloadGame();
                     game.goToMenu();
                 }
             });
         }
     }
 
-    // ... render, resize, dispose ...
+
 
     @Override
     public void render(float delta) {
@@ -228,10 +221,7 @@ public class MenuScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
-        
-        // Auto-load if we prefer? No, user choice is better.
-        // But we might want to refresh 'Continue' button if we returned from game?
-        // Note: New MenuScreen is created every time goToMenu is called, so constructor logic runs again.
+
     }
 
     @Override

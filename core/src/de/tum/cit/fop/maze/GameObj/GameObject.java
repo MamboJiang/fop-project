@@ -7,29 +7,29 @@ import com.badlogic.gdx.math.Vector2;
 
 public abstract class GameObject {
 
-    //坐标
+
     protected Vector2 position;
 
-    //长，宽度
+
     protected float width;
     protected float height;
 
-    //碰撞检测
+
     protected Rectangle bounds;
 
-    //贴图
+
     protected TextureRegion textureRegion;
 
-    //是否可以被移除
+
     protected boolean markedForRemoval = false;
 
-    //构造函数 Constructor
+
     public GameObject(float x, float y, float width, float height, TextureRegion textureRegion) {
         this.position = new Vector2(x, y);
         this.width = width;
         this.height = height;
         this.textureRegion = textureRegion;
-        // 初始化碰撞箱
+
         this.bounds = new Rectangle(x, y, width, height);
     }
 

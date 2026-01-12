@@ -33,10 +33,10 @@ public class SettingsScreen implements Screen {
         stage.addActor(table);
         Skin skin = game.getSkin();
 
-        // Title
+
         table.add(new Label("Settings", skin, "title")).padBottom(20).colspan(2).row();
 
-        // Music Volume
+
         table.add(new Label("Music Volume:", skin)).right().padRight(10);
         final Slider musicSlider = new Slider(0, 1, 0.1f, false, skin);
         musicSlider.setValue(game.getConfigManager().getMusicVolume());
@@ -49,7 +49,7 @@ public class SettingsScreen implements Screen {
         });
         table.add(musicSlider).width(200).row();
 
-        // Sound Volume
+
         table.add(new Label("Sound Volume:", skin)).right().padRight(10);
         final Slider soundSlider = new Slider(0, 1, 0.1f, false, skin);
         soundSlider.setValue(game.getConfigManager().getSoundVolume());
@@ -57,12 +57,12 @@ public class SettingsScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.getConfigManager().setSoundVolume(soundSlider.getValue());
-                // Test sound could be played here
+
             }
         });
         table.add(soundSlider).width(200).padBottom(20).row();
 
-        // Key Bindings
+
         table.add(new Label("Key Bindings", skin)).colspan(2).padBottom(10).row();
         
         addKeyBindingRow(table, skin, "Move Up", "UP");
@@ -72,7 +72,7 @@ public class SettingsScreen implements Screen {
         addKeyBindingRow(table, skin, "Pause/Menu", "PAUSE");
         addKeyBindingRow(table, skin, "Open Console", "CONSOLE");
 
-        // Back Button
+
         TextButton backButton = new TextButton("Back", skin);
         backButton.addListener(new ChangeListener() {
             @Override
@@ -82,7 +82,7 @@ public class SettingsScreen implements Screen {
         });
         table.add(backButton).colspan(2).padTop(20).width(200);
         
-        // Input processor for capturing keys
+
         stage.addListener(new InputListener() {
             @Override
             public boolean keyDown(InputEvent event, int keycode) {

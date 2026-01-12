@@ -11,7 +11,7 @@ import de.tum.cit.fop.maze.GameObj.PlayerState;
 public class AchievementManager {
     private static AchievementManager instance;
     private Map<String, Achievement> achievements;
-    private HUD hud; // To notify UI
+    private HUD hud;
 
     private AchievementManager() {
         achievements = new HashMap<>();
@@ -30,16 +30,11 @@ public class AchievementManager {
     }
 
     private void loadAchievements() {
-        // Load definitions (Name, Desc) only.
-        // For simple setup, we just create the defaults every time, 
-        // OR we load from read-only asset file if we have one.
-        // Assuming we rely on code-defined defaults for now as definitions source:
         createDefaultAchievements();
-        
-        // Disable local loading of progress
+
     }
     
-    // Reset progress (Locks all)
+
     public void resetAchievements() {
         for (Achievement a : achievements.values()) {
             a.setUnlocked(false);
@@ -47,7 +42,7 @@ public class AchievementManager {
         }
     }
     
-    // Sync GameConfig -> AchievementManager
+
     public void syncFrom(PlayerState state) {
         if (state == null) return;
         
@@ -63,8 +58,7 @@ public class AchievementManager {
             }
         }
     }
-    
-    // Sync AchievementManager -> GameConfig
+
     public void syncTo(PlayerState state) {
         if (state == null) return;
         
@@ -82,14 +76,12 @@ public class AchievementManager {
 
     private void createDefaultAchievements() {
         achievements.clear();
-        // Define defaults code-side if JSON fails
         addDefault("first_blood", "First Blood", "Kill your first enemy.", EventType.KILL_ENEMY, 1);
         addDefault("serial_killer", "Serial Killer", "Kill 10 enemies.", EventType.KILL_ENEMY, 10);
         addDefault("survivor_novice", "Survivor", "Reach Difficulty 3 in Infinite Mode.", EventType.REACH_DIFFICULTY, 3);
         addDefault("rich", "Treasure Hunter", "Collect 5 items.", EventType.COLLECT_ITEM, 5);
         addDefault("escape_artist", "Escape Artist", "Complete your first level.", EventType.LEVEL_COMPLETE, 1);
-        
-        // No auto-save to file
+
     }
     
     private void addDefault(String id, String name, String desc, EventType type, int target) {
@@ -97,9 +89,8 @@ public class AchievementManager {
         achievements.put(id, a);
     }
 
-    // Removed global saveAchievements method or make it empty
+
     private void saveAchievements() {
-        // No-op, handled by GameSaveManager
     }
 
     public void onEvent(EventType type, int amount) {
@@ -111,15 +102,12 @@ public class AchievementManager {
             }
         }
     }
-    
-    // For absolute values (e.g. Reach Difficulty 3, not "add 1 difficulty")
+
     public void onStatusUpdate(EventType type, int value) {
          for (Achievement a : achievements.values()) {
             if (a.isUnlocked()) continue;
             if (a.getType() == type) {
-                // For status, we check if value >= target
-                // We don't "add" to progress, we just set it or check it.
-                // Simple implementation:
+
                 if (value >= a.getTarget()) {
                     a.setProgress(value);
                     unlock(a);
@@ -140,7 +128,6 @@ public class AchievementManager {
         if (hud != null) {
             hud.showAchievementPopup(a);
         }
-        // TODO: Save progress
     }
     
     public void debugUnlock(String id) {

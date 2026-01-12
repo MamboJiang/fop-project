@@ -50,18 +50,12 @@ public class MazeRunnerGame extends Game {
     private Sound gameOverSound;
     private Sound blockSound;
 
-    /**
-     * Constructor for MazeRunnerGame.
-     *
-     * @param fileChooser The file chooser for the game, typically used in desktop environment.
-     */
+
     public MazeRunnerGame(NativeFileChooser fileChooser) {
         super();
     }
 
-    /**
-     * Called when the game is created. Initializes the SpriteBatch and Skin.
-     */
+
     @Override
     public void create() {
         hitSound = Gdx.audio.newSound(Gdx.files.internal("Hit.wav"));
@@ -70,51 +64,40 @@ public class MazeRunnerGame extends Game {
         footstepSound = Gdx.audio.newSound(Gdx.files.internal("footstep.wav"));
         gameOverSound = Gdx.audio.newSound(Gdx.files.internal("gameover.wav"));
         blockSound = Gdx.audio.newSound(Gdx.files.internal("block.wav"));
-        configManager = new ConfigManager(); // Initialize config manager
+        configManager = new ConfigManager();
 
-        spriteBatch = new SpriteBatch(); // Create SpriteBatch
-        skin = new Skin(Gdx.files.internal("craft/craftacular-ui.json")); // Load UI skin
-        this.loadCharacterAnimation(); // Load character animation
-        playerState = null; // Start with no game loaded
+        spriteBatch = new SpriteBatch();
+        skin = new Skin(Gdx.files.internal("craft/craftacular-ui.json"));
+        this.loadCharacterAnimation();
+        playerState = null;
 
-        // Play some background music
-        // Background sound
         backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("Pixel Crypt Keep.mp3"));
         backgroundMusic.setLooping(true);
         backgroundMusic.setVolume(configManager.getMusicVolume());
         backgroundMusic.play();
 
-        goToMenu(); // Navigate to the menu screen
+        goToMenu();
     }
 
 
-    /**
-     * Switches to the menu screen.
-     */
     public void goToMenu() {
-        this.setScreen(new MenuScreen(this)); // Set the current screen to MenuScreen
+        this.setScreen(new MenuScreen(this));
         if (gameScreen != null) {
-            gameScreen.dispose(); // Dispose the game screen if it exists
+            gameScreen.dispose();
             gameScreen = null;
         }
     }
 
-    /**
-     * Switches to the game screen.
-     * @param mapFile The map file to load.
-     */
+
     public void goToGame(FileHandle mapFile) {
-        this.setScreen(new GameScreen(this, mapFile)); // Set the current screen to GameScreen
+        this.setScreen(new GameScreen(this, mapFile));
         if (menuScreen != null) {
-            menuScreen.dispose(); // Dispose the menu screen if it exists
+            menuScreen.dispose();
             menuScreen = null;
         }
     }
 
-    /**
-     * Switches to the story screen.
-     * @param mapFile The map file to load after the story.
-     */
+
     public void goToStory(FileHandle mapFile) {
         this.setScreen(new StoryScreen(this, mapFile));
         if (menuScreen != null) {
@@ -123,9 +106,7 @@ public class MazeRunnerGame extends Game {
         }
     }
     
-    /**
-     * Switches to the level selection screen.
-     */
+
     public void goToLevelSelect() {
         this.setScreen(new LevelSelectionScreen(this));
         if (menuScreen != null) {
@@ -134,9 +115,7 @@ public class MazeRunnerGame extends Game {
         }
     }
 
-    /**
-     * Switches to the settings screen.
-     */
+
     public void goToSettings() {
         this.setScreen(new SettingsScreen(this));
         if (menuScreen != null) {
@@ -145,18 +124,16 @@ public class MazeRunnerGame extends Game {
         }
     }
     
-    /**
-     * Switches to the procedural endless mode.
-     */
+
     public void goToEndlessMode(String playerName) {
-        // Resume from saved wave if available in playerState
+
         int startDifficulty = 1;
         if (playerState != null) {
             startDifficulty = playerState.getEndlessWave();
         }
 
         GameScreen gs = new GameScreen(this, true, playerName);
-        gs.setDifficulty(startDifficulty); // Helper method we will add or use constructor
+        gs.setDifficulty(startDifficulty);
         this.setScreen(gs);
 
         if (menuScreen != null) {
@@ -165,9 +142,7 @@ public class MazeRunnerGame extends Game {
         }
     }
     
-    /**
-     * Updates the music volume based on configuration.
-     */
+
     public void updateMusicVolume() {
         if (backgroundMusic != null) {
             backgroundMusic.setVolume(configManager.getMusicVolume());
@@ -178,9 +153,7 @@ public class MazeRunnerGame extends Game {
         return configManager;
     }
 
-    /**
-     * Loads the character animation from the character.png file.
-     */
+
     private void loadCharacterAnimation() {
         Texture walkSheet = new Texture(Gdx.files.internal("character.png"));
 
@@ -188,10 +161,10 @@ public class MazeRunnerGame extends Game {
         int frameHeight = 32;
         int animationFrames = 4;
 
-        // libGDX internal Array instead of ArrayList because of performance
+
         Array<TextureRegion> walkFrames = new Array<>(TextureRegion.class);
 
-        // Add all frames to the animation
+
         for (int col = 0; col < animationFrames; col++) {
             walkFrames.add(new TextureRegion(walkSheet, col * frameWidth, 0, frameWidth, frameHeight));
         }
@@ -199,15 +172,13 @@ public class MazeRunnerGame extends Game {
         characterDownAnimation = new Animation<>(0.1f, walkFrames);
     }
 
-    /**
-     * Cleans up resources when the game is disposed.
-     */
+
     @Override
     public void dispose() {
-        getScreen().hide(); // Hide the current screen
-        getScreen().dispose(); // Dispose the current screen
-        spriteBatch.dispose(); // Dispose the spriteBatch
-        skin.dispose(); // Dispose the skin
+        getScreen().hide();
+        getScreen().dispose();
+        spriteBatch.dispose();
+        skin.dispose();
         if (backgroundMusic != null) {
             backgroundMusic.dispose();
         }
@@ -228,7 +199,7 @@ public class MazeRunnerGame extends Game {
         }
     }
 
-    // Getter methods
+
     public Skin getSkin() {
         return skin;
     }
@@ -241,12 +212,12 @@ public class MazeRunnerGame extends Game {
         return spriteBatch;
     }
 
-    // Add getter
+
     public PlayerState getPlayerState() {
         return playerState;
     }
 
-    private int currentSlotIndex = -1; // -1 means no slot loaded
+    private int currentSlotIndex = -1;
 
     public void goToSkillTree() {
         this.setScreen(new SkillTreeScreen(this));
@@ -258,7 +229,7 @@ public class MazeRunnerGame extends Game {
 
 
     public void playHitSound() {
-        hitSound.play(configManager.getSoundVolume()); // 使用设置里的音量
+        hitSound.play(configManager.getSoundVolume());
     }
 
     public void playPickupSound() {
@@ -270,7 +241,7 @@ public class MazeRunnerGame extends Game {
     }
 
     public void playFootstepSound() {
-        // 脚步声通常需要小一点，可以乘以一个系数，例如 0.5f
+
         footstepSound.play(configManager.getSoundVolume() * 0.6f);
     }
 
@@ -306,11 +277,10 @@ public class MazeRunnerGame extends Game {
         this.playerState.setUsername(name);
         this.currentSlotIndex = slotIndex;
 
-        // Reset achievements to ensure fresh start (clean singleton state)
+
         de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().resetAchievements();
 
-        saveGame(); // Save immediately to persist the new profile
-        // User flow: New Game -> Name -> Hub (MenuScreen with loaded state)
+        saveGame();
         goToMenu();
     }
 
@@ -321,7 +291,6 @@ public class MazeRunnerGame extends Game {
 
     public void setScreen(Screen screen) {
         super.setScreen(screen);
-        // Note: Existing screens might not be disposed automatically if reused.
-        // Logic handled in specific goTo methods.
+
     }
 }

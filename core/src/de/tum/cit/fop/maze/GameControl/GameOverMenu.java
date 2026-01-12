@@ -15,14 +15,14 @@ import java.util.ArrayList;
 
 public class GameOverMenu extends Table{
     private final MazeRunnerGame game;
-    private int wavesCleared = -1; // -1 means standard mode
+    private int wavesCleared = -1;
     private Runnable onRetry;
     private Runnable onExit;
     private boolean isWin;
     private Runnable onNextLevel;
     private int finalScore;
     private Table leaderboardTable;
-    private Table bottomRankTable; // Always visible footer for user rank
+    private Table bottomRankTable;
     private int xp;
 
     public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int finalScore, int xp) {
@@ -59,7 +59,7 @@ public class GameOverMenu extends Table{
         Label scoreLabel = new Label("Score: " + finalScore, skin);
         Label xpLabel = new Label("XP gained: " + xp, skin);
         
-        // Stats table for rank
+
         bottomRankTable = new Table();
 
         if (wavesCleared >= 0 && !isWin) {
@@ -67,13 +67,13 @@ public class GameOverMenu extends Table{
             content.add(lbTitle).padTop(10).row();
 
             leaderboardTable = new Table();
-            leaderboardTable.top(); // Align content to top
+            leaderboardTable.top();
             
             com.badlogic.gdx.scenes.scene2d.ui.ScrollPane scrollPane = new com.badlogic.gdx.scenes.scene2d.ui.ScrollPane(leaderboardTable, skin);
             scrollPane.setFadeScrollBars(false);
-            scrollPane.setScrollingDisabled(true, false); // Cancel horizontal scroll
+            scrollPane.setScrollingDisabled(true, false);
             
-            // Allow mouse scroll
+
             scrollPane.addListener(new com.badlogic.gdx.scenes.scene2d.utils.ClickListener() {
                @Override
                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -85,14 +85,14 @@ public class GameOverMenu extends Table{
                }
             });
 
-            // Add scrollPane with limited height
+
             content.add(scrollPane).width(500).height(200).pad(10).row();
             
-            // Add fixed rank footer
+
             content.add(bottomRankTable).growX().pad(5).row();
         }
 
-        // Endless Mode Label
+
         Label wavesLabel = null;
         if (wavesCleared >= 0) {
             wavesLabel = new Label("Waves Cleared: " + wavesCleared, skin);
@@ -135,32 +135,30 @@ public class GameOverMenu extends Table{
             content.add(titleLabelLose).pad(20).row();
             
             if (wavesCleared >= 0) {
-                // Endless Mode Loss
+
                 if (wavesLabel != null) content.add(wavesLabel).pad(10).row();
                 
-                // Show Score and XP
+
                 content.add(scoreLabel).pad(5).row();
                 content.add(xpLabel).pad(5).row();
                 
-                // Leaderboard is added above locally if condition met
-                
+
                 content.add(exitBtn).width(300).pad(10).row();
             } else {
-                // Standard Loss
+
                 content.add(retryBtn).width(300).pad(10).row();
                 content.add(exitBtn).width(300).pad(10).row();
             }
         } else {
-            // Win
-            // 胜利时显示分数
+
             content.add(titleLabelWin).pad(20).row();
-            // --- 将分数显示在按钮之前 ---
+
             content.add(scoreLabel).pad(10).row();
             content.add(xpLabel).pad(10).row();
 
             content.add(nextLevelBtn).pad(20).row();
             if (wavesCleared == -1) {
-                // Standard Win - Allow replaying/retrying this level?
+
                 content.add(retryBtn).width(300).pad(10).row();
             }
             content.add(exitBtn).width(300).pad(10).row();
@@ -179,17 +177,16 @@ public class GameOverMenu extends Table{
     }
 
     public void loadLeaderboard() {
-        if (leaderboardTable == null) return; // Should not happen if logic is correct
+        if (leaderboardTable == null) return;
         
-        leaderboardTable.clear(); // Clear old data
+        leaderboardTable.clear();
         leaderboardTable.add(new Label("Loading...", game.getSkin())).expandX().center().row();
 
         LeaderboardManager.fetchScores(new LeaderboardManager.LeaderboardCallback() {
             @Override
             public void onScoresLoaded(ArrayList<LeaderboardManager.ScoreEntry> scores) {
                 leaderboardTable.clear();
-                // NO TITLE HERE
-                
+
                 if (bottomRankTable != null) bottomRankTable.clear();
 
                 if (scores.isEmpty()) {
@@ -206,7 +203,7 @@ public class GameOverMenu extends Table{
                         Label rankLabel = new Label("#" + (i + 1), game.getSkin());
                         Label entryLabel = new Label(entry.name + ": " + entry.score, game.getSkin());
                         
-                         // Highlighting check
+
                         boolean isHighlight = (entry.score == finalScore && entry.name.equals(currentUserName));
                         if (isHighlight) {
                             userFound = true;
@@ -219,11 +216,11 @@ public class GameOverMenu extends Table{
                         rowTable.add(rankLabel).padRight(15).right().width(40);
                         rowTable.add(entryLabel).left();
 
-                        // Add row to main table
+
                         leaderboardTable.add(rowTable).expandX().center().padRight(20).padBottom(5).row();
                     }
                     
-                    // Populate Footer
+
                     if (bottomRankTable != null) {
                          Label footerRank;
                          if (userFound) {

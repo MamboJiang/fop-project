@@ -39,42 +39,37 @@ public class GameScreen implements Screen {
     private ShapeRenderer shapeRenderer;
     private HUD hud;
     
-    // Debug
+
     private boolean debugEnabled = false;
 
-    // Pause State and UI
+
     private boolean isPaused = false;
     private boolean isGameOver = false;
     private Stage pauseStage;
     private PauseMenu pauseMenu;
     private GameOverMenu GameOverMenu;
 
-    // Game Objects
+
     private de.tum.cit.fop.maze.GameObj.Character character;
     private List<GameObject> mapObjects;
     private List<de.tum.cit.fop.maze.GameObj.Enemy> enemies;
     private FileHandle mapFile;
     private de.tum.cit.fop.maze.AI.Grid grid;
     private List<de.tum.cit.fop.maze.VFX.DamageNumber> damageNumbers;
-    
-    // Procedural Generation
     private boolean isProcedural = false;
     private int currentDifficulty = 1;
-
-    private float levelTimer = 0f; // 记录当前关卡耗时（秒）
-    private int score = 0;         // 当前得分
+    private float levelTimer = 0f;
+    private int score = 0;
     private static final int BASE_SCORE_PER_LEVEL = 1000; // 每关基础分
     private static final int PENALTY_PER_SECOND = 10;     // 每秒扣除的分数
     private static final int SCORE_PER_LIFE = 500;
 
-    private String playerName = "Player"; // For endless run leaderboard
-    private int totalRunScore = 0; // Cumulative score for endless run
+    private String playerName = "Player";
+    private int totalRunScore = 0;
     
-    // Level Tracking
+
     private String currentLevelName = "Unknown";
-    /**
-     * Constructor for GameScreen (File Mode).
-     */
+
     public GameScreen(MazeRunnerGame game, FileHandle mapFile) {
         this.game = game;
         this.mapFile = mapFile;
@@ -87,9 +82,7 @@ public class GameScreen implements Screen {
         setupLevel();
     }
     
-    /**
-     * Constructor for GameScreen (Procedural Mode).
-     */
+
     public GameScreen(MazeRunnerGame game, boolean isProcedural, String playerName) {
         this.game = game;
         this.isProcedural = isProcedural;
@@ -104,22 +97,18 @@ public class GameScreen implements Screen {
     
     public void setDifficulty(int difficulty) {
         this.currentDifficulty = difficulty;
-        // If mapObjects already generated, we might need to regenerate? 
-        // But constructor calls setupLevel immediately.
-        // So we should probably call setupLevel() AFTER setting difficulty if we want to honor it.
-        // However, goToEndlessMode sets screen THEN calls this. 
-        // So we need to re-generate level.
+
         generateProceduralLevel();
     }
     
     private void initCommon() {
-        // Create and configure the camera for the game view
+
         camera = new OrthographicCamera();
         camera.zoom = 0.7f; 
         
         viewport = new ExtendViewport(640, 360, camera);
 
-        // Get the font from the game's skin
+
         font = game.getSkin().getFont("font");
         
         shapeRenderer = new ShapeRenderer();
@@ -135,13 +124,7 @@ public class GameScreen implements Screen {
              return;
         }
 
-        // Load map
-        // Ideally we should select levels, for now load level 1
-        //FileHandle mapHandle = Gdx.files.internal("maps/level-1.properties");
-        //if (!mapHandle.exists()) {
-            // Try absolute path if internal fails (e.g. running from IDE root vs assets root)
-            // However, map loader tries internal. Let's assume standard GDX internal structure.
-            // If this fails, we might need to look in "assets/maps" or similar depending on working dir
+
         if(this.mapFile ==null || !this.mapFile.exists()){
             Gdx.app.error("GameScreen", "Map file is null or does not exist!");
             this.mapFile = Gdx.files.internal("maps/level-6.properties");
@@ -153,7 +136,7 @@ public class GameScreen implements Screen {
     }
 
     private void generateProceduralLevel() {
-        // Size scales slightly with difficulty? Or static 50x50
+
         int size = 40 + (currentDifficulty * 2);
         if (size > 100) size = 100;
         
@@ -164,12 +147,9 @@ public class GameScreen implements Screen {
     }
     
     private void initMapObjects() {
-        // Initialize AI Grid
+
         grid = new de.tum.cit.fop.maze.AI.Grid(0, 0, mapObjects);
 
-
-
-        // Find entry point to spawn character
         float spawnX = 0;
         float spawnY = 0;
         for (GameObject obj : mapObjects) {
@@ -181,13 +161,12 @@ public class GameScreen implements Screen {
         }
 
         if (character == null) {
-            // Pass the global player state to the character
+
             character = new Character(spawnX+16, spawnY, game.getPlayerState(), game);
         } else {
             character.setPosition(spawnX + 16, spawnY);
         }
 
-        // Restore Endless Run State if applicable
         if (isProcedural) {
             de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
             if (state.getCurrentRunScore() > 0) {
@@ -199,10 +178,9 @@ public class GameScreen implements Screen {
         }
 
         
-        // Create Enemy List
+
         enemies = new java.util.ArrayList<>();
-        
-        // Find Enemy Spawn Points and Convert to Real Enemies
+
         List<GameObject> toRemove = new java.util.ArrayList<>();
         for (GameObject obj : mapObjects) {
              if (obj instanceof de.tum.cit.fop.maze.GameObj.EnemySpawnPoint) {
@@ -224,15 +202,12 @@ public class GameScreen implements Screen {
                  toRemove.add(obj);
              }
         }
-        
-        // Remove spawn points from mapObjects so they don't render twice or collide
+
         mapObjects.removeAll(toRemove);
-        
-        // Spawn Hearts (Chunk-based: 0-1 per 16x16 tile area)
+
         java.util.Map<String, java.util.List<GameObject>> chunks = new java.util.HashMap<>();
-        int chunkSize = 16 * 16; // 16 tiles * 16 pixels = 256 pixels
-        
-        // 1. Group paths into chunks
+        int chunkSize = 16 * 16;
+
         for (GameObject obj : mapObjects) {
             if (obj instanceof de.tum.cit.fop.maze.GameObj.Path) {
                 int cx = (int) (obj.getPosition().x / chunkSize);
@@ -246,19 +221,17 @@ public class GameScreen implements Screen {
             }
         }
         
-        // 2. Spawn per chunk
+
         for (java.util.List<GameObject> chunkPaths : chunks.values()) {
             if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.5f)) { 
                 GameObject randomPath = chunkPaths.get(com.badlogic.gdx.math.MathUtils.random(chunkPaths.size() - 1));
                 de.tum.cit.fop.maze.GameObj.Heart heart = new de.tum.cit.fop.maze.GameObj.Heart(randomPath.getPosition().x, randomPath.getPosition().y);
                 mapObjects.add(heart);
             }
-            
-            // Chance to spawn 1 Shield (Lower chance, e.g. 20%)
+
             if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.2f)) {
                 GameObject randomPath = chunkPaths.get(com.badlogic.gdx.math.MathUtils.random(chunkPaths.size() - 1));
-                // Avoid stacking heart and shield?
-                // For simplicity, just add. overlap is rare or acceptable.
+
                 de.tum.cit.fop.maze.GameObj.ShieldItem shield = new de.tum.cit.fop.maze.GameObj.ShieldItem(randomPath.getPosition().x, randomPath.getPosition().y);
                 mapObjects.add(shield);
             }
@@ -271,7 +244,7 @@ public class GameScreen implements Screen {
         pauseStage = new Stage(new FitViewport(1920, 1080), game.getSpriteBatch());
         
         pauseMenu = new PauseMenu(game, 
-            () -> togglePause(), // Resume action
+            () -> togglePause(),
             () -> {
                 // Exit action
                 if (isProcedural) {
@@ -281,9 +254,9 @@ public class GameScreen implements Screen {
                             if (object instanceof Integer) {
                                 int choice = (Integer) object;
                                 if (choice == 1) {
-                                    // Save & Quit
+
                                     game.getPlayerState().setEndlessWave(currentDifficulty); 
-                                    // Save Run State
+
                                     game.getPlayerState().setCurrentRunScore(totalRunScore);
                                     if (character != null) {
                                         game.getPlayerState().setCurrentRunHealth(character.getCurrentHealth());
@@ -292,14 +265,14 @@ public class GameScreen implements Screen {
                                     game.saveGame();
                                     game.goToMenu();
                                 } else if (choice == 2) {
-                                    // End Game (Submit Score) -> Treat as death
+
                                     game.getPlayerState().resetEndlessWave(); 
-                                    game.getPlayerState().resetRunState(); // Reset run state
+                                    game.getPlayerState().resetRunState();
                                     pauseMenu.hide();
                                     isPaused = false; 
                                     showGameOverMenu(false); 
                                 } else {
-                                    // Cancel -> Do nothing, dialog closes automaticallly
+
                                 }
                             }
                         }
@@ -321,11 +294,11 @@ public class GameScreen implements Screen {
         if (isProcedural) {
             totalRunScore += calculateScore();
 
-            // Increase Difficulty
+
             currentDifficulty++;
             de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onStatusUpdate(de.tum.cit.fop.maze.GameControl.EventType.REACH_DIFFICULTY, currentDifficulty);
             
-            // Reset Game State
+
             isGameOver = false;
             isPaused = false;
             levelTimer = 0f;
@@ -333,7 +306,7 @@ public class GameScreen implements Screen {
                 character.resetForNewLevel();
             }
             
-            // Hide Menu if open
+
             if (GameOverMenu != null) {
                 GameOverMenu.remove();
             }
@@ -341,49 +314,47 @@ public class GameScreen implements Screen {
                 pauseMenu.hide();
             }
             
-            // Reset Input
+
             updateInputProcessor();
             
-            // Generate next level
+
             generateProceduralLevel();
             return;
         }
 
-        // 1. 获取所有地图文件
+
         List<FileHandle> maps = MapLoader.getMapFiles(); //
         int currentIndex = -1;
 
-        // 2. 找到当前地图在列表中的位置
+
         for (int i = 0; i < maps.size(); i++) {
-            // mapFile 是 GameScreen 的成员变量
+
             if (maps.get(i).name().equals(this.mapFile.name())) {
                 currentIndex = i;
                 break;
             }
         }
 
-        // 3. 判断是否有下一张图
+
         if (currentIndex != -1 && currentIndex + 1 < maps.size()) {
-            // 有下一关：告诉主游戏类切换到下一张地图
+
             FileHandle nextMap = maps.get(currentIndex + 1);
             game.goToGame(nextMap); //
         } else {
-            // 没有下一关了（全通关）：回到主菜单
+
             game.goToMenu();
         }
     }
 
     private int awardXP(boolean win) {
         if (win) {
-            // Track level completion if not procedural
+
             if (!isProcedural && currentLevelName != null) {
                 game.getPlayerState().addCompletedLevel(currentLevelName);
             }
             
-            int xpEarned = 50; // Base XP for clearing a level
+            int xpEarned = 50;
 
-            // Bonus for killing enemies (if you track kills)
-            // xpEarned += enemiesKilled * 10;
 
             if (isProcedural) {
                 game.getPlayerState().addCurrentRunXP(xpEarned);
@@ -393,7 +364,7 @@ public class GameScreen implements Screen {
                 System.out.println("Awarded " + xpEarned + " XP");
             }
             
-            // Auto-save on win
+
             game.saveGame();
             
             return xpEarned;
@@ -407,24 +378,23 @@ public class GameScreen implements Screen {
 
         int awardXP = awardXP(win);
         
-        // Reset endless wave if it's a loss or end of run
+
         if (isProcedural && !win) {
-            // Settle XP
+
             int runXP = game.getPlayerState().getCurrentRunXP();
             game.getPlayerState().addXP(runXP);
-            awardXP = runXP; // Update display value
+            awardXP = runXP;
             
             game.getPlayerState().resetEndlessWave();
             game.getPlayerState().resetRunState();
-            game.saveGame(); // Save the reset state
+            game.saveGame();
         }
 
 
-        // 创建结果菜单
         int currentLevelScore = win ? calculateScore() : 0;
         int finalDisplayScore = isProcedural ? (totalRunScore + currentLevelScore) : currentLevelScore;
         
-        // precise waves logic: if win, we cleared currentDifficulty. if lose, we cleared currentDifficulty-1.
+
         int waves = -1;
         if (isProcedural) {
             waves = win ? currentDifficulty : currentDifficulty - 1;
@@ -432,7 +402,7 @@ public class GameScreen implements Screen {
         
         GameOverMenu = new GameOverMenu(game,
                 () -> {
-                    // Retry 逻辑: 重新加载当前地图
+
                     if (isProcedural) {
                         game.goToEndlessMode(playerName); // Restart run
                     } else {
@@ -440,7 +410,7 @@ public class GameScreen implements Screen {
                     }
                 },
                 () -> {
-                    // Exit 逻辑 (Win case)
+
                     if (isProcedural && win) {
                          com.badlogic.gdx.scenes.scene2d.ui.Dialog dialog = new com.badlogic.gdx.scenes.scene2d.ui.Dialog("Endless Mode", game.getSkin()) {
                             @Override
@@ -448,10 +418,9 @@ public class GameScreen implements Screen {
                                 if (object instanceof Integer) {
                                     int choice = (Integer) object;
                                     if (choice == 1) {
-                                        // Save & Quit
-                                        game.getPlayerState().setEndlessWave(currentDifficulty + 1); // Resume NEXT wave
-                                        // Save Run State (Score + Health)
-                                        // Accumulate current level score into total
+
+                                        game.getPlayerState().setEndlessWave(currentDifficulty + 1);
+
                                         game.getPlayerState().setCurrentRunScore(totalRunScore + calculateScore());
                                         if (character != null) {
                                             game.getPlayerState().setCurrentRunHealth(character.getCurrentHealth());
@@ -460,17 +429,16 @@ public class GameScreen implements Screen {
                                         game.saveGame();
                                         game.goToMenu();
                                     } else if (choice == 2) {
-                                        // End Game (Abandon Run) -> Trigger Game Over Logic
-                                        // Bank the current level's score since we technically beat it
+
                                         totalRunScore += calculateScore();
-                                        game.getPlayerState().resetEndlessWave(); // Reset difficulty
-                                        game.getPlayerState().resetRunState(); // Reset run state persistence
+                                        game.getPlayerState().resetEndlessWave();
+                                        game.getPlayerState().resetRunState();
                                         
                                         if (GameOverMenu != null) GameOverMenu.remove();
-                                        isGameOver = false; // Reset flag to allow re-entry
-                                        showGameOverMenu(false); // Show defeat screen (with leaderboard)
+                                        isGameOver = false;
+                                        showGameOverMenu(false);
                                     } else {
-                                        // Return (Cancel) -> Do nothing
+
                                     }
                                 }
                             }
@@ -479,7 +447,7 @@ public class GameScreen implements Screen {
                         dialog.button("Save & Quit", 1);
                         dialog.button("End Game (Submit Score)", 2);
                         dialog.button("Cancel", 0);
-                        dialog.show(pauseStage); // Pop over the existing menu
+                        dialog.show(pauseStage);
                     } else {
                         game.goToMenu();
                     }
@@ -494,8 +462,7 @@ public class GameScreen implements Screen {
         );
 
         if (isProcedural) {
-            // 只有在输了 (!win) 的时候才保存分数
-            // 这样通关每一层时不会生成新记录，只有死掉时才算 "Run Ended"
+
             if (!win) {
                 de.tum.cit.fop.maze.GameControl.LeaderboardManager.saveScore(playerName, finalDisplayScore, () -> {
                     if (GameOverMenu != null) GameOverMenu.loadLeaderboard();
@@ -512,7 +479,7 @@ public class GameScreen implements Screen {
         GameOverMenu.show();
         game.playGameOverSound();
 
-        // 切换输入处理器到 UI
+
         Gdx.input.setInputProcessor(pauseStage);
     }
 
@@ -531,7 +498,7 @@ public class GameScreen implements Screen {
             }
             pauseMenu.show();
         } else {
-            pauseMenu.hide(); // Should already be hidden by Resume button, but safe to call
+            pauseMenu.hide();
         }
         updateInputProcessor();
     }
@@ -541,7 +508,7 @@ public class GameScreen implements Screen {
         if (isPaused) {
             multiplexer.addProcessor(pauseStage);
         } else {
-            // Process HUD input first, then game input (if any)
+
             multiplexer.addProcessor(hud.getStage());
         }
         Gdx.input.setInputProcessor(multiplexer);
@@ -552,7 +519,6 @@ public class GameScreen implements Screen {
     }
     
     public void zoomIn() {
-        // With viewport, zoom modifies camera.zoom directly
         camera.zoom = Math.max(0.1f, camera.zoom - 0.1f);
         camera.update();
     }
@@ -563,29 +529,29 @@ public class GameScreen implements Screen {
     }
 
 
-        // Camera Shake
+
     private de.tum.cit.fop.maze.VFX.ScreenShake screenShake;
 
-    // Screen interface methods with necessary functionality
+
     @Override
     public void render(float delta) {
-        // Toggle Debug
+
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F3)) {
             toggleDebug();
         }
 
-        // Check for pause key press to go back to the menu
+
         if (Gdx.input.isKeyJustPressed(game.getConfigManager().getKey("PAUSE"))) {
             togglePause();
         }
 
-        ScreenUtils.clear(0, 0, 0, 1); // Clear the screen
+        ScreenUtils.clear(0, 0, 0, 1);
         boolean isLevelCompleted = character.isLevelCompleted();
         levelTimer += delta;
-        // Logic update
+
         if (!isPaused && !isGameOver && !isLevelCompleted) {
             if (character != null) {
-                // Check if shake is requested
+
                 if (character.isScreenShakeRequested()) {
                     if (screenShake != null) screenShake.start(0.3f, 0.8f);
                     character.clearScreenShakeRequest();
@@ -602,7 +568,7 @@ public class GameScreen implements Screen {
                 }
 
 
-                // Check if damage number requested
+
                 if (character.isDamageNumberRequested()) {
                      damageNumbers.add(new de.tum.cit.fop.maze.VFX.DamageNumber(character, 1));
                      character.clearDamageNumberRequest();
@@ -610,16 +576,16 @@ public class GameScreen implements Screen {
 
                 character.update(delta, mapObjects, game.getConfigManager());
 
-                // Camera follow character with smooth lerp
-                float targetX = character.getPosition().x + 8; // Center of 16 width
-                float targetY = character.getPosition().y + 16; // Center of 32 height
+
+                float targetX = character.getPosition().x + 8;
+                float targetY = character.getPosition().y + 16;
                 
-                // Lerp factor (adjust for smoothness, 5f is typical)
+
                 float lerpSpeed = 5f;
                 camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
                 camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
                 
-                // Apply Shake (Post-Lerp)
+
                 if (screenShake != null) {
                     screenShake.update(delta, camera);
                 } else {
@@ -639,12 +605,12 @@ public class GameScreen implements Screen {
             }
         }
 
-        // Render
-        viewport.apply(); // Update camera viewport
+
+        viewport.apply();
         game.getSpriteBatch().setProjectionMatrix(camera.combined);
         game.getSpriteBatch().begin();
 
-        // Draw map objects
+
         if (mapObjects != null) {
             for (GameObject obj : mapObjects) {
                 if (obj instanceof de.tum.cit.fop.maze.GameObj.Heart) {
@@ -659,19 +625,19 @@ public class GameScreen implements Screen {
             }
         }
 
-        // Draw character
+
         if (character != null) {
             character.draw(game.getSpriteBatch());
         }
         
-        // Draw Enemies
+
         for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
             enemy.draw(game.getSpriteBatch());
-            // Draw Status Icon and/or HP
+
             enemy.drawStatus(game.getSpriteBatch(), font, debugEnabled);
         }
         
-        // Draw Damage Numbers
+
         if (damageNumbers != null) {
             java.util.Iterator<de.tum.cit.fop.maze.VFX.DamageNumber> iter = damageNumbers.iterator();
             while (iter.hasNext()) {
@@ -688,9 +654,9 @@ public class GameScreen implements Screen {
             }
         }
 
-        game.getSpriteBatch().end(); // Important to call this after drawing everything
+        game.getSpriteBatch().end();
         
-        // Update Enemies
+
         if (!isPaused && !isGameOver && !character.isLevelCompleted()) {
             java.util.Iterator<de.tum.cit.fop.maze.GameObj.Enemy> enemyIter = enemies.iterator();
             while (enemyIter.hasNext()) {
@@ -703,19 +669,19 @@ public class GameScreen implements Screen {
             }
         }
         
-        // Draw HUD
+
         if (character != null) {
             hud.update(character);
             hud.render(delta);
         }
         
         
-        // Debug Rendering for Collision Boxes
+
         if (debugEnabled && character != null) {
             shapeRenderer.setProjectionMatrix(camera.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             
-            // Draw Character Bounds (Red)
+
             shapeRenderer.setColor(Color.RED);
             shapeRenderer.rect(
                 character.getBounds().x, 
@@ -724,7 +690,7 @@ public class GameScreen implements Screen {
                 character.getBounds().height
             );
             
-            // Draw Wall Bounds (Green)
+
             shapeRenderer.setColor(Color.GREEN);
             if (mapObjects != null) {
                 for (GameObject obj : mapObjects) {
@@ -738,8 +704,7 @@ public class GameScreen implements Screen {
                     }
                 }
             }
-            
-            // Draw Enemy Path Debug
+
             for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
                 enemy.drawDebug(shapeRenderer);
             }
@@ -747,7 +712,7 @@ public class GameScreen implements Screen {
             shapeRenderer.end();
         }
 
-        // Draw pause menu if paused
+
         if (isPaused || isGameOver || isLevelCompleted) {
             pauseStage.act(delta);
             pauseStage.draw();
@@ -789,14 +754,13 @@ public class GameScreen implements Screen {
     public int calculateScore() {
         int lifeScore = 0;
         if (character != null) {
-            // character.getLives() 返回当前剩余生命数
             lifeScore = character.getLives() * SCORE_PER_LIFE;
         }
 
         int timePenalty = (int) (levelTimer * PENALTY_PER_SECOND);
         int totalScore = BASE_SCORE_PER_LEVEL - timePenalty;
 
-        // 如果是无尽模式，可以在这里加上难度系数乘数
+
         if (isProcedural) {
             totalScore *= currentDifficulty;
         }
@@ -806,7 +770,7 @@ public class GameScreen implements Screen {
         return Math.max(0, totalScore);
     }
 
-    // 获取格式化后的时间字符串 (例如 "01:23")
+
     public String getFormattedTime() {
         int minutes = (int) levelTimer / 60;
         int seconds = (int) levelTimer % 60;

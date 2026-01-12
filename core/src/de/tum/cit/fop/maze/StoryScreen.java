@@ -43,9 +43,9 @@ public class StoryScreen implements Screen {
     private boolean partComplete = false;
     private boolean isFading = false;
     private float fadeTimer = 0;
-    private final float CHAR_DELAY = 0.08f; // Slightly slow text speed
-    private final float FADE_DURATION = 1.0f; // Duration of black screen between parts
-    private final float READ_DELAY = 2.0f; // Time to wait after text finishes before fading
+    private final float CHAR_DELAY = 0.08f;
+    private final float FADE_DURATION = 1.0f;
+    private final float READ_DELAY = 2.0f;
 
     public StoryScreen(MazeRunnerGame game, FileHandle nextMapFile) {
         this.game = game;
@@ -65,7 +65,7 @@ public class StoryScreen implements Screen {
         
         rootTable.row();
 
-        // Start Button (Hidden initially, appears at the very end)
+
         startButton = new TextButton("Start Mission", game.getSkin());
         startButton.setVisible(false);
         startButton.addListener(new ChangeListener() {
@@ -76,7 +76,7 @@ public class StoryScreen implements Screen {
         });
         rootTable.add(startButton).width(300).height(60).padBottom(50);
 
-        // Skip Button (Bottom Right)
+
         Table bottomTable = new Table();
         bottomTable.setFillParent(true);
         bottomTable.bottom().right();
@@ -98,23 +98,23 @@ public class StoryScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // Clear screen with Black
+
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Handle 'E' key for skipping
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
             skipStory();
             return;
         }
 
         if (isFading) {
-            // In transition (Black screen)
+
             storyLabel.setText(""); 
             fadeTimer += delta;
             
             if (fadeTimer >= FADE_DURATION) {
-                // Transition done, start next part
+
                 isFading = false;
                 currentPartIndex++;
                 if (currentPartIndex < storyParts.length) {
@@ -122,7 +122,7 @@ public class StoryScreen implements Screen {
                     partComplete = false;
                     timer = 0;
                 } else {
-                    // Should theoretically not reach here if logic is right, but handle safety
+
                     currentPartIndex = storyParts.length - 1;
                     partComplete = true;
                     startButton.setVisible(true);
@@ -130,7 +130,7 @@ public class StoryScreen implements Screen {
                 }
             }
         } else {
-            // Typing Text or Waiting
+
             if (!partComplete) {
                 timer += delta;
                 if (timer >= CHAR_DELAY) {
@@ -143,26 +143,26 @@ public class StoryScreen implements Screen {
                         partComplete = true;
                         
                         if (currentPartIndex == storyParts.length - 1) {
-                            // Last part finished
+
                             startButton.setVisible(true);
                         } else {
-                            // Not last part, prepare to fade
-                            fadeTimer = -READ_DELAY; // Wait READ_DELAY seconds before setting isFading
+
+                            fadeTimer = -READ_DELAY;
                         }
                     }
                     storyLabel.setText(currentText.substring(0, charIndex));
                 }
             } else {
-                // Part is complete (text fully displayed)
+
                 if (currentPartIndex < storyParts.length - 1) {
-                    // We are waiting to transition to black
+
                     fadeTimer += delta;
                     if (fadeTimer >= 0) {
                         isFading = true;
                         fadeTimer = 0;
                     }
                 }
-                // Else: Last part displayed, waiting for user interaction (Start or Skip)
+
             }
         }
 

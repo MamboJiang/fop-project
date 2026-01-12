@@ -32,16 +32,14 @@ public class LevelSelectionScreen implements Screen {
         this.stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), game.getSpriteBatch());
 
         Table table = new Table();
-        // table.setFillParent(true); // Don't fill parent if using ScrollPane, or use container
-        
-        // Title
+
+
         Table container = new Table();
         container.setFillParent(true);
         stage.addActor(container);
         
         container.add(new Label("Select Level", game.getSkin(), "title")).padBottom(20).row();
 
-        // Level Buttons
         Table levelsTable = new Table();
         List<FileHandle> mapFiles = MapLoader.getMapFiles();
         
@@ -65,13 +63,12 @@ public class LevelSelectionScreen implements Screen {
             }
         }
 
-        // ScrollPane for levels
+
         scrollPane = new ScrollPane(levelsTable, game.getSkin());
         scrollPane.setFadeScrollBars(false);
         scrollPane.setScrollingDisabled(true, false); // Disable horizontal scrolling
         container.add(scrollPane).width(400).height(400).padBottom(20).row();
 
-        // Back Button
         TextButton backButton = new TextButton("Back", game.getSkin());
         backButton.addListener(new ChangeListener() {
             @Override
@@ -97,7 +94,7 @@ public class LevelSelectionScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
-        // Enable scroll focus
+
         if (scrollPane != null) {
             stage.setScrollFocus(scrollPane);
         }

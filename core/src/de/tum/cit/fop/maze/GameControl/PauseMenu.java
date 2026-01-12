@@ -33,21 +33,18 @@ public class PauseMenu extends Table {
     private void setupUI() {
         Skin skin = game.getSkin();
         
-        // Semi-transparent background
-        // Assumes "white" exists in skin for tinting, otherwise we might need a Pixmap or similar.
-        // StoryDialogueScreen used: game.getSkin().newDrawable("white", 0, 0, 0, 0.8f);
-        // We will trust "white" exists as it worked in StoryDialogueScreen
+
         Drawable bg = skin.newDrawable("white", 0, 0, 0, 0.8f);
         setBackground(bg);
         
-        // Content Window
+
         Table content = new Table();
         content.setBackground(skin.getDrawable("window"));
         
-        // Title
+
         content.add(new Label("PAUSED", skin, "title")).pad(20).row();
         
-        // Stats
+
         scoreLabel = new Label("Score: 0", skin);
         difficultyLabel = new Label("Difficulty: 1", skin);
         xpLabel = new Label("XP: 0", skin);
@@ -56,7 +53,7 @@ public class PauseMenu extends Table {
         content.add(difficultyLabel).pad(5).row();
         content.add(xpLabel).pad(5).padBottom(20).row();
         
-        // Resume Button
+
         TextButton resumeBtn = new TextButton("Resume", skin);
         resumeBtn.addListener(new ClickListener() {
             @Override
@@ -67,7 +64,7 @@ public class PauseMenu extends Table {
         });
         content.add(resumeBtn).width(300).pad(10).row();
         
-        // Exit to Menu Button
+
         TextButton exitBtn = new TextButton("Exit to Menu", skin);
         exitBtn.addListener(new ClickListener() {
             @Override

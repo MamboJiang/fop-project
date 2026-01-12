@@ -7,8 +7,7 @@ public class Achievement {
     private EventType type;
     private int target;
     private boolean hidden;
-    
-    // Runtime state
+
     private int progress;
     private boolean unlocked;
 

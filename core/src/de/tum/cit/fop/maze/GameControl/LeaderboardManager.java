@@ -8,17 +8,15 @@ import java.util.Collections;
 
 public class LeaderboardManager {
     private static final String FILE_NAME = "leaderboard.json";
-    private static final int MAX_SCORES = 10; // 只保留前10名
-    
-    // Global URL
+    private static final int MAX_SCORES = 10;
+
     private static final String CLOUD_URL = "https://leaderboard-backup.vercel.app/api/leaderboard"; 
 
-    // 内部类：单条分数记录
     public static class ScoreEntry implements Comparable<ScoreEntry> {
         public String name;
         public int score;
 
-        public ScoreEntry() {} // Json 需要空构造函数
+        public ScoreEntry() {}
         public ScoreEntry(String name, int score) {
             this.name = name;
             this.score = score;
@@ -30,15 +28,12 @@ public class LeaderboardManager {
         }
     }
 
-    // Callback interface for async results
     public interface LeaderboardCallback {
         void onScoresLoaded(ArrayList<ScoreEntry> scores);
         void onError(String message);
     }
 
-    // 保存分数
     public static void saveScore(String name, int score, Runnable callbacks) {
-        // 1. Local Save
         ArrayList<ScoreEntry> scores = loadScores();
         scores.add(new ScoreEntry(name, score));
         Collections.sort(scores);
@@ -52,8 +47,7 @@ public class LeaderboardManager {
         } catch(Exception e) {
             Gdx.app.error("Leaderboard", "Local Save Failed", e);
         }
-        
-        // 2. Cloud Upload
+
         uploadScoreToCloud(name, score, callbacks);
     }
 
@@ -62,7 +56,7 @@ public class LeaderboardManager {
     }
 
     public static void uploadScoreToCloud(String name, int score, Runnable onSuccess) {
-        if (CLOUD_URL.contains("YOUR_VERCEL_URL_HERE")) { // Offline fallback
+        if (CLOUD_URL.contains("YOUR_VERCEL_URL_HERE")) {
              if (onSuccess != null) Gdx.app.postRunnable(onSuccess);
              return; 
         }
@@ -70,8 +64,7 @@ public class LeaderboardManager {
         com.badlogic.gdx.Net.HttpRequest request = new com.badlogic.gdx.Net.HttpRequest(com.badlogic.gdx.Net.HttpMethods.POST);
         request.setUrl(CLOUD_URL);
         request.setHeader("Content-Type", "application/json");
-        
-        // JSON Body: {"name": "Player", "score": 100}
+
         String content = "{\"name\":\"" + name + "\", \"score\":" + score + "}";
         request.setContent(content);
 
@@ -82,15 +75,12 @@ public class LeaderboardManager {
                 String result = httpResponse.getResultAsString();
                 Gdx.app.log("Leaderboard", "Upload Response Code: " + statusCode);
                 Gdx.app.log("Leaderboard", "Upload Response Body: " + result);
-                
-                // If successful or even if failed (to avoid hanging), run callback
-                // But ideally only on success. For UX, let's run it so menu shows up.
+
                 if (onSuccess != null) Gdx.app.postRunnable(onSuccess);
             }
             @Override
             public void failed(Throwable t) {
                 Gdx.app.log("Leaderboard", "Upload Failed: " + t.getMessage());
-                // Still run callback to proceed? Yes.
                 if (onSuccess != null) Gdx.app.postRunnable(onSuccess);
             }
             @Override
@@ -100,10 +90,9 @@ public class LeaderboardManager {
         });
     }
 
-    // Fetch scores (Try Cloud, Fallback to Local)
+
     public static void fetchScores(LeaderboardCallback callback) {
         if (CLOUD_URL.contains("YOUR_VERCEL_URL_HERE")) {
-                // Offline mode
                 callback.onScoresLoaded(loadScores());
                 return;
         }
@@ -118,7 +107,6 @@ public class LeaderboardManager {
                 int statusCode = httpResponse.getStatus().getStatusCode();
                 String result = httpResponse.getResultAsString();
                 Gdx.app.log("Leaderboard", "Fetch Response Code: " + statusCode);
-                // Gdx.app.log("Leaderboard", "Fetch Response Body: " + result); 
 
                 if (statusCode != 200) {
                         Gdx.app.error("Leaderboard", "Fetch Failed code: " + statusCode + ", Body: " + result);
@@ -128,7 +116,6 @@ public class LeaderboardManager {
 
                 try {
                     Json json = new Json();
-                    // Assume result is JSON array: [{"name":"A", "score":10}, ...]
                     ArrayList<ScoreEntry> onlineScores = json.fromJson(ArrayList.class, ScoreEntry.class, result);
                         
                     Gdx.app.postRunnable(() -> callback.onScoresLoaded(onlineScores));
@@ -141,7 +128,6 @@ public class LeaderboardManager {
             @Override
             public void failed(Throwable t) {
                     Gdx.app.error("Leaderboard", "Network Error", t);
-                    // Fallback to local?
                     Gdx.app.postRunnable(() -> callback.onScoresLoaded(loadScores()));
             }
             @Override
@@ -151,7 +137,7 @@ public class LeaderboardManager {
         });
     }
 
-    // Debug: Clear all data from Cloud
+
     public static void clearOnlineLeaderboard(Runnable onSuccess) {
         if (CLOUD_URL.contains("YOUR_VERCEL_URL_HERE")) return;
 
@@ -173,15 +159,13 @@ public class LeaderboardManager {
         });
     }
 
-    // Debug: Add Random Score
     public static void addDebugEntry() {
         int randomScore = (int)(Math.random() * 5000) + 100;
         String name = "DebugPlayer" + (int)(Math.random() * 100);
         saveScore(name, randomScore);
     }
     
-    // 读取分数列表 (Local Only)
-    @SuppressWarnings("unchecked")
+
     public static ArrayList<ScoreEntry> loadScores() {
         FileHandle file = Gdx.files.local(FILE_NAME);
         if (!file.exists()) {

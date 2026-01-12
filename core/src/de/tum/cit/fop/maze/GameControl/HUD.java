@@ -33,25 +33,21 @@ public class HUD {
     private Label debugInfoLabel;
     private Label timeLabel;
     
-    // Console UI
     private Table contentTable;
     private com.badlogic.gdx.scenes.scene2d.ui.TextField consoleInput;
     
-    // Dependencies
     private final GameScreen gameScreen;
     private final Skin skin;
-    private Character character; // Reference to character for debug actions
+    private Character character;
 
     public HUD(SpriteBatch spriteBatch, GameScreen gameScreen, Skin skin) {
         this.gameScreen = gameScreen;
         this.skin = skin;
         stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), spriteBatch);
         
-        // Load textures
         objectsTexture = new Texture(Gdx.files.internal("objects.png"));
         TextureRegion[][] tmp = TextureRegion.split(objectsTexture, 16, 16);
         
-        // Hearts logic
         heartRegions = new TextureRegion[5];
         for (int i = 0; i < 5; i++) {
             heartRegions[i] = tmp[0][4 + i];
@@ -59,7 +55,6 @@ public class HUD {
         
         keyRegion = tmp[4][0];
 
-        // Achievement Background logic...
         TextureRegion bgRegion = new TextureRegion(objectsTexture, 4 * 16, 18 * 16, 4 * 16, 2 * 16);
         achievementNinePatch = new com.badlogic.gdx.graphics.g2d.NinePatch(bgRegion, 16, 16, 0, 0);
         achievementNinePatch.scale(4, 4); 
@@ -69,7 +64,6 @@ public class HUD {
         setupUI();
         setupDebugMenu();
         
-        // Register HUD with AchievementManager
         AchievementManager.getInstance().setHUD(this);
     }
 
@@ -78,16 +72,13 @@ public class HUD {
         table.top();
         table.setFillParent(true);
         
-        // Left: Hearts Container
         heartsTable = new Table();
         heartsTable.left();
         
-        // Right: Key
         keyImage = new Image(keyRegion);
         timeLabel = new Label("Time: 00:00\nScore: 1000", skin);
         timeLabel.setAlignment(Align.center); 
 
-        // Layout
         table.add(heartsTable).expandX().left().pad(10).height(64);
         table.add(timeLabel).expandX().center().padTop(10);
         table.add(keyImage).expandX().right().pad(10).size(64, 64);
@@ -99,23 +90,20 @@ public class HUD {
         debugTable = new Table();
         debugTable.bottom().left();
         debugTable.setFillParent(true);
-        
-        // Container for content buttons
+
         contentTable = new Table();
-        contentTable.setVisible(false); // Initially hidden
-        
-        // Debug Info Label
+        contentTable.setVisible(false);
+
         debugInfoLabel = new Label("Speed: 0\nHP: 4\nKey: false", skin);
         contentTable.add(debugInfoLabel).left().pad(5).row();
 
-        // --- Console UI ---
-        // Output Log
+
         final Label consoleLog = new Label("Console ready. Type 'help' for commands.", skin);
         consoleLog.setWrap(true);
-        // We might want scroll pane but for simplicity just a label for last few lines or strictly current feedback
+
         contentTable.add(consoleLog).width(300).left().pad(5).row();
 
-        // Input Field
+
         consoleInput = new com.badlogic.gdx.scenes.scene2d.ui.TextField("", skin);
         consoleInput.setMessageText("Enter command...");
         consoleInput.setTextFieldListener(new com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener() {
@@ -123,7 +111,7 @@ public class HUD {
             public void keyTyped(com.badlogic.gdx.scenes.scene2d.ui.TextField textField, char c) {
                 if ((c == '\r' || c == '\n') && !textField.getText().trim().isEmpty()) {
                     String cmd = textField.getText().trim();
-                    textField.setText(""); // Clear input
+                    textField.setText("");
                     String output = handleCommand(cmd);
                     consoleLog.setText(output);
                 }
@@ -132,17 +120,12 @@ public class HUD {
         consoleInput.setTextFieldFilter(new com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter() {
             @Override
             public boolean acceptChar(com.badlogic.gdx.scenes.scene2d.ui.TextField textField, char c) {
-                // Reject the console toggle key character (if it matches default or common toggle keys)
                 if (c == '`' || c == '~') return false;
-                
-                // Also check configured key if possible mapping exists (hard to map int->char robustly without more logic)
-                // For now, hardcoding rejection of backtick/tilde is what the user asked for.
                 return true;
             }
         });
         contentTable.add(consoleInput).width(300).left().pad(5).row();
 
-        // Toggle Menu Button (Always visible)
         TextButton toggleMenuBtn = new TextButton("Debug", skin);
         toggleMenuBtn.addListener(new ChangeListener() {
             @Override
@@ -159,7 +142,6 @@ public class HUD {
         });
         
 
-        // Add content table and toggle button to main table
         debugTable.add(contentTable).left().pad(5).row();
         debugTable.add(toggleMenuBtn).left().pad(5);
         
@@ -242,13 +224,7 @@ public class HUD {
                      if (parts.length < 2) return "Usage: achievement <unlock/list> [id]";
                      if (parts[1].equalsIgnoreCase("unlock")) {
                          if (parts.length < 3) return "Specify achievement ID.";
-                         // For testing UI, we can forcefully unlock or just show popup
-                         // But manager handles logic. Let's add a debug method in Manager or just simulate event?
-                         // Better: Force unlock by specific ID (bypass conditions)
-                         // Check AchievementManager implementation... it doesn't have public unlock or getAchievement.
-                         // Let's rely on simulated event if possible, or add a method.
-                         // Actually, I can use reflection or add a method to manager.
-                         // Let's assume I can call a method I'll add to Manager "debugUnlock(id)"
+
                          AchievementManager.getInstance().debugUnlock(parts[2]);
                          return "Attempting unlock: " + parts[2];
                      }
@@ -281,16 +257,13 @@ public class HUD {
         String timeStr = gameScreen.getFormattedTime();
         timeLabel.setText(timeStr);
 
-        // Update Hearts
         int currentLives = character.getLives();
         int maxLives = character.getMaxLives();
-        
-        // Calculate needed hearts
-        // Each heart holds 4 HP.
-        int numHearts = (int)Math.ceil(maxLives / 4.0);
-        if (numHearts < 1) numHearts = 1; // At least one heart container (even if 0 HP)
 
-        // Resize heart list if needed
+        int numHearts = (int)Math.ceil(maxLives / 4.0);
+        if (numHearts < 1) numHearts = 1;
+
+
         if (heartImages.size != numHearts) {
             heartsTable.clearChildren();
             heartImages.clear();
@@ -301,39 +274,32 @@ public class HUD {
             }
         }
         
-        // Update texture for each heart
+
         for (int i = 0; i < heartImages.size; i++) {
             Image img = heartImages.get(i);
             
-            // Calculate health for this specific heart container
-            // Heart 0 covers HP 1-4
-            // Heart 1 covers HP 5-8
-            int heartStartHP = i * 4; // 0, 4, 8...
+
+            int heartStartHP = i * 4;
             int hpForThisHeart = currentLives - heartStartHP;
             
-            // Clamp to 0-4
+
             if (hpForThisHeart > 4) hpForThisHeart = 4;
             if (hpForThisHeart < 0) hpForThisHeart = 0;
             
-            // Map 0-4 HP to Texture Index
-            // 4 HP -> Index 0
-            // 3 HP -> Index 1
-            // 2 HP -> Index 2
-            // 1 HP -> Index 3
-            // 0 HP -> Index 4
+
             int textureIndex = 4 - hpForThisHeart;
             
             img.setDrawable(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(heartRegions[textureIndex]));
         }
         
-        // Update Key
+
         if (character.hasKey()) {
-             keyImage.setColor(Color.WHITE); // Normal color
+             keyImage.setColor(Color.WHITE);
         } else {
-             keyImage.setColor(Color.DARK_GRAY); // Dimmed if not collected
+             keyImage.setColor(Color.DARK_GRAY);
         }
         
-        // Update Debug Label
+
         if (debugInfoLabel != null) {
             float speed = character.getVelocity().len();
             debugInfoLabel.setText(String.format("Speed: %.2f\nHP: %d/%d\nKey: %b", speed, currentLives, maxLives, character.hasKey()));
@@ -345,7 +311,7 @@ public class HUD {
     }
 
     public void render(float delta) {
-        // Check for Hotkey
+
         int consoleKey = gameScreen.getGame().getConfigManager().getKey("CONSOLE");
         if (Gdx.input.isKeyJustPressed(consoleKey)) {
              boolean isVisible = !contentTable.isVisible();
@@ -371,7 +337,7 @@ public class HUD {
         objectsTexture.dispose();
     }
 
-    // --- Achievement Popup Logic ---
+
     public void showAchievementPopup(Achievement achievement) {
         Gdx.app.postRunnable(() -> {
             AchievementPopup popup = new AchievementPopup(achievement, skin, achievementNinePatch);
@@ -383,12 +349,9 @@ public class HUD {
     private static class AchievementPopup extends Table {
         public AchievementPopup(Achievement achievement, Skin skin, com.badlogic.gdx.graphics.g2d.NinePatch bgPatch) {
             this.setBackground(new com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable(bgPatch));
-            
-            // Adjust size. User requested wider.
-            // Old was 256. Let's increase to 320 (5 * 64) or similar.
+
             this.setSize(340, 128);
-            
-            // Align top-center of screen initially (off-screen)
+
             this.setPosition((1920 - 340) / 2f, 1080 + 10);
             
             Label titleLabel = new Label("Achievement!", skin);
@@ -400,7 +363,6 @@ public class HUD {
         }
 
         public void animate() {
-            // Slide down, wait, slide up, remove
             this.addAction(com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence(
                 com.badlogic.gdx.scenes.scene2d.actions.Actions.moveTo(this.getX(), 1080 - 150, 0.5f, com.badlogic.gdx.math.Interpolation.swingOut),
                 com.badlogic.gdx.scenes.scene2d.actions.Actions.delay(3f),

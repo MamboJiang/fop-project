@@ -27,11 +27,10 @@ public class AchievementsScreen implements Screen {
         rootTable.setFillParent(true);
         stage.addActor(rootTable);
 
-        // Title
         Label title = new Label("Achievements", skin, "title");
         rootTable.add(title).padBottom(20).row();
 
-        // Scrollable List
+
         Table listTable = new Table();
         listTable.top();
 
@@ -46,9 +45,9 @@ public class AchievementsScreen implements Screen {
 
         ScrollPane scrollPane = new ScrollPane(listTable, skin);
         scrollPane.setFadeScrollBars(false);
-        scrollPane.setScrollingDisabled(true, false); // Cancel horizontal scroll
+        scrollPane.setScrollingDisabled(true, false);
         
-        // Add listeners for mouse scroll focus
+
         scrollPane.addListener(new com.badlogic.gdx.scenes.scene2d.utils.ClickListener() {
            @Override
            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -62,7 +61,6 @@ public class AchievementsScreen implements Screen {
         
         rootTable.add(scrollPane).width(800).height(500).padBottom(20).row();
 
-        // Back Button
         TextButton backButton = new TextButton("Back", skin);
         backButton.addListener(new ChangeListener() {
             @Override
@@ -75,10 +73,9 @@ public class AchievementsScreen implements Screen {
 
     private void addAchievementRow(Table table, Achievement a) {
         Table row = new Table();
-        row.setBackground(skin.getDrawable("button")); // Use button background for panel look
+        row.setBackground(skin.getDrawable("button"));
         row.pad(10);
-        
-        // Name & Status
+
         String statusText = a.isUnlocked() ? " [UNLOCKED]" : " [LOCKED]";
         Label nameLabel = new Label(a.getName() + statusText, skin);
         if (a.isUnlocked()) {
@@ -88,24 +85,22 @@ public class AchievementsScreen implements Screen {
         }
         row.add(nameLabel).expandX().left().row();
         
-        // Description
+
         Label descLabel = new Label(a.getDescription(), skin);
         descLabel.setFontScale(0.8f);
         descLabel.setWrap(true);
         row.add(descLabel).expandX().left().width(700).padTop(5).row();
         
-        // Progress Bar (Custom using Label for simplicity or ProgressBar if available)
-        // Let's use a Label first: "Progress: 3/5"
+
         int current = a.getProgress();
         int target = a.getTarget();
-        if (current > target) current = target; // Clamp
+        if (current > target) current = target;
         
         String progressText = "Progress: " + current + " / " + target;
         Label progressLabel = new Label(progressText, skin);
         progressLabel.setColor(Color.LIGHT_GRAY);
         row.add(progressLabel).expandX().left().padTop(5).row();
-        
-        // Add row to list
+
         table.add(row).width(750).padBottom(10).row();
     }
 

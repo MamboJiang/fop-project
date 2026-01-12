@@ -4,8 +4,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
 public abstract class MovableObject extends GameObject {
-    
-    // Physics properties
+
     protected Vector2 velocity = new Vector2();
     protected Vector2 inputVector = new Vector2();
     protected float acceleration = 800f;
@@ -24,8 +23,7 @@ public abstract class MovableObject extends GameObject {
             this.health -= amount;
             this.damageFlashTime = FLASH_DURATION; // Short visual flash
             this.damageCooldownTimer = DAMAGE_COOLDOWN_DURATION; // Long invulnerability
-            
-            // Play generic sound? Or override?
+
             if (this.health <= 0) {
                 this.health = 0;
                 setMarkedForRemoval(true);
@@ -57,16 +55,14 @@ public abstract class MovableObject extends GameObject {
             damageCooldownTimer -= delta;
         }
     }
-    
-    // Helper to setup flash blending
+
     protected void setupDamageFlash(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
         if (damageFlashTime > 0) {
             batch.setBlendFunction(com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA, com.badlogic.gdx.graphics.GL20.GL_ONE);
             batch.setColor(1, 1, 1, 1);
         }
     }
-    
-    // Helper to reset blending
+
     protected void endDamageFlash(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
          if (damageFlashTime > 0) {
             batch.setBlendFunction(com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA, com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA);

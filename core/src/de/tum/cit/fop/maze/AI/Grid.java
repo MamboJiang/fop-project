@@ -15,13 +15,9 @@ public class Grid {
     private int tileSize = 16;
 
     public Grid(int mapWidth, int mapHeight, List<GameObject> objects) {
-        // mapWidth/Height are in PIXELS? Or TILES?
-        // Let's assume input is in PIXELS for now, or we define grid dimension directly.
-        // Standard map is usually e.g. 64x64 tiles or something.
-        // Let's calculate grid size based on objects if not provided.
-        // For simplicity, let's assume a fixed max size or calculate bounds.
+
         
-        // Dynamic sizing:
+
         float maxX = 0;
         float maxY = 0;
         for (GameObject obj : objects) {
@@ -34,14 +30,14 @@ public class Grid {
         
         walkable = new boolean[width][height];
         
-        // Default to true
+
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 walkable[x][y] = true;
             }
         }
         
-        // Mark walls as non-walkable
+
         for (GameObject obj : objects) {
             if (obj instanceof Wall) {
                 int tax = (int)(obj.getPosition().x / tileSize);

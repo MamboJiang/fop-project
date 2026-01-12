@@ -7,17 +7,14 @@ public class PlayerState {
     private int healthLevel;
     private int speedLevel;
     private int defenseLevel;
-    
-    // Progress tracking
+
     private java.util.ArrayList<String> completedLevels;
-    
-    // Stored Achievements
+
     private java.util.HashMap<String, Boolean> unlockedAchievements;
     private java.util.HashMap<String, Integer> achievementProgress;
-    private int endlessWave = 1; // Default to 1
+    private int endlessWave = 1;
 
     public PlayerState() {
-        // 每次游戏启动初始化为 0
         this.username = "Adventurer";
         this.currentXP = 0;
         this.healthLevel = 0;
@@ -33,10 +30,10 @@ public class PlayerState {
     public void setEndlessWave(int wave) { this.endlessWave = wave; }
     public void resetEndlessWave() { this.endlessWave = 1; }
     
-    // --- Run State Persistence ---
+
     private int currentRunScore = 0;
-    private float currentRunHealth = -1; // -1 means use default/full, >0 means saved value
-    private int currentRunXP = 0; // Accumulates XP during current run
+    private float currentRunHealth = -1;
+    private int currentRunXP = 0;
 
     public int getCurrentRunScore() { return currentRunScore; }
     public void setCurrentRunScore(int score) { this.currentRunScore = score; }
@@ -95,7 +92,6 @@ public class PlayerState {
         return completedLevels;
     }
 
-    // --- XP 逻辑 ---
     public void addXP(int amount) {
         currentXP += amount;
         System.out.println("Current XP: " + currentXP);
@@ -105,7 +101,6 @@ public class PlayerState {
         return currentXP;
     }
 
-    // --- 升级逻辑 ---
     public int getUpgradeCost(String skillType) {
         int level = 0;
         switch (skillType) {
@@ -130,7 +125,6 @@ public class PlayerState {
         return false;
     }
 
-    // --- 属性加成计算 ---
     public int getMaxLives() {
         return 4 + healthLevel;
     }
@@ -143,7 +137,6 @@ public class PlayerState {
         return defenseLevel * 0.1f;
     }
 
-    // UI Getter
     public int getHealthLevel() { return healthLevel; }
     public int getSpeedLevel() { return speedLevel; }
     public int getDefenseLevel() { return defenseLevel; }

@@ -22,7 +22,7 @@ public class DesktopLauncher {
 
 		// Get the display mode of the current monitor
 		Graphics.DisplayMode displayMode = Lwjgl3ApplicationConfiguration.getDisplayMode();
-		// Set the window size to 80% of the screen width and heighta
+		// Set the window size to 80% of the screen width and height
 		config.setWindowedMode(
 				Math.round(0.8f * displayMode.width),
 				Math.round(0.8f * displayMode.height)

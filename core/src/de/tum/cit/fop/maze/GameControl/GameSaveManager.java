@@ -17,7 +17,7 @@ public class GameSaveManager {
         
         FileHandle file = Gdx.files.local(SAVE_DIR + SAVE_PREFIX + slotIndex + EXT);
         
-        // Sync achievements to state before saving
+
         AchievementManager.getInstance().syncTo(state);
         
         file.writeString(json.prettyPrint(state), false);
@@ -30,11 +30,10 @@ public class GameSaveManager {
         
         try {
             Json json = new Json();
-            // Important: We need to handle the achievements field if we added it.
+
             PlayerState state = json.fromJson(PlayerState.class, file);
             Gdx.app.log("GameSaveManager", "Game loaded from slot " + slotIndex);
             
-            // Sync achievements from state to manager
             AchievementManager.getInstance().resetAchievements();
             AchievementManager.getInstance().syncFrom(state);
             
@@ -49,7 +48,6 @@ public class GameSaveManager {
         return Gdx.files.local(SAVE_DIR + SAVE_PREFIX + slotIndex + EXT).exists();
     }
     
-    // Get the slot index of the most recently modified save, or -1 if none
     public static int getLatestSaveSlot() {
         long lastModified = -1;
         int bestSlot = -1;
@@ -66,7 +64,6 @@ public class GameSaveManager {
         return bestSlot;
     }
     
-    // Get summary for UI (e.g. "PlayerName - XP 500")
     public static String getSaveSummary(int slotIndex) {
         PlayerState state = loadGame(slotIndex);
         if (state == null) return "Empty";

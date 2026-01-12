@@ -16,7 +16,7 @@ import de.tum.cit.fop.maze.MazeRunnerGame;
 import java.util.List;
 
 public class Character extends MovableObject {
-    // private int lives; // Removed, using health
+
     private boolean hasKey = false;
     private float speed;
     private static final float WALK_SPEED = 100f;
@@ -31,16 +31,12 @@ public class Character extends MovableObject {
 
     private Direction currentDirection;
     
-    // Damage VFX (Moved to MovableObject, but local fields removed)
-    // private float damageFlashTime = 0f; 
-    // private static final float DAMAGE_DURATION = 0.1f;
 
-    // Navigation Arrow
     private TextureRegion arrowRegion;
     private Vector2 targetPosition;
     private PlayerState playerState;
-    private MazeRunnerGame game; // 添加这个引用
-    private float footstepTimer = 0f; // 用于控制脚步声频率
+    private MazeRunnerGame game;
+    private float footstepTimer = 0f;
 
     private boolean blockEffectRequested = false;
 
@@ -51,10 +47,10 @@ public class Character extends MovableObject {
     public Character(float x, float y, PlayerState state, MazeRunnerGame game) {
         super(x, y, 16, 32, null);
         this.playerState = state;
-        this.health = 4; // Use inherited health
+        this.health = 4;
         this.speed = WALK_SPEED;
         
-        // Physics Init
+
         this.maxSpeed = WALK_SPEED;
         this.acceleration = 800f;
         this.friction = 800f;
@@ -82,10 +78,6 @@ public class Character extends MovableObject {
         updateBounds();
     }
 
-    // ... (isLevelCompleted and loadAnimations omitted, assumed unchanged if not in range) ...
-    // NOTE: Replace does not support "..." expansion, so I must include everything I am replacing.
-    // I will target the class definition up to updatePhysics usage.
-
     public boolean isLevelCompleted() {
         return isLevelCompleted;
     }
@@ -95,16 +87,15 @@ public class Character extends MovableObject {
         this.hasKey = false;
         this.targetPosition = null;
         
-        // Reset Status Effects
         this.shieldTime = 0f;
         this.invincibleTime = 0f;
         this.damageFlashTime = 0f;
         this.screenShakeRequested = false;
         this.damageNumberRequested = false;
         
-        // Reset physical state
+
         this.velocity.set(0, 0);
-        this.acceleration = 800f; // Reset accel in case it was modified? (Not usually, but safe)
+        this.acceleration = 800f;
     }
 
     private void loadAnimations() {
@@ -116,7 +107,7 @@ public class Character extends MovableObject {
         arrowRegion = thingsTmp[4][0];
 
 
-        // Helper to extract first 4 frames
+
         TextureRegion[] downFrames = new TextureRegion[4];
         TextureRegion[] rightFrames = new TextureRegion[4];
         TextureRegion[] upFrames = new TextureRegion[4];
@@ -130,16 +121,15 @@ public class Character extends MovableObject {
             leftFrames[i] = tmp[3][i];
         }
 
-        // Row 0: Down
+
         walkDown = new Animation<>(0.1f, downFrames);
-        // Row 1: Right
+
         walkRight = new Animation<>(0.1f, rightFrames);
-        // Row 2: Up
+
         walkUp = new Animation<>(0.1f, upFrames);
-        // Row 3: Left
+
         walkLeft = new Animation<>(0.1f, leftFrames);
 
-        // Set initial texture
         this.textureRegion = downFrames[0];
     }
 
@@ -186,7 +176,6 @@ public class Character extends MovableObject {
                 }
             }
             else if (hitObject instanceof Trap) {
-                // 1. 扣血
                 this.takeDamage();
                 System.out.println("Stepped on a trap! Lives left: " + getLives());
             }
@@ -198,12 +187,12 @@ public class Character extends MovableObject {
 
         handleInput(configManager);
 
-        // Physics update (Inherited)
+
         updatePhysics(delta);
 
-        // Animation state
+
         if (isMoving) {
-            // Update direction based on velocity
+
             if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
                 currentDirection = velocity.x > 0 ? Direction.RIGHT : Direction.LEFT;
             } else {
@@ -215,42 +204,42 @@ public class Character extends MovableObject {
             float oldX = position.x;
             float oldY = position.y;
 
-            // Move X
+
             position.x += velocity.x * delta;
             updateBounds();
             GameObject colX = checkCollision(mapObjects);
             collisionAddressing(colX, oldX, true);
 
 
-            // Move Y
+
             position.y += velocity.y * delta;
             updateBounds();
             GameObject colY = checkCollision(mapObjects);
             collisionAddressing(colY, oldY, false);
 
 
-            // Corner Sliding Logic
+
             handleWallSliding(delta, mapObjects, colX, colY);
         }
 
         float stepInterval = (maxSpeed > 150f) ? 0.25f : 0.35f;
 
-// 2. 更新计时器逻辑
+
         if (velocity.len() > 5f) {
             footstepTimer += delta;
 
-            // 使用动态的 stepInterval 代替固定的 0.35f
+
             if (footstepTimer >= stepInterval) {
                 game.playFootstepSound();
                 footstepTimer = 0f;
             }
         } else {
-            // 没移动时，重置计时器为当前间隔，保证下次一动立刻响
+
             footstepTimer = stepInterval;
         }
 
 
-        // Update texture based on animation
+
         Animation<TextureRegion> currentAnim;
         switch (currentDirection) {
             case DOWN: currentAnim = walkDown; break;
@@ -266,17 +255,16 @@ public class Character extends MovableObject {
             this.textureRegion = currentAnim.getKeyFrame(0, true); // Stand still frame
         }
 
-        // Handle damage flash
+
         if (damageFlashTime > 0) {
             damageFlashTime -= delta;
         }
         
-        // Handle Invincibility
+
         if (invincibleTime > 0) {
             invincibleTime -= delta;
         }
         
-        // Handle Shield
         if (shieldTime > 0) {
             shieldTime -= delta;
         }
@@ -284,7 +272,7 @@ public class Character extends MovableObject {
         updateTarget(mapObjects);
     }
     
-    // Shield Logic
+
     private float shieldTime = 0f;
     private Animation<TextureRegion> shieldAnimation;
     
@@ -311,8 +299,7 @@ public class Character extends MovableObject {
     }
 
     public void draw(SpriteBatch batch) {
-        // boolean isFlashing = damageFlashTime > 0; // inherited
-        
+
         setupDamageFlash(batch);
         
         batch.draw(textureRegion, position.x, position.y, width, height);
@@ -321,44 +308,37 @@ public class Character extends MovableObject {
         
         drawArrow(batch);
         
-        // Reset Color (Important! Otherwise everything else becomes transparent/tinted)
         batch.setColor(Color.WHITE);
         
-            // Draw Shield Overlay
-            if (shieldTime > 0 && shieldAnimation != null) {
-                TextureRegion shieldFrame = shieldAnimation.getKeyFrame(stateTime, true);
+
+        if (shieldTime > 0 && shieldAnimation != null) {
+            TextureRegion shieldFrame = shieldAnimation.getKeyFrame(stateTime, true);
                 
-                // Semi-transparent
-                batch.setColor(1, 1, 1, 0.5f); // 50% opacity
+
+            batch.setColor(1, 1, 1, 0.5f);
                 
-                // User Request: Allow slight stretching and manual scale adjustment
-                float scaleX = 1.2f; // Adjust this for horizontal stretch (e.g. 1.2f)
-                float scaleY = 1.5f; // Adjust this for vertical stretch (e.g. 1.1f)
+
+            float scaleX = 1.2f;
+            float scaleY = 1.5f;
                 
-                float actualWidth = 16f * scaleX;
-                float actualHeight = 16f * scaleY;
+            float actualWidth = 16f * scaleX;
+            float actualHeight = 16f * scaleY;
+
+            float drawX = (position.x + 8) - (actualWidth / 2);
+
+            float drawY = position.y + 5;
                 
-                // Center X: SpriteCenter (pos.x + 8) - HalfNewWidth
-                float drawX = (position.x + 8) - (actualWidth / 2);
+            batch.draw(shieldFrame, drawX, drawY, actualWidth, actualHeight);
                 
-                // Bottom Y: Aligned with Hitbox Bottom (pos.y + 4) or slightly offset (+6)
-                // Growing height keeps bottom fixed.
-                float drawY = position.y + 5; 
-                
-                batch.draw(shieldFrame, drawX, drawY, actualWidth, actualHeight);
-                
-                batch.setColor(Color.WHITE);
+            batch.setColor(Color.WHITE);
             }
     }
 
-    
-    // approach helper removed as it is now in MovableObject
     
     private void updateTarget(List<GameObject> mapObjects) {
         targetPosition = null;
         float minDst = Float.MAX_VALUE;
 
-        // If has Key, look for Exit. Else look for Key.
         Class<?> targetType = hasKey ? Exit.class : Key.class;
 
         for (GameObject obj : mapObjects) {
@@ -371,7 +351,6 @@ public class Character extends MovableObject {
             }
         }
 
-        // If searching for key but none found (e.g. all collected or none exist), target Exit
         if (!hasKey && targetPosition == null) {
             targetType = Exit.class;
             for (GameObject obj : mapObjects) {
@@ -392,7 +371,6 @@ public class Character extends MovableObject {
         float angle = MathUtils.atan2(targetPosition.y - position.y, targetPosition.x - position.x) * MathUtils.radiansToDegrees;
         float radius = 20f;
 
-        // Center of character
         float cx = position.x + width / 2;
         float cy = position.y + height / 2; 
 
@@ -426,11 +404,10 @@ public class Character extends MovableObject {
         if (Gdx.input.isKeyPressed(configManager.getKey("RIGHT"))) inputVector.x = 1;
 
         if (inputVector.len2() > 0) {
-            inputVector.nor(); // Normalize for consistent diagonal speed
+            inputVector.nor();
         }
     }
-    
-    // Bounds update logic stays here
+
     private void updateBounds() {
         this.bounds.setPosition(position.x+4, position.y+4);
     }
@@ -439,7 +416,6 @@ public class Character extends MovableObject {
         for (GameObject obj : mapObjects) {
             if (obj == this) continue;
 
-            // Wall collision
             if (obj instanceof Wall || obj instanceof Key || obj instanceof Exit || obj instanceof Trap || obj instanceof Collectable) {
                 if (bounds.overlaps(obj.getBounds())) {
                     return obj;
@@ -455,36 +431,33 @@ public class Character extends MovableObject {
     private static final float INVINCIBLE_DURATION = 1.0f;
     private boolean infiniteHP = false;
     
-    // Override takeDamage to add invincibility and specific effects
+
     @Override
     public void takeDamage(int amount) {
-        if (invincibleTime > 0) return;// Prevent damage if invincible
+        if (invincibleTime > 0) return;
 
         if (playerState != null && com.badlogic.gdx.math.MathUtils.random() < playerState.getDamageReductionChance()) {
             System.out.println("Blocked!");
             game.playBlockSound();
-            this.blockEffectRequested = true;// Request the visual
+            this.blockEffectRequested = true;
             damageNumberRequested = false;
             invincibleTime = 0.5f;
-            return; // Return early, taking NO damage
+            return;
         }
         
         if (damageFlashTime <= 0) {
             if (!infiniteHP) {
-                // Character damage is usually 1 "life" regardless of amount unless specified
-                // But let's respect amount if needed. For now default is 1.
-                // Assuming amount is 1 for traps/enemies usually.
+
                 super.takeDamage(amount);
                 damageNumberRequested = true;
                 game.playHitSound();
                 de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.TAKE_DAMAGE, 1);
             } else {
-                 // Even with infinite HP, show flash? 
+
                 damageFlashTime = FLASH_DURATION;
                 damageNumberRequested = true;
             }
-            
-            // On top of base logic:
+
             invincibleTime = INVINCIBLE_DURATION; 
             screenShakeRequested = true;
         }
@@ -519,18 +492,16 @@ public class Character extends MovableObject {
     }
 
     public int getLives() {
-        return health; // In Character, health = lives
+        return health;
     }
     
     public int getMaxLives() {
         if (playerState != null) {
             return playerState.getMaxLives();
         }
-        return 4; // Default fallback
+        return 4;
     }
-    
-    // isDead() inherited
-    // isDamaged() inherited
+
 
     public boolean hasKey() {
         return hasKey;
@@ -540,7 +511,7 @@ public class Character extends MovableObject {
         this.hasKey = hasKey;
     }
     
-    // Debug methods
+
     public void setLives(int lives) {
         this.health = lives;
         int max = getMaxLives();
@@ -561,10 +532,10 @@ public class Character extends MovableObject {
     }
 
     private void handleWallSliding(float delta, List<GameObject> mapObjects, GameObject colX, GameObject colY) {
-        float SLIDE_THRESHOLD = 8.0f; // User requested 8.0f
+        float SLIDE_THRESHOLD = 8.0f;
         float slideSpeed = 100f; 
 
-        // Case 1: Hitting Vertical Wall (X-Collision), trying to move Horizontally
+
         if (colX instanceof Wall && Math.abs(inputVector.x) > 0 && Math.abs(inputVector.y) == 0) {
             Rectangle wallBounds = colX.getBounds();
             float overlapY = Math.min(bounds.y + bounds.height, wallBounds.y + wallBounds.height) - Math.max(bounds.y, wallBounds.y);
@@ -577,14 +548,12 @@ public class Character extends MovableObject {
                 float newY = position.y;
                 boolean slidingDown = centerY < wallCenterY;
                 
-                // Continuity Check: Is there a wall in the direction we want to slide?
-                // If sliding down, check directly below the current wall.
-                // If sliding up, check directly above.
+
                 float checkY = slidingDown ? wallBounds.y - 1 : wallBounds.y + wallBounds.height + 1;
-                // Check a thin strip along the wall's vertical seam
+
                 Rectangle neighborCheck = new Rectangle(wallBounds.x, checkY, wallBounds.width, 1);
                 
-                if (!isWallAt(neighborCheck, mapObjects, colX)) { // Only slide if NO wall there
+                if (!isWallAt(neighborCheck, mapObjects, colX)) {
                     if (slidingDown) newY -= slideAmount;
                     else newY += slideAmount;
 
@@ -596,7 +565,6 @@ public class Character extends MovableObject {
             }
         }
 
-        // Case 2: Hitting Horizontal Wall (Y-Collision), trying to move Vertically
         if (colY instanceof Wall && Math.abs(inputVector.y) > 0 && Math.abs(inputVector.x) == 0) {
             Rectangle wallBounds = colY.getBounds();
             float overlapX = Math.min(bounds.x + bounds.width, wallBounds.x + wallBounds.width) - Math.max(bounds.x, wallBounds.x);
@@ -608,8 +576,7 @@ public class Character extends MovableObject {
                 
                 float newX = position.x;
                 boolean slidingLeft = centerX < wallCenterX;
-                
-                // Continuity Check
+
                 float checkX = slidingLeft ? wallBounds.x - 1 : wallBounds.x + wallBounds.width + 1;
                 Rectangle neighborCheck = new Rectangle(checkX, wallBounds.y, 1, wallBounds.height);
                 
@@ -637,12 +604,11 @@ public class Character extends MovableObject {
     }
 
     private boolean isPositionFree(float x, float y, List<GameObject> mapObjects, GameObject ignoreSelf) {
-        // Temporarily move bounds to check collision
-        Rectangle testBounds = new Rectangle(x+4, y+4, 8, 8); // Match constructor logic
+        Rectangle testBounds = new Rectangle(x+4, y+4, 8, 8);
         for (GameObject obj : mapObjects) {
             if (obj == ignoreSelf) continue;
             if (obj instanceof Wall || obj instanceof Exit) {
-                 if (obj instanceof Exit && hasKey) continue; // Passable if has key
+                 if (obj instanceof Exit && hasKey) continue;
                  
                  if (testBounds.overlaps(obj.getBounds())) {
                      return false;
@@ -660,14 +626,14 @@ public class Character extends MovableObject {
         this.blockEffectRequested = false;
     }
     
-    // --- Persistence Adapter Methods ---
+
     public float getCurrentHealth() {
         return (float) this.health;
     }
 
     public void setCurrentHealth(float health) {
         this.health = (int) health;
-        // Clamp to max lives?
+
         int max = getMaxLives();
         if (this.health > max) this.health = max;
         if (this.health < 0) this.health = 0;

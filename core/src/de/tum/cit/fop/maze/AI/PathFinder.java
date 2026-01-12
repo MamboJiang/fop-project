@@ -8,8 +8,8 @@ public class PathFinder {
     private static class Node implements Comparable<Node> {
         int x, y;
         Node parent;
-        float gCost; // Cost from start
-        float hCost; // Heuristic to end
+        float gCost;
+        float hCost;
         
         public Node(int x, int y, Node parent, float g, float h) {
             this.x = x;
@@ -46,11 +46,11 @@ public class PathFinder {
         int endX = (int)(endWorld.x / 16);
         int endY = (int)(endWorld.y / 16);
         
-        if (!grid.isWalkable(endX, endY)) return null; // Target unreachable
+        if (!grid.isWalkable(endX, endY)) return null;
         
         PriorityQueue<Node> openSet = new PriorityQueue<>();
         Set<Node> closedSet = new HashSet<>();
-        Map<String, Node> nodeMap = new HashMap<>(); // To check if node exists with better path
+        Map<String, Node> nodeMap = new HashMap<>();
         
         Node startNode = new Node(startX, startY, null, 0, heuristic(startX, startY, endX, endY));
         openSet.add(startNode);
@@ -88,11 +88,11 @@ public class PathFinder {
             }
         }
         
-        return null; // No path found
+        return null;
     }
     
     private static float heuristic(int x1, int y1, int x2, int y2) {
-        // Manhattan Distance for 4-way movement
+
         return Math.abs(x1 - x2) + Math.abs(y1 - y2);
     }
     
@@ -104,7 +104,7 @@ public class PathFinder {
         List<Vector2> path = new ArrayList<>();
         Node current = endNode;
         while (current != null) {
-            // Convert back to world coordinates (Center of tile)
+
             path.add(new Vector2(current.x * 16 + 8, current.y * 16 + 8));
             current = current.parent;
         }

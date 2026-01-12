@@ -1,0 +1,28 @@
+{
+username: Bababoi
+currentXP: 550
+healthLevel: 6
+speedLevel: 10
+defenseLevel: 9
+completedLevels: [
+	level-1
+]
+unlockedAchievements: {
+	serial_killer: false
+	survivor_novice: true
+	escape_artist: true
+	rich: true
+	first_blood: true
+}
+achievementProgress: {
+	serial_killer: 1
+	survivor_novice: 3
+	escape_artist: 1
+	rich: 5
+	first_blood: 1
+}
+endlessWave: 4
+currentRunScore: 18364
+currentRunHealth: 9
+currentRunXP: 200
+}

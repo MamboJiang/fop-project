@@ -37,23 +37,22 @@ public class SaveSlotScreen implements Screen {
             String btnText = "Slot " + (i+1) + ": " + summary;
             TextButton slotButton = new TextButton(btnText, game.getSkin());
             
-            // Logic
+
             slotButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     if (isLoading) {
                         if (exists) {
                             if (game.loadGame(slotIndex)) {
-                                game.goToLevelSelect(); // Or menu, but usually game start/level select
+                                game.goToLevelSelect();
                             }
                         } else {
-                            // Can't load empty
-                            // Maybe play error sound or shake
+
                         }
                     } else {
-                        // New Game
+
                         if (exists) {
-                            // Confirm Overwrite
+
                             showOverwriteDialog(slotIndex);
                         } else {
                            showNameInputDialog(slotIndex);
@@ -62,7 +61,7 @@ public class SaveSlotScreen implements Screen {
                 }
             });
             
-            // Disable Load button if empty? Or just do nothing?
+
             if (isLoading && !exists) {
                 slotButton.setColor(0.5f, 0.5f, 0.5f, 1f); 
                 slotButton.setDisabled(true);
@@ -71,7 +70,7 @@ public class SaveSlotScreen implements Screen {
             table.add(slotButton).width(600).height(80).padBottom(20).row();
         }
 
-        // Back Button
+
         TextButton backButton = new TextButton("Back", game.getSkin());
         backButton.addListener(new ChangeListener() {
             @Override

@@ -32,14 +32,13 @@ public class ConfigManager {
         } else {
             createDefaultConfig();
         }
-        
-        // Ensure defaults if keys are missing from loaded config
+
         validateKeyBindings();
     }
 
     private void createDefaultConfig() {
         config = new GameConfig();
-        // Set default key bindings
+
         Map<String, Integer> keys = config.getKeyBindings();
         keys.put("UP", Keys.W);
         keys.put("DOWN", Keys.S);
@@ -66,7 +65,6 @@ public class ConfigManager {
         file.writeString(json.prettyPrint(config), false);
     }
 
-    // Getters and Setters
 
     public float getMusicVolume() {
         return config.getMusicVolume();
