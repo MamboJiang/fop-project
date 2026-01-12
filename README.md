@@ -32,29 +32,49 @@ A Java-based maze runner game built with LibGDX. Navigate through mazes, avoid e
 
 ```mermaid
 classDiagram
+    %% Core Game
     class MazeRunnerGame {
         +SpriteBatch spriteBatch
         +Skin skin
         +create()
         +goToGame(FileHandle map)
         +goToMenu()
+        +goToStory()
+        +goToSettings()
     }
     
+    %% Screens
     class Screen {
         <<interface>>
         +show()
         +render(delta)
         +resize(width, height)
+        +pause()
+        +resume()
+        +hide()
+        +dispose()
     }
     
     MazeRunnerGame --> Screen : manages
     Screen <|.. GameScreen
     Screen <|.. MenuScreen
     Screen <|.. StoryScreen
-    
+    Screen <|.. LevelSelectionScreen
+    Screen <|.. SettingsScreen
+    Screen <|.. AchievementsScreen
+    Screen <|.. SkillTreeScreen
+    Screen <|.. SaveSlotScreen
+    Screen <|.. StoryDialogueScreen
+    Screen <|.. DialogueScreen
+    Screen <|.. VFXDemoScreen
+
+    %% Game Objects Hierarchy
     class GameObject {
         +Vector2 position
+        +float width
+        +float height
         +Rectangle bounds
+        +TextureRegion textureRegion
         +draw(SpriteBatch)
         +getBounds()
     }
@@ -63,45 +83,157 @@ classDiagram
         +float speed
         +Vector2 velocity
         +int health
+        +int maxHealth
         +update(delta)
         +takeDamage(amount)
+        +heal(amount)
     }
     
     class Character {
         +PlayerState state
         +handleInput()
         +update(delta)
+        +hasKey()
+    }
+    
+    class PlayerState {
+        +int currentHealth
+        +int score
+        +addScore(points)
     }
     
     class Enemy {
         +float detectionRange
         +pathFind(target)
+        +updateCombat()
     }
+    
+    class Ghost {
+        +boolean passThroughWalls
+    }
+    
+    %% Environment & Items
+    class Wall
+    class Path
+    class Trap
+    class EntryPoint
+    class Exit
+    class EnemySpawnPoint
+    class GhostSpawnPoint
     
     class Collectable {
         <<interface>>
         +collect(Character)
     }
     
+    class Key
+    class Heart
+    class ShieldItem
+
+    %% Inheritance
     GameObject <|-- MovableObject
     GameObject <|-- Wall
+    GameObject <|-- Path
     GameObject <|-- Trap
     GameObject <|-- EntryPoint
     GameObject <|-- Exit
-    
-    MovableObject <|-- Character
-    MovableObject <|-- Enemy
-    Enemy <|-- Ghost
+    GameObject <|-- EnemySpawnPoint
+    GameObject <|-- GhostSpawnPoint
     
     GameObject <|-- Key
     GameObject <|-- Heart
     GameObject <|-- ShieldItem
     
+    MovableObject <|-- Character
+    MovableObject <|-- Enemy
+    Enemy <|-- Ghost
+    
+    %% Interfaces
     Collectable <|.. Key
     Collectable <|.. Heart
     Collectable <|.. ShieldItem
     
-    Character --> Collectable : collects
+    %% Systems & Managers
+    class MapLoader {
+        +loadMap(FileHandle)
+        +getMapFiles()
+    }
+    
+    class HUD {
+        +update(Character)
+    }
+    
+    class PauseMenu {
+        +updateStats()
+    }
+    
+    class GameOverMenu
+    
+    class ConfigManager {
+        +loadConfig()
+        +saveConfig()
+    }
+    class GameConfig
+    ConfigManager --> GameConfig
+    
+    class AchievementManager {
+        +unlockAchievement()
+    }
+    class Achievement
+    AchievementManager --> Achievement
+    
+    class GameSaveManager {
+        +saveGame()
+        +loadGame()
+    }
+    class LeaderboardManager
+    
+    %% UI & Logic Relations
+    GameScreen --> HUD
+    GameScreen --> PauseMenu
+    GameScreen --> GameOverMenu
+    GameScreen --> MapLoader
+    Character --> PlayerState
+    
+    %% AI
+    class Grid {
+        +isWalkable(x, y)
+    }
+    
+    class PathFinder {
+        +findPath(Grid, start, end)
+    }
+    
+    Enemy --> PathFinder
+    PathFinder --> Grid
+    
+    %% Dialogues
+    class DialogueBox {
+        +show(text)
+    }
+    StoryDialogueScreen --> DialogueBox
+    DialogueScreen --> DialogueBox
+    
+    %% Procedural Generation
+    class DungeonGenerator {
+        +generate(difficulty)
+    }
+    class Room
+    
+    DungeonGenerator --> Room
+    DungeonGenerator --> GameObject : creates
+    
+    %% VFX
+    class LightManager {
+        +render(batch, lights)
+    }
+    class PointLight
+    class DamageNumber
+    class ScreenShake
+    
+    LightManager --> PointLight
+    GameScreen --> LightManager
+    GameScreen --> ScreenShake
 ```
 
 ## How to Play
