@@ -4,17 +4,15 @@ A Java-based maze runner game built with LibGDX. Navigate through mazes, avoid e
 
 ## Project Structure
 
-The source code is organized into the following packages under `de.tum.cit.fop.maze`:
-
 - **Root**: Contains the main game entry point `MazeRunnerGame` and various `Screen` implementations (Menu, Game, Story, etc.).
 - **GameObj**: Defines all game entities.
     - `GameObject`: Base class for all entities.
     - `MovableObject`: Base for moving entities (Physics, Collision).
     - `Character`: The player character.
-    - `Enemy` / `Ghost`: AI-controlled antagonists.
-    - Items: `Key`, `Heart`, `ShieldItem`.
+    - `Enemy` / `Ghost`: AI-controlled entities.
+    - Collectable Items: `Key`, `Heart`, `ShieldItem`.
 - **GameControl**: Manages game systems.
-    - `HUD`: Heads-Up Display.
+    - `HUD`
     - `GameConfig` / `ConfigManager`: Settings management.
     - `AchievementManager`: Tracks player achievements.
     - `GameSaveManager`: Handles save/load functionality.
@@ -22,15 +20,15 @@ The source code is organized into the following packages under `de.tum.cit.fop.m
     - `Grid`: Map representation for AI.
     - `PathFinder`: A* algorithm implementation.
 - **Conversation**: Dialogue system.
-    - `DialogueBox`: UI component for conversations.
-    - `StoryDialogueScreen`: Screen for story sequences.
+    - `DialogueBox`: UI components.
+    - `StoryDialogueScreen`: Screen for story sequences
 - **Procedure**: Random level generation.
     - `DungeonGenerator`: Generates procedural layouts.
 - **VFX**: Visual effects.
     - `LightManager`: Dynamic lighting system.
     - `DamageNumber`: Floating damage text.
 
-## Class Hierarchy (Simplified)
+## Class Hierarchy
 
 ```mermaid
 classDiagram
@@ -106,28 +104,7 @@ classDiagram
     Character --> Collectable : collects
 ```
 
-## How to Run
-
-1.  **Prerequisites**: Ensure you have a Java Development Kit (JDK) 17 or higher installed.
-2.  **Build & Run**:
-    This project uses Gradle. Open a terminal (PowerShell or CMD) in the project root.
-    
-    **Windows (PowerShell)**:
-    ```powershell
-    .\gradlew desktop:run
-    ```
-    
-    **Windows (CMD)**:
-    ```cmd
-    gradlew desktop:run
-    ```
-    
-    **Mac/Linux**:
-    ```bash
-    ./gradlew desktop:run
-    ```
-
-## Game Mechanics
+## How to Play
 
 ### Controls
 -   **Movement**: `W`, `A`, `S`, `D` keys.
@@ -139,11 +116,11 @@ classDiagram
 -   **Enemies**:
     -   **Slimes**: Patrol hallways. Avoid them!
     -   **Ghosts**: Can fly through walls and chase you.
--   **Health**: You start with 4 Lives (Hearts). Touching an enemy loses 1 Heart. If you reach 0, Game Over.
+-   **Health**: You start with 4 Lives. Touching an enemy will reduce your Lives. If you reach 0, Game Over.
 
 ### Items
 -   ❤️ **Heart**: Restores 1 Life.
--   🛡️ **Shield**: Grants temporary invulnerability (glowing effect).
+-   🛡️ **Shield**: Grants temporary invulnerability (glowing effect) and hurt enemies.
 
 ### Game Modes
 1.  **Story Mode**: Play through crafted levels with a storyline.
