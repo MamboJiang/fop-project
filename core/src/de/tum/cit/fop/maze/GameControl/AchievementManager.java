@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 import de.tum.cit.fop.maze.GameObj.PlayerState;
 
+/**
+ * Singleton manager for tracking and updating achievements.
+ */
 public class AchievementManager {
     private static AchievementManager instance;
     private Map<String, Achievement> achievements;
@@ -18,6 +21,9 @@ public class AchievementManager {
         loadAchievements();
     }
 
+    /**
+     * @return The singleton instance of AchievementManager.
+     */
     public static AchievementManager getInstance() {
         if (instance == null) {
             instance = new AchievementManager();
@@ -35,6 +41,9 @@ public class AchievementManager {
     }
     
 
+    /**
+     * Resets all achievements to locked state.
+     */
     public void resetAchievements() {
         for (Achievement a : achievements.values()) {
             a.setUnlocked(false);
@@ -43,6 +52,10 @@ public class AchievementManager {
     }
     
 
+    /**
+     * Syncs achievement state from PlayerState.
+     * @param state The player state to load from.
+     */
     public void syncFrom(PlayerState state) {
         if (state == null) return;
         
@@ -59,6 +72,10 @@ public class AchievementManager {
         }
     }
 
+    /**
+     * Syncs achievement state to PlayerState for saving.
+     * @param state The player state to write to.
+     */
     public void syncTo(PlayerState state) {
         if (state == null) return;
         
@@ -93,6 +110,11 @@ public class AchievementManager {
     private void saveAchievements() {
     }
 
+    /**
+     * Triggers progress for an event type.
+     * @param type Event type (e.g., KILL_ENEMY).
+     * @param amount Amount to increment.
+     */
     public void onEvent(EventType type, int amount) {
         for (Achievement a : achievements.values()) {
             if (a.isUnlocked()) continue;

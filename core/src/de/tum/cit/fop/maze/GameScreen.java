@@ -27,6 +27,10 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import java.util.List;
 
 
+/**
+ * The GameScreen class is responsible for the main gameplay loop.
+ * It handles rendering, updates, input, and game logic like level generation and game over states.
+ */
 public class GameScreen implements Screen {
 
     private final MazeRunnerGame game;
@@ -67,6 +71,11 @@ public class GameScreen implements Screen {
 
     private String currentLevelName = "Unknown";
 
+    /**
+     * Constructor for loading a specific map file.
+     * @param game The main game class.
+     * @param mapFile The map file to load.
+     */
     public GameScreen(MazeRunnerGame game, FileHandle mapFile) {
         this.game = game;
         this.mapFile = mapFile;
@@ -80,6 +89,12 @@ public class GameScreen implements Screen {
     }
     
 
+    /**
+     * Constructor for Procedural / Endless modes.
+     * @param game The main game class.
+     * @param isProcedural Whether the level should be generated procedurally.
+     * @param playerName The name of the player.
+     */
     public GameScreen(MazeRunnerGame game, boolean isProcedural, String playerName) {
         this.game = game;
         this.isProcedural = isProcedural;
@@ -92,14 +107,20 @@ public class GameScreen implements Screen {
         setupLevel();
     }
     
+    /**
+     * Sets the difficulty for procedural generation.
+     * @param difficulty The difficulty level.
+     */
     public void setDifficulty(int difficulty) {
         this.currentDifficulty = difficulty;
 
         generateProceduralLevel();
     }
     
+    /**
+     * Common initialization for camera, viewport, HUD, and other systems.
+     */
     private void initCommon() {
-
         camera = new OrthographicCamera();
         camera.zoom = 0.7f; 
         
@@ -115,6 +136,9 @@ public class GameScreen implements Screen {
         setupPauseMenu();
     }
 
+    /**
+     * Sets up the level, either loading from file or generating procedurally.
+     */
     private void setupLevel() {
         if (isProcedural) {
              generateProceduralLevel();
@@ -132,6 +156,9 @@ public class GameScreen implements Screen {
         initMapObjects();
     }
 
+    /**
+     * Generates a procedurally generated level using DungeonGenerator.
+     */
     private void generateProceduralLevel() {
 
         int size = 40 + (currentDifficulty * 2);
@@ -143,6 +170,9 @@ public class GameScreen implements Screen {
         initMapObjects();
     }
     
+    /**
+     * Initializes game objects (Player, Enemies, Items) from the map data.
+     */
     private void initMapObjects() {
 
         grid = new de.tum.cit.fop.maze.AI.Grid(0, 0, mapObjects);
@@ -237,6 +267,9 @@ public class GameScreen implements Screen {
         damageNumbers = new java.util.ArrayList<>();
     }
 
+    /**
+     * Sets up the pause menu UI.
+     */
     private void setupPauseMenu() {
         pauseStage = new Stage(new FitViewport(1920, 1080), game.getSpriteBatch());
         
@@ -286,6 +319,10 @@ public class GameScreen implements Screen {
         pauseStage.addActor(pauseMenu);
     }
 
+    /**
+     * Loads the next level. If procedural, generates a new harder level.
+     * If story/classic, loads the next map file.
+     */
     private void loadNextLevel() {
         if (isProcedural) {
             totalRunScore += calculateScore();
@@ -342,6 +379,11 @@ public class GameScreen implements Screen {
         }
     }
 
+    /**
+     * Awards XP to the player.
+     * @param win Whether the level was won.
+     * @return The amount of XP awarded.
+     */
     private int awardXP(boolean win) {
         if (win) {
 
@@ -368,6 +410,10 @@ public class GameScreen implements Screen {
         return 0;
     }
 
+    /**
+     * Shows the Game Over menu with appropriate options (Win/Loss).
+     * @param win True if the player won the level/run.
+     */
     private void showGameOverMenu(boolean win) {
         if (isGameOver) return;
         isGameOver = true;
@@ -480,6 +526,9 @@ public class GameScreen implements Screen {
     }
 
 
+    /**
+     * Toggles the pause state of the game.
+     */
     private void togglePause() {
         isPaused = !isPaused;
         if (isPaused) {
@@ -497,6 +546,9 @@ public class GameScreen implements Screen {
         updateInputProcessor();
     }
     
+    /**
+     * Updates the input processor based on current game state (Paused vs Running).
+     */
     public void updateInputProcessor() {
         InputMultiplexer multiplexer = new InputMultiplexer();
         if (isPaused) {
@@ -508,15 +560,24 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(multiplexer);
     }
     
+    /**
+     * Toggles debug rendering mode.
+     */
     public void toggleDebug() {
         debugEnabled = !debugEnabled;
     }
     
+    /**
+     * Zooms the camera in.
+     */
     public void zoomIn() {
         camera.zoom = Math.max(0.1f, camera.zoom - 0.1f);
         camera.update();
     }
     
+    /**
+     * Zooms the camera out.
+     */
     public void zoomOut() {
         camera.zoom = Math.min(2.0f, camera.zoom + 0.1f);
         camera.update();
@@ -527,6 +588,10 @@ public class GameScreen implements Screen {
     private de.tum.cit.fop.maze.VFX.ScreenShake screenShake;
 
 
+    /**
+     * Main render loop.
+     * @param delta Time since last frame in seconds.
+     */
     @Override
     public void render(float delta) {
 
@@ -714,6 +779,11 @@ public class GameScreen implements Screen {
     }
 
 
+    /**
+     * Resizes the viewport and UI stages.
+     * @param width New width.
+     * @param height New height.
+     */
     public void resize(int width, int height) {
         viewport.update(width, height, false);
         pauseStage.getViewport().update(width, height, true);
@@ -729,6 +799,9 @@ public class GameScreen implements Screen {
     public void resume() {
     }
 
+    /**
+     * Called when this screen becomes the current screen.
+     */
     @Override
     public void show() {
         updateInputProcessor();
@@ -738,6 +811,9 @@ public class GameScreen implements Screen {
     public void hide() {
     }
 
+    /**
+     * Disposes of the screen resources.
+     */
     @Override
     public void dispose() {
         if (pauseStage != null) pauseStage.dispose();
@@ -745,6 +821,10 @@ public class GameScreen implements Screen {
         if (hud != null) hud.dispose();
     }
 
+    /**
+     * Calculates the score for the current level.
+     * @return The calculated score.
+     */
     public int calculateScore() {
         int lifeScore = 0;
         if (character != null) {
@@ -765,12 +845,20 @@ public class GameScreen implements Screen {
     }
 
 
+    /**
+     * Gets the formatted level timer.
+     * @return String in MM:SS format.
+     */
     public String getFormattedTime() {
         int minutes = (int) levelTimer / 60;
         int seconds = (int) levelTimer % 60;
         return String.format("%02d:%02d", minutes, seconds);
     }
 
+    /**
+     * Returns the main game instance.
+     * @return MazeRunnerGame instance.
+     */
     public MazeRunnerGame getGame() {
         return game;
     }

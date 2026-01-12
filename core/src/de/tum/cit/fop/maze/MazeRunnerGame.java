@@ -51,11 +51,18 @@ public class MazeRunnerGame extends Game {
     private Sound blockSound;
 
 
+    /**
+     * Constructor for MazeRunnerGame.
+     * @param fileChooser The file chooser for selecting map files.
+     */
     public MazeRunnerGame(NativeFileChooser fileChooser) {
         super();
     }
 
 
+    /**
+     * Called when the game is created. Initializes assets, sounds, and the initial screen.
+     */
     @Override
     public void create() {
         hitSound = Gdx.audio.newSound(Gdx.files.internal("Hit.wav"));
@@ -80,6 +87,9 @@ public class MazeRunnerGame extends Game {
     }
 
 
+    /**
+     * Switches to the Main Menu screen.
+     */
     public void goToMenu() {
         this.setScreen(new MenuScreen(this));
         if (gameScreen != null) {
@@ -89,6 +99,10 @@ public class MazeRunnerGame extends Game {
     }
 
 
+    /**
+     * Switches to the Game screen to play a level.
+     * @param mapFile The map file to load.
+     */
     public void goToGame(FileHandle mapFile) {
         this.setScreen(new GameScreen(this, mapFile));
         if (menuScreen != null) {
@@ -98,6 +112,10 @@ public class MazeRunnerGame extends Game {
     }
 
 
+    /**
+     * Switches to the Story screen (e.g., intro or cutscene).
+     * @param mapFile The map file associated with the story.
+     */
     public void goToStory(FileHandle mapFile) {
         this.setScreen(new StoryScreen(this, mapFile));
         if (menuScreen != null) {
@@ -107,6 +125,9 @@ public class MazeRunnerGame extends Game {
     }
     
 
+    /**
+     * Switches to the Level Selection screen.
+     */
     public void goToLevelSelect() {
         this.setScreen(new LevelSelectionScreen(this));
         if (menuScreen != null) {
@@ -116,6 +137,9 @@ public class MazeRunnerGame extends Game {
     }
 
 
+    /**
+     * Switches to the Settings screen.
+     */
     public void goToSettings() {
         this.setScreen(new SettingsScreen(this));
         if (menuScreen != null) {
@@ -125,6 +149,10 @@ public class MazeRunnerGame extends Game {
     }
     
 
+    /**
+     * Starts an Endless Mode game.
+     * @param playerName The name of the player starting the run.
+     */
     public void goToEndlessMode(String playerName) {
 
         int startDifficulty = 1;
@@ -143,17 +171,27 @@ public class MazeRunnerGame extends Game {
     }
     
 
+    /**
+     * Updates the background music volume from the configuration manager.
+     */
     public void updateMusicVolume() {
         if (backgroundMusic != null) {
             backgroundMusic.setVolume(configManager.getMusicVolume());
         }
     }
 
+    /**
+     * gets the configuration manager.
+     * @return The ConfigManager instance.
+     */
     public ConfigManager getConfigManager() {
         return configManager;
     }
 
 
+    /**
+     * Loads the character walking animation from texture files.
+     */
     private void loadCharacterAnimation() {
         Texture walkSheet = new Texture(Gdx.files.internal("character.png"));
 
@@ -173,6 +211,9 @@ public class MazeRunnerGame extends Game {
     }
 
 
+    /**
+     * Disposes of all resources used by the game.
+     */
     @Override
     public void dispose() {
         getScreen().hide();
@@ -200,25 +241,44 @@ public class MazeRunnerGame extends Game {
     }
 
 
+    /**
+     * Gets the UI skin.
+     * @return The Skin instance.
+     */
     public Skin getSkin() {
         return skin;
     }
 
+    /**
+     * Gets the character's downward animation.
+     * @return The Animation for walking down.
+     */
     public Animation<TextureRegion> getCharacterDownAnimation() {
         return characterDownAnimation;
     }
 
+    /**
+     * Gets the main sprite batch.
+     * @return The SpriteBatch instance.
+     */
     public SpriteBatch getSpriteBatch() {
         return spriteBatch;
     }
 
 
+    /**
+     * Gets the current player state.
+     * @return The PlayerState instance.
+     */
     public PlayerState getPlayerState() {
         return playerState;
     }
 
     private int currentSlotIndex = -1;
 
+    /**
+     * Switches to the Skill Tree screen.
+     */
     public void goToSkillTree() {
         this.setScreen(new SkillTreeScreen(this));
         if (menuScreen != null) {
@@ -228,27 +288,45 @@ public class MazeRunnerGame extends Game {
     }
 
 
+    /**
+     * Plays the hit sound effect.
+     */
     public void playHitSound() {
         hitSound.play(configManager.getSoundVolume());
     }
 
+    /**
+     * Plays the pickup sound effect.
+     */
     public void playPickupSound() {
         pickupSound.play(configManager.getSoundVolume());
     }
 
+    /**
+     * Plays the power-up sound effect.
+     */
     public void playPowerUpSound() {
         powerUpSound.play(configManager.getSoundVolume());
     }
 
+    /**
+     * Plays the footstep sound effect.
+     */
     public void playFootstepSound() {
 
         footstepSound.play(configManager.getSoundVolume() * 0.6f);
     }
 
+    /**
+     * Plays the game over sound effect.
+     */
     public void playGameOverSound() {
         gameOverSound.play(configManager.getSoundVolume());
     }
 
+    /**
+     * Plays the block sound effect.
+     */
     public void playBlockSound(){
         blockSound.play(configManager.getSoundVolume());
     }
@@ -256,12 +334,20 @@ public class MazeRunnerGame extends Game {
 
 
 
+    /**
+     * Saves the current game state to the current slot.
+     */
     public void saveGame() {
         if (currentSlotIndex != -1) {
             de.tum.cit.fop.maze.GameControl.GameSaveManager.saveGame(playerState, currentSlotIndex);
         }
     }
 
+    /**
+     * Loads the game state from the specified slot.
+     * @param slotIndex The index of the save slot.
+     * @return True if load was successful, false otherwise.
+     */
     public boolean loadGame(int slotIndex) {
         PlayerState loaded = de.tum.cit.fop.maze.GameControl.GameSaveManager.loadGame(slotIndex);
         if (loaded != null) {
@@ -272,6 +358,11 @@ public class MazeRunnerGame extends Game {
         return false;
     }
 
+    /**
+     * Starts a new game with the given player name in the specified slot.
+     * @param name The player's name.
+     * @param slotIndex The save slot index.
+     */
     public void startNewGame(String name, int slotIndex) {
         this.playerState = new PlayerState();
         this.playerState.setUsername(name);
@@ -284,6 +375,9 @@ public class MazeRunnerGame extends Game {
         goToMenu();
     }
 
+    /**
+     * Unloads the current game and resets player state.
+     */
     public void unloadGame() {
         this.playerState = null;
         this.currentSlotIndex = -1;

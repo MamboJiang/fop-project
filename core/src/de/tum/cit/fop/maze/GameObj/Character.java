@@ -15,6 +15,10 @@ import de.tum.cit.fop.maze.MazeRunnerGame;
 
 import java.util.List;
 
+/**
+ * The player character controlled by the user.
+ * Handles movement input, collision logic with walls/items/exits, and rendering.
+ */
 public class Character extends MovableObject {
 
     private boolean hasKey = false;
@@ -40,10 +44,20 @@ public class Character extends MovableObject {
 
     private boolean blockEffectRequested = false;
 
+    /**
+     * Enum for movement direction.
+     */
     public enum Direction {
         DOWN, RIGHT, UP, LEFT
     }
 
+    /**
+     * Constructor for Character.
+     * @param x Starting x.
+     * @param y Starting y.
+     * @param state The player's persistent state (stats, inventory).
+     * @param game The main game instance.
+     */
     public Character(float x, float y, PlayerState state, MazeRunnerGame game) {
         super(x, y, 16, 32, null);
         this.playerState = state;
@@ -73,6 +87,11 @@ public class Character extends MovableObject {
         this.game = game;
     }
     
+    /**
+     * Sets the position and updates the bounding box.
+     * @param x New x.
+     * @param y New y.
+     */
     public void setPosition(float x, float y) {
         this.position.set(x, y);
         updateBounds();
@@ -82,6 +101,9 @@ public class Character extends MovableObject {
         return isLevelCompleted;
     }
     
+    /**
+     * Resets temporary state (health, flags) for a new level.
+     */
     public void resetForNewLevel() {
         this.isLevelCompleted = false;
         this.hasKey = false;
@@ -98,6 +120,9 @@ public class Character extends MovableObject {
         this.acceleration = 800f;
     }
 
+    /**
+     * Loads the character sprites and animations.
+     */
     private void loadAnimations() {
         Texture texture = new Texture(Gdx.files.internal("character.png"));
         TextureRegion[][] tmp = TextureRegion.split(texture, 16, 32);
@@ -133,6 +158,12 @@ public class Character extends MovableObject {
         this.textureRegion = downFrames[0];
     }
 
+    /**
+     * Handles collision reactions when hitting objects.
+     * @param hitObject The object collided with.
+     * @param oldPosition The position before the move (to revert if wall).
+     * @param isXAxis Whether the movement was on the X axis.
+     */
     private void collisionAddressing(GameObject hitObject, float oldPosition, boolean isXAxis){
         if (hitObject != null) {
             if(hitObject instanceof Wall){
@@ -182,6 +213,13 @@ public class Character extends MovableObject {
         }
     }
 
+    /**
+     * Main update loop for the character.
+     * Handles input, physics, collisions, and animation state.
+     * @param delta Time delta.
+     * @param mapObjects List of objects in the map.
+     * @param configManager Configuration manager for key bindings.
+     */
     public void update(float delta, List<GameObject> mapObjects, de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
         stateTime += delta;
 
@@ -276,6 +314,10 @@ public class Character extends MovableObject {
     private float shieldTime = 0f;
     private Animation<TextureRegion> shieldAnimation;
     
+    /**
+     * Activates a temporary shield.
+     * @param duration Duration in seconds.
+     */
     public void activateShield(float duration) {
         if (shieldAnimation == null) {
             loadShieldAnimation();
@@ -298,6 +340,10 @@ public class Character extends MovableObject {
         return shieldTime > 0;
     }
 
+    /**
+     * Renders the character, shield, and navigation arrow.
+     * @param batch The sprite batch.
+     */
     public void draw(SpriteBatch batch) {
 
         setupDamageFlash(batch);
@@ -335,6 +381,10 @@ public class Character extends MovableObject {
     }
 
     
+    /**
+     * Updates the logic for the navigation arrow (nearest interesting object).
+     * @param mapObjects Objects to scan.
+     */
     private void updateTarget(List<GameObject> mapObjects) {
         targetPosition = null;
         float minDst = Float.MAX_VALUE;
@@ -365,6 +415,10 @@ public class Character extends MovableObject {
         }
     }
 
+    /**
+     * Draws the navigation arrow pointing to the target.
+     * @param batch SpriteBatch.
+     */
     public void drawArrow(SpriteBatch batch) {
         if (targetPosition == null) return;
 
@@ -390,6 +444,10 @@ public class Character extends MovableObject {
         );
     }
 
+    /**
+     * Reads keyboard input to set the movement vector.
+     * @param configManager Config manager.
+     */
     private void handleInput(de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
             maxSpeed = RUN_SPEED;
@@ -432,6 +490,10 @@ public class Character extends MovableObject {
     private boolean infiniteHP = false;
     
 
+    /**
+     * Takes damage, checks for block chance, shields, or invincibility.
+     * @param amount Damage amount.
+     */
     @Override
     public void takeDamage(int amount) {
         if (invincibleTime > 0) return;
@@ -531,6 +593,9 @@ public class Character extends MovableObject {
         return velocity;
     }
 
+    /**
+     * Handles "wall sliding" to help the player navigate around corners smoothly.
+     */
     private void handleWallSliding(float delta, List<GameObject> mapObjects, GameObject colX, GameObject colY) {
         float SLIDE_THRESHOLD = 8.0f;
         float slideSpeed = 100f; 

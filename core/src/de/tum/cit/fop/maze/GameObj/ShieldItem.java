@@ -5,10 +5,18 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+/**
+ * A collectable shield that grants temporary invulnerability.
+ */
 public class ShieldItem extends GameObject implements Collectable {
     private Animation<TextureRegion> animation;
     private float stateTime;
 
+    /**
+     * Constructor for ShieldItem.
+     * @param x X pos.
+     * @param y Y pos.
+     */
     public ShieldItem(float x, float y) {
         super(x, y, 16, 16, null);
         loadAnimation();
@@ -34,6 +42,9 @@ public class ShieldItem extends GameObject implements Collectable {
         this.textureRegion = animation.getKeyFrame(stateTime, true);
     }
 
+    /**
+     * Activates the character's shield for 10 seconds.
+     */
     @Override
     public void collect(Character character) {
         character.activateShield(10.0f);

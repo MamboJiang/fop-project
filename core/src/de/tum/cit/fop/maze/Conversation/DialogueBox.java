@@ -15,6 +15,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * UI Component for displaying dialogue bubbles.
+ * Supports different styles (Normal, Shout, Think) and tail directions.
+ */
 public class DialogueBox extends Group {
     
     public enum DialogueType {
@@ -50,6 +54,11 @@ public class DialogueBox extends Group {
     
     private static final int TILE_SIZE = 16;
     
+    /**
+     * Constructor for DialogueBox.
+     * @param skin UI Skin.
+     * @param objectsTexture Texture atlas containing bubble assets.
+     */
     public DialogueBox(Skin skin, Texture objectsTexture) {
 
         loadAssets(objectsTexture);
@@ -175,6 +184,12 @@ public class DialogueBox extends Group {
     private boolean typingFinished = true;
 
 
+    /**
+     * Displays text in the dialogue box.
+     * @param text The text to display.
+     * @param type The type of bubble (NORMAL, SHOUT, THINK).
+     * @param preferredWidth Preferred maximum width of the text area.
+     */
     public void show(String text, DialogueType type, float preferredWidth) {
         setType(type);
         this.setVisible(true);

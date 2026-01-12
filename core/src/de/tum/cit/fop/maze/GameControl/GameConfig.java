@@ -12,6 +12,9 @@ public class GameConfig {
     private float soundVolume;
     private Map<String, Integer> keyBindings;
 
+    /**
+     * Constructor initializes default headers.
+     */
     public GameConfig() {
 
         this.musicVolume = 1.0f;
@@ -19,6 +22,9 @@ public class GameConfig {
         this.keyBindings = new HashMap<>();
     }
 
+    /**
+     * @return Music volume (0.0 to 1.0).
+     */
     public float getMusicVolume() {
         return musicVolume;
     }

@@ -18,11 +18,19 @@ import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 
 
+/**
+ * The MenuScreen class represents the main menu of the game.
+ * It provides options for New Game, Continue, Level Selection, Endless Mode, and Settings.
+ */
 public class MenuScreen implements Screen {
 
     private final Stage stage;
 
 
+    /**
+     * Constructor for MenuScreen. Initializes the UI stage and buttons.
+     * @param game The main game instance.
+     */
     public MenuScreen(MazeRunnerGame game) {
         Viewport viewport = new FitViewport(2560, 1440);
         stage = new Stage(viewport, game.getSpriteBatch());
@@ -201,6 +209,10 @@ public class MenuScreen implements Screen {
 
 
 
+    /**
+     * Renders the menu screen.
+     * @param delta Time since last frame.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); 
@@ -208,16 +220,28 @@ public class MenuScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Resizes the stage viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
+    /**
+     * Disposes of the stage resources.
+     */
     @Override
     public void dispose() {
         stage.dispose();
     }
 
+    /**
+     * Called when this screen becomes the current screen.
+     * Sets the input processor to the stage.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);

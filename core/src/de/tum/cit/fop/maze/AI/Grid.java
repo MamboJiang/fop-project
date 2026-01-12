@@ -14,6 +14,12 @@ public class Grid {
     private int height;
     private int tileSize = 16;
 
+    /**
+     * Constructor for Grid.
+     * @param mapWidth Width of the map in pixels.
+     * @param mapHeight Height of the map in pixels.
+     * @param objects List of game objects to check for collisions (Walls).
+     */
     public Grid(int mapWidth, int mapHeight, List<GameObject> objects) {
 
         
@@ -49,6 +55,12 @@ public class Grid {
         }
     }
     
+    /**
+     * Checks if a specific tile coordinate is walkable.
+     * @param x Tile X coordinate.
+     * @param y Tile Y coordinate.
+     * @return True if walkable, false otherwise.
+     */
     public boolean isWalkable(int x, int y) {
         if (x < 0 || x >= width || y < 0 || y >= height) return false;
         return walkable[x][y];

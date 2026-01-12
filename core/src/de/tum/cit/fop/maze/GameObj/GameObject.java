@@ -5,6 +5,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
+/**
+ * The abstract base class for all objects in the game world.
+ * Holds position, dimensions, bounds, and texture data.
+ */
 public abstract class GameObject {
 
 
@@ -24,6 +28,14 @@ public abstract class GameObject {
     protected boolean markedForRemoval = false;
 
 
+    /**
+     * Constructor for GameObject.
+     * @param x The x-coordinate.
+     * @param y The y-coordinate.
+     * @param width The width of the object.
+     * @param height The height of the object.
+     * @param textureRegion The visual texture of the object.
+     */
     public GameObject(float x, float y, float width, float height, TextureRegion textureRegion) {
         this.position = new Vector2(x, y);
         this.width = width;
@@ -33,6 +45,9 @@ public abstract class GameObject {
         this.bounds = new Rectangle(x, y, width, height);
     }
 
+    /**
+     * @return The position vector.
+     */
     public Vector2 getPosition() {
         return position;
     }
@@ -57,6 +72,9 @@ public abstract class GameObject {
         this.height = height;
     }
 
+    /**
+     * @return The collision boundary rectangle.
+     */
     public Rectangle getBounds() {
         return bounds;
     }
@@ -65,6 +83,9 @@ public abstract class GameObject {
         this.bounds = bounds;
     }
 
+    /**
+     * @return The texture region for rendering.
+     */
     public TextureRegion getTextureRegion() {
         return textureRegion;
     }
@@ -73,6 +94,9 @@ public abstract class GameObject {
         this.textureRegion = textureRegion;
     }
 
+    /**
+     * @return True if this object needs to be removed from the game.
+     */
     public boolean isMarkedForRemoval() {
         return markedForRemoval;
     }

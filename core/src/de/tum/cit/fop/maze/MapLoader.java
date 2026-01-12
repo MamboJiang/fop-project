@@ -11,8 +11,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * The MapLoader class is responsible for loading map files (.properties) and creating
+ * the corresponding GameObjects (Walls, Enemies, Items).
+ */
 public class MapLoader {
 
+    /**
+     * Loads a map from the given file handle.
+     * Parses the properties file to create a list of GameObjects.
+     * @param mapFile The file handle of the map properties file.
+     * @return A list of GameObjects representing the level.
+     */
     public static List<GameObject> loadMap(FileHandle mapFile) {
         List<GameObject> objects = new ArrayList<>();
         Properties props = new Properties();
@@ -93,6 +103,12 @@ public class MapLoader {
     private static Texture mobsTexture;
 
 
+    /**
+     * Retrieves the animation set for a specific mob based on its grid position in the sprite sheet.
+     * @param blockCol The column index in the sprite sheet grid.
+     * @param blockRow The row index in the sprite sheet grid.
+     * @return An array of Animations (Down, Left, Right, Up).
+     */
     public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getMobAnimations(int blockCol, int blockRow) {
         if (mobsTexture == null) {
             mobsTexture = new Texture(Gdx.files.internal("mobs.png"));
@@ -137,6 +153,10 @@ public class MapLoader {
         return anims;
     }
 
+    /**
+     * Scans the "maps" directory for .properties files.
+     * @return A list of FileHandles for found map files.
+     */
     public static List<FileHandle> getMapFiles() {
         List<FileHandle> files = new ArrayList<>();
 

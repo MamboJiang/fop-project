@@ -10,12 +10,20 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 
+/**
+ * Screen for selecting a save slot (New Game or Load Game).
+ */
 public class SaveSlotScreen implements Screen {
 
     private final MazeRunnerGame game;
     private final Stage stage;
     private final boolean isLoading; // true = Load Game, false = New Game
 
+    /**
+     * Constructor for SaveSlotScreen.
+     * @param game Main game instance.
+     * @param isLoading True if selecting for loading, False for new game (overwriting).
+     */
     public SaveSlotScreen(MazeRunnerGame game, boolean isLoading) {
         this.game = game;
         this.isLoading = isLoading;

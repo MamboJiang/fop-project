@@ -3,6 +3,10 @@ package de.tum.cit.fop.maze.GameObj;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
+/**
+ * Abstract class for objects that can move and interact physically (take damage, have velocity).
+ * Extends GameObject with physics properties like velocity, acceleration, and health.
+ */
 public abstract class MovableObject extends GameObject {
 
     protected Vector2 velocity = new Vector2();
@@ -18,6 +22,10 @@ public abstract class MovableObject extends GameObject {
     protected static final float FLASH_DURATION = 0.15f; 
     protected static final float DAMAGE_COOLDOWN_DURATION = 1.0f; // 1 second invulnerability
     
+    /**
+     * Applies damage to the object if not in cooldown.
+     * @param amount The amount of damage to take.
+     */
     public void takeDamage(int amount) {
         if (damageCooldownTimer <= 0) {
             this.health -= amount;
@@ -39,6 +47,9 @@ public abstract class MovableObject extends GameObject {
         this.health = health;
     }
     
+    /**
+     * @return True if health is less than or equal to 0.
+     */
     public boolean isDead() {
         return health <= 0;
     }
@@ -47,6 +58,10 @@ public abstract class MovableObject extends GameObject {
         return damageFlashTime > 0;
     }
     
+    /**
+     * Updates effect timers like damage flash and cooldowns.
+     * @param delta Time since last frame.
+     */
     public void updateDamageFlash(float delta) {
         if (damageFlashTime > 0) {
             damageFlashTime -= delta;
@@ -56,6 +71,10 @@ public abstract class MovableObject extends GameObject {
         }
     }
 
+    /**
+     * Sets up the sprite batch for a white flash effect if damaged.
+     * @param batch The SpriteBatch.
+     */
     protected void setupDamageFlash(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
         if (damageFlashTime > 0) {
             batch.setBlendFunction(com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA, com.badlogic.gdx.graphics.GL20.GL_ONE);
@@ -63,6 +82,10 @@ public abstract class MovableObject extends GameObject {
         }
     }
 
+    /**
+     * Resets the sprite batch blend function after drawing.
+     * @param batch The SpriteBatch.
+     */
     protected void endDamageFlash(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
          if (damageFlashTime > 0) {
             batch.setBlendFunction(com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA, com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -70,6 +93,14 @@ public abstract class MovableObject extends GameObject {
         }
     }
 
+    /**
+     * Constructor for MovableObject.
+     * @param x X coordinate.
+     * @param y Y coordinate.
+     * @param width Width.
+     * @param height Height.
+     * @param textureRegion Texture.
+     */
     public MovableObject(float x, float y, float width, float height, TextureRegion textureRegion) {
         super(x, y, width, height, textureRegion);
         this.health = 100; // Default
@@ -92,6 +123,13 @@ public abstract class MovableObject extends GameObject {
         isMoving = velocity.len() > 10f;
     }
     
+    /**
+     * Helper to approach a target value by a given amount (linear interpolation step).
+     * @param current Current value.
+     * @param target Target value.
+     * @param amount Max change amount.
+     * @return New value.
+     */
     protected float approach(float current, float target, float amount) {
         if (current < target) {
             return Math.min(current + amount, target);

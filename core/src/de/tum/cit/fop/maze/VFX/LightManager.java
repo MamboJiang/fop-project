@@ -12,6 +12,9 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.math.Matrix4;
 
+/**
+ * Manages dynamic lighting effects using FrameBuffer Objects (FBO).
+ */
 public class LightManager implements Disposable {
     private FrameBuffer fbo;
     private Texture lightTexture;
@@ -53,6 +56,11 @@ public class LightManager implements Disposable {
         pixmap.dispose();
     }
     
+    /**
+     * Resizes the FBO to match screen dimensions.
+     * @param width Screen width.
+     * @param height Screen height.
+     */
     public void resize(int width, int height) {
         if (fbo != null) fbo.dispose();
 
@@ -61,6 +69,12 @@ public class LightManager implements Disposable {
         fboRegion.flip(false, true);
     }
     
+    /**
+     * Renders the light map and applies it to the scene.
+     * @param batch SpriteBatch to use.
+     * @param viewport Viewport to project lights to.
+     * @param lights List of active point lights.
+     */
     public void render(SpriteBatch batch, Viewport viewport, Array<PointLight> lights) {
         if (fbo == null || !enabled) return;
 

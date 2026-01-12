@@ -4,9 +4,19 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.MathUtils;
 
+/**
+ * Represents a rectangular room in the dungeon generation process.
+ */
 public class Room {
     public int x, y, width, height;
     
+    /**
+     * Constructor for Room.
+     * @param x Top-left X coordinate.
+     * @param y Top-left Y coordinate.
+     * @param width Width in tiles.
+     * @param height Height in tiles.
+     */
     public Room(int x, int y, int width, int height) {
         this.x = x;
         this.y = y;

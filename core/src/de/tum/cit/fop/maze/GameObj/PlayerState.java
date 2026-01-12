@@ -1,5 +1,9 @@
 package de.tum.cit.fop.maze.GameObj;
 
+/**
+ * Represents the persistent state of the player across runs or sessions.
+ * Holds stats, level, xp, achievements, and upgrades.
+ */
 public class PlayerState {
     // 数据只存在于内存变量中
     private String username;
@@ -14,6 +18,9 @@ public class PlayerState {
     private java.util.HashMap<String, Integer> achievementProgress;
     private int endlessWave = 1;
 
+    /**
+     * Constructor for PlayerState with default values.
+     */
     public PlayerState() {
         this.username = "Adventurer";
         this.currentXP = 0;
@@ -45,6 +52,9 @@ public class PlayerState {
     public void addCurrentRunXP(int amount) { this.currentRunXP += amount; }
     public void setCurrentRunXP(int xp) { this.currentRunXP = xp; }
 
+    /**
+     * Resets the temporary stats for a single run (Endless Mode).
+     */
     public void resetRunState() {
         this.currentRunScore = 0;
         this.currentRunHealth = -1;
@@ -78,6 +88,10 @@ public class PlayerState {
     public void setUsername(String name) { this.username = name; }
     public String getUsername() { return username; }
     
+    /**
+     * Marks a level as completed.
+     * @param levelName The name of the level.
+     */
     public void addCompletedLevel(String levelName) {
         if (!completedLevels.contains(levelName)) {
             completedLevels.add(levelName);
@@ -92,6 +106,10 @@ public class PlayerState {
         return completedLevels;
     }
 
+    /**
+     * Adds XP to the player's total.
+     * @param amount XP amount.
+     */
     public void addXP(int amount) {
         currentXP += amount;
         System.out.println("Current XP: " + currentXP);
@@ -101,6 +119,11 @@ public class PlayerState {
         return currentXP;
     }
 
+    /**
+     * Calculates the cost to upgrade a skill.
+     * @param skillType "HEALTH", "SPEED", or "DEFENSE".
+     * @return Cost in XP.
+     */
     public int getUpgradeCost(String skillType) {
         int level = 0;
         switch (skillType) {
@@ -111,6 +134,11 @@ public class PlayerState {
         return 100 * (level + 1);
     }
 
+    /**
+     * Attempts to upgrade a skill if enough XP is available.
+     * @param skillType "HEALTH", "SPEED", or "DEFENSE".
+     * @return True if successful.
+     */
     public boolean upgradeSkill(String skillType) {
         int cost = getUpgradeCost(skillType);
         if (currentXP >= cost) {
@@ -125,14 +153,23 @@ public class PlayerState {
         return false;
     }
 
+    /**
+     * @return Max lives dependent on health level.
+     */
     public int getMaxLives() {
         return 4 + healthLevel;
     }
 
+    /**
+     * @return Speed multiplier from speed level.
+     */
     public float getSpeedMultiplier() {
         return 1.0f + (speedLevel * 0.1f);
     }
 
+    /**
+     * @return Damage reduction chance from defense level.
+     */
     public float getDamageReductionChance() {
         return defenseLevel * 0.1f;
     }

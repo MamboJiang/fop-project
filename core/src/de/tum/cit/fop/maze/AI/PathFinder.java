@@ -3,6 +3,9 @@ package de.tum.cit.fop.maze.AI;
 import com.badlogic.gdx.math.Vector2;
 import java.util.*;
 
+/**
+ * Utility class for A* pathfinding.
+ */
 public class PathFinder {
     
     private static class Node implements Comparable<Node> {
@@ -40,6 +43,13 @@ public class PathFinder {
         }
     }
     
+    /**
+     * Finds a path from start to end using A* algorithm.
+     * @param grid The navigation grid.
+     * @param startWorld Start position in world coordinates.
+     * @param endWorld End position in world coordinates.
+     * @return List of waypoints (Vector2) representing the path, or null if no path found.
+     */
     public static List<Vector2> findPath(Grid grid, Vector2 startWorld, Vector2 endWorld) {
         int startX = (int)(startWorld.x / 16);
         int startY = (int)(startWorld.y / 16);

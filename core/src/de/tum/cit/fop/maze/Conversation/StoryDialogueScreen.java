@@ -15,6 +15,10 @@ import de.tum.cit.fop.maze.GameControl.PauseMenu;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Screen for displaying story-driven dialogue with characters.
+ * Features auto-play, history log, and pause functionality.
+ */
 public class StoryDialogueScreen implements Screen {
     private final MazeRunnerGame game;
     private Stage stage;
@@ -56,6 +60,10 @@ public class StoryDialogueScreen implements Screen {
     
 
 
+    /**
+     * Constructor for StoryDialogueScreen.
+     * @param game Main game instance.
+     */
     public StoryDialogueScreen(MazeRunnerGame game) {
         this.game = game;
         this.historyLog = new ArrayList<>();

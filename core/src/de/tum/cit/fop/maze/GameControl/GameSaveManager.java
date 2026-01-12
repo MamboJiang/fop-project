@@ -5,11 +5,19 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
 import de.tum.cit.fop.maze.GameObj.PlayerState;
 
+/**
+ * Handles saving and loading of game state to JSON files.
+ */
 public class GameSaveManager {
     private static final String SAVE_DIR = "saves/";
     private static final String SAVE_PREFIX = "save_";
     private static final String EXT = ".json";
 
+    /**
+     * Saves the current player state to a file.
+     * @param state The state to save.
+     * @param slotIndex The save slot index.
+     */
     public static void saveGame(PlayerState state, int slotIndex) {
         Json json = new Json();
         FileHandle dir = Gdx.files.local(SAVE_DIR);
@@ -24,6 +32,11 @@ public class GameSaveManager {
         Gdx.app.log("GameSaveManager", "Game saved to slot " + slotIndex);
     }
 
+    /**
+     * Loads player state from a file.
+     * @param slotIndex The save slot index.
+     * @return The loaded PlayerState, or null if failed.
+     */
     public static PlayerState loadGame(int slotIndex) {
         FileHandle file = Gdx.files.local(SAVE_DIR + SAVE_PREFIX + slotIndex + EXT);
         if (!file.exists()) return null;
@@ -48,6 +61,9 @@ public class GameSaveManager {
         return Gdx.files.local(SAVE_DIR + SAVE_PREFIX + slotIndex + EXT).exists();
     }
     
+    /**
+     * @return The slot index with the most recent modification time, or -1.
+     */
     public static int getLatestSaveSlot() {
         long lastModified = -1;
         int bestSlot = -1;

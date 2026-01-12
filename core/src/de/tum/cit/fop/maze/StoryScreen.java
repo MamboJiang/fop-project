@@ -15,6 +15,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+/**
+ * The StoryScreen displays the narrative context before a level or the game starts.
+ * It features scrolling text and a skip option.
+ */
 public class StoryScreen implements Screen {
 
     private final MazeRunnerGame game;
@@ -47,6 +51,11 @@ public class StoryScreen implements Screen {
     private final float FADE_DURATION = 1.0f;
     private final float READ_DELAY = 2.0f;
 
+    /**
+     * Constructor for StoryScreen.
+     * @param game The main game instance.
+     * @param nextMapFile The map file to load after the story.
+     */
     public StoryScreen(MazeRunnerGame game, FileHandle nextMapFile) {
         this.game = game;
         this.nextMapFile = nextMapFile;
@@ -92,10 +101,17 @@ public class StoryScreen implements Screen {
         bottomTable.add(skipButton).pad(20);
     }
 
+    /**
+     * Skips the story and loads the next game level immediately.
+     */
     private void skipStory() {
         game.goToGame(nextMapFile);
     }
 
+    /**
+     * Renders the story text with a typing effect.
+     * @param delta Time since last frame.
+     */
     @Override
     public void render(float delta) {
 
@@ -170,16 +186,27 @@ public class StoryScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Resizes the stage viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
+    /**
+     * Called when the screen shows. Sets input processor.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
     }
 
+    /**
+     * Called when the screen hides. Resets input processor.
+     */
     @Override
     public void hide() {
         Gdx.input.setInputProcessor(null);
@@ -191,6 +218,9 @@ public class StoryScreen implements Screen {
     @Override
     public void resume() {}
 
+    /**
+     * Disposes of stage resources.
+     */
     @Override
     public void dispose() {
         stage.dispose();

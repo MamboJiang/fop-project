@@ -6,6 +6,9 @@ import com.badlogic.gdx.utils.Json;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * Manages leaderboard data, including local saving and cloud upload/fetch.
+ */
 public class LeaderboardManager {
     private static final String FILE_NAME = "leaderboard.json";
     private static final int MAX_SCORES = 10;
@@ -33,6 +36,12 @@ public class LeaderboardManager {
         void onError(String message);
     }
 
+    /**
+     * Saves a score locally and attempts to upload it.
+     * @param name Player name.
+     * @param score Score value.
+     * @param callbacks Callback on success.
+     */
     public static void saveScore(String name, int score, Runnable callbacks) {
         ArrayList<ScoreEntry> scores = loadScores();
         scores.add(new ScoreEntry(name, score));
@@ -91,6 +100,10 @@ public class LeaderboardManager {
     }
 
 
+    /**
+     * Fetches scores from the cloud (or local fallback).
+     * @param callback Callback for success/error.
+     */
     public static void fetchScores(LeaderboardCallback callback) {
         if (CLOUD_URL.contains("YOUR_VERCEL_URL_HERE")) {
                 callback.onScoresLoaded(loadScores());
@@ -159,6 +172,9 @@ public class LeaderboardManager {
         });
     }
 
+    /**
+     * Adds a random test score for debugging.
+     */
     public static void addDebugEntry() {
         int randomScore = (int)(Math.random() * 5000) + 100;
         String name = "DebugPlayer" + (int)(Math.random() * 100);

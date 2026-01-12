@@ -27,6 +27,10 @@ public class LevelSelectionScreen implements Screen {
 
     private ScrollPane scrollPane;
 
+    /**
+     * Constructor for LevelSelectionScreen.
+     * @param game Main game instance.
+     */
     public LevelSelectionScreen(MazeRunnerGame game) {
         this.game = game;
         this.stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), game.getSpriteBatch());

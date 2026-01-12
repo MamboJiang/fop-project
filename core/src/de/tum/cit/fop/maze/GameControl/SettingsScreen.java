@@ -24,6 +24,10 @@ public class SettingsScreen implements Screen {
     private String actionToRebind = null;
     private TextButton activeRebindButton = null;
 
+    /**
+     * Constructor for SettingsScreen.
+     * @param game Main game instance.
+     */
     public SettingsScreen(MazeRunnerGame game) {
         this.game = game;
         this.stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), game.getSpriteBatch());

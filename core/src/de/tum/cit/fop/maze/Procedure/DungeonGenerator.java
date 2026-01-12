@@ -11,6 +11,10 @@ import de.tum.cit.fop.maze.MapLoader;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Procedural generator for dungeon levels.
+ * Creates rooms and corridors.
+ */
 public class DungeonGenerator {
 
     private static final int WALL = 0;
@@ -27,6 +31,11 @@ public class DungeonGenerator {
     private TextureRegion trapRegion;
     private TextureRegion chestRegion;
 
+    /**
+     * Constructor for DungeonGenerator.
+     * @param width Width of the map in tiles.
+     * @param height Height of the map in tiles.
+     */
     public DungeonGenerator(int width, int height) {
         this.width = width;
         this.height = height;
@@ -47,6 +56,11 @@ public class DungeonGenerator {
         chestRegion = regions[4][4];
     }
     
+    /**
+     * Generates a new dungeon level.
+     * @param difficultyLevel Factors into enemy and trap count.
+     * @return List of generated GameObjects (walls, floors, entities).
+     */
     public List<GameObject> generate(int difficultyLevel) {
 
         for (int x = 0; x < width; x++) {

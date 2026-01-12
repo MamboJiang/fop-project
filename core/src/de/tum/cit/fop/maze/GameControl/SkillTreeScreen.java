@@ -14,12 +14,19 @@ import de.tum.cit.fop.maze.GameObj.PlayerState;
 import de.tum.cit.fop.maze.*;
 
 
+/**
+ * Screen where players can spend XP to upgrade skills.
+ */
 public class SkillTreeScreen implements Screen {
 
     private final MazeRunnerGame game;
     private final Stage stage;
     private Label xpLabel;
 
+    /**
+     * Constructor for SkillTreeScreen.
+     * @param game Main game instance.
+     */
     public SkillTreeScreen(MazeRunnerGame game) {
         this.game = game;
         this.stage = new Stage(new ScreenViewport());

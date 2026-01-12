@@ -5,6 +5,9 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Interpolation;
 
+/**
+ * Floating text effect for damage or healing numbers.
+ */
 public class DamageNumber {
 
     private de.tum.cit.fop.maze.GameObj.MovableObject target;
@@ -26,6 +29,12 @@ public class DamageNumber {
     private static final float PHASE_3_DURATION = 0.2f; // Fade
 
 
+    /**
+     * Constructor for DamageNumber with custom text and color.
+     * @param target The object the number is attached to.
+     * @param text The text to display.
+     * @param color The color of the text.
+     */
     public DamageNumber(de.tum.cit.fop.maze.GameObj.MovableObject target, String text, Color color) {
         this.target = target;
         this.text = text;
@@ -41,6 +50,11 @@ public class DamageNumber {
     }
 
 
+    /**
+     * Constructor for numeric damage value (red).
+     * @param target The target object.
+     * @param value The damage amount.
+     */
     public DamageNumber(de.tum.cit.fop.maze.GameObj.MovableObject target, int value) {
         this(target, "-" + value, Color.RED);
     }

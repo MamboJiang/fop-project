@@ -18,6 +18,10 @@ import com.badlogic.gdx.graphics.Color;
 import de.tum.cit.fop.maze.GameObj.Character;
 import de.tum.cit.fop.maze.GameScreen;
 
+/**
+ * Heads-Up Display (HUD) for the game.
+ * Shows lives (hearts), key status, timer, score, and debug console.
+ */
 public class HUD {
     private final Stage stage;
     private final Texture objectsTexture;
@@ -40,6 +44,12 @@ public class HUD {
     private final Skin skin;
     private Character character;
 
+    /**
+     * Constructor for HUD.
+     * @param spriteBatch SpriteBatch for rendering.
+     * @param gameScreen Reference to game screen.
+     * @param skin UI skin.
+     */
     public HUD(SpriteBatch spriteBatch, GameScreen gameScreen, Skin skin) {
         this.gameScreen = gameScreen;
         this.skin = skin;
@@ -251,6 +261,10 @@ public class HUD {
         }
     }
 
+    /**
+     * Updates the HUD elements based on character state.
+     * @param character The player character.
+     */
     public void update(Character character) {
         this.character = character;
 
@@ -338,6 +352,10 @@ public class HUD {
     }
 
 
+    /**
+     * Displays an achievement unlocked popup.
+     * @param achievement The achievement to display.
+     */
     public void showAchievementPopup(Achievement achievement) {
         Gdx.app.postRunnable(() -> {
             AchievementPopup popup = new AchievementPopup(achievement, skin, achievementNinePatch);

@@ -1,5 +1,9 @@
 package de.tum.cit.fop.maze.GameControl;
 
+/**
+ * Represents a single achievement in the game.
+ * Tracks progress and unlock status.
+ */
 public class Achievement {
     private String id;
     private String name;
@@ -14,6 +18,14 @@ public class Achievement {
     public Achievement() {
     }
 
+    /**
+     * Constructor for Achievement.
+     * @param id Unique ID.
+     * @param name Display name.
+     * @param description Requirements description.
+     * @param type Event type that triggers progress.
+     * @param target distinct value to reach.
+     */
     public Achievement(String id, String name, String description, EventType type, int target) {
         this.id = id;
         this.name = name;

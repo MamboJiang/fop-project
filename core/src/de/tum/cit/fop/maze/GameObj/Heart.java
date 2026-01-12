@@ -6,10 +6,18 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+/**
+ * A collectable heart that restores health/lives to the player.
+ */
 public class Heart extends GameObject implements Collectable {
     private Animation<TextureRegion> floatAnimation;
     private float stateTime;
 
+    /**
+     * Constructor for Heart.
+     * @param x X pos.
+     * @param y Y pos.
+     */
     public Heart(float x, float y) {
         super(x, y, 16, 16, null);
         loadAnimation();
@@ -35,6 +43,9 @@ public class Heart extends GameObject implements Collectable {
         this.textureRegion = floatAnimation.getKeyFrame(stateTime, true);
     }
 
+    /**
+     * Restores 1 life to the character.
+     */
     @Override
     public void collect(Character character) {
         if (character.getLives() < character.getMaxLives()) {

@@ -13,6 +13,10 @@ import de.tum.cit.fop.maze.MazeRunnerGame;
 
 import java.util.ArrayList;
 
+/**
+ * UI Element (Table) displayed when the game ends (Win or Lose).
+ * Shows score, XP, leaderboard, and navigation buttons.
+ */
 public class GameOverMenu extends Table{
     private final MazeRunnerGame game;
     private int wavesCleared = -1;
@@ -29,6 +33,17 @@ public class GameOverMenu extends Table{
         this(game, onRetry, onExit, onNextLevel, isWin, -1, finalScore, xp);
     }
 
+    /**
+     * Constructor for GameOverMenu.
+     * @param game Main game instance.
+     * @param onRetry Callback for retry.
+     * @param onExit Callback for exit.
+     * @param onNextLevel Callback for next level.
+     * @param isWin True if level was completed successfully.
+     * @param wavesCleared Number of waves cleared (if endless mode), or -1.
+     * @param finalScore The final score achieved.
+     * @param xp The XP gained.
+     */
     public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int wavesCleared, int finalScore, int xp) {
         this.game = game;
         this.onRetry = onRetry;
@@ -176,6 +191,9 @@ public class GameOverMenu extends Table{
         setVisible(false);
     }
 
+    /**
+     * Fetches and displays the leaderboard scores.
+     */
     public void loadLeaderboard() {
         if (leaderboardTable == null) return;
         

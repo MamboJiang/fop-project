@@ -15,6 +15,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 
+/**
+ * Screen for demonstrating dialogue mechanics (not the story mode).
+ */
 public class DialogueScreen implements Screen {
     private final MazeRunnerGame game;
     private Stage stage;
@@ -53,6 +56,10 @@ public class DialogueScreen implements Screen {
         true
     };
 
+    /**
+     * Constructor for DialogueScreen.
+     * @param game Main game instance.
+     */
     public DialogueScreen(MazeRunnerGame game) {
         this.game = game;
     }

@@ -19,6 +19,9 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 
+/**
+ * Screen for demonstrating Visual Effects (VFX) like lighting.
+ */
 public class VFXDemoScreen implements Screen {
 
     private final MazeRunnerGame game;
@@ -34,6 +37,10 @@ public class VFXDemoScreen implements Screen {
     private Stage stage;
     private PointLight mouseLight;
 
+    /**
+     * Constructor for VFXDemoScreen.
+     * @param game Main game instance.
+     */
     public VFXDemoScreen(MazeRunnerGame game) {
         this.game = game;
         this.batch = game.getSpriteBatch();

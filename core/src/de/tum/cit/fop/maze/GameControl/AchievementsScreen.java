@@ -12,12 +12,19 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.graphics.Color;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 
+/**
+ * Screen that displays the list of achievements and their status.
+ */
 public class AchievementsScreen implements Screen {
 
     private final MazeRunnerGame game;
     private final Stage stage;
     private final Skin skin;
 
+    /**
+     * Constructor for AchievementsScreen.
+     * @param game Main game instance.
+     */
     public AchievementsScreen(MazeRunnerGame game) {
         this.game = game;
         this.skin = game.getSkin();

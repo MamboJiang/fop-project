@@ -15,6 +15,10 @@ import de.tum.cit.fop.maze.AI.PathFinder;
 
 import java.util.List;
 
+/**
+ * Represents an enemy character in the game.
+ * Uses a state machine (Patrol, Chase, Retreat, Confused) for AI behavior.
+ */
 public class Enemy extends MovableObject {
 
     protected enum State {
@@ -46,6 +50,14 @@ public class Enemy extends MovableObject {
 
     private float waitTimer = 0f;
 
+    /**
+     * Constructor for Enemy.
+     * @param x X coordinate.
+     * @param y Y coordinate.
+     * @param animations Array of texture animations.
+     * @param grid The navigation grid.
+     * @param target The player character to chase.
+     */
     public Enemy(float x, float y, Animation<TextureRegion>[] animations, Grid grid, Character target) {
 
         super(x, y, 16, 16, animations[0].getKeyFrame(0)); 
@@ -68,6 +80,10 @@ public class Enemy extends MovableObject {
         this.friction = 50f;   
     }
     
+    /**
+     * Updates the enemy's logic and physics.
+     * @param delta Time delta.
+     */
     public void update(float delta) {
         stateTime += delta;
         
@@ -177,6 +193,10 @@ public class Enemy extends MovableObject {
         return new Vector2(tBounds.x + tBounds.width/2, tBounds.y + tBounds.height/2);
     }
 
+    /**
+     * Checks for collision with player to deal damage.
+     * @param delta Time delta.
+     */
     protected void updateCombat(float delta) {
         
 
@@ -437,6 +457,10 @@ public class Enemy extends MovableObject {
         this.bounds.setPosition(position.x+4, position.y+4);
     }
     
+    /**
+     * Draws debug information (bounds, path, view range).
+     * @param sr ShapeRenderer.
+     */
     public void drawDebug(ShapeRenderer sr) {
         sr.setColor(Color.YELLOW);
 
@@ -466,6 +490,12 @@ public class Enemy extends MovableObject {
         endDamageFlash(batch);
     }
 
+    /**
+     * Draws a status indicator (e.g., '!' for chase) above the enemy.
+     * @param batch SpriteBatch.
+     * @param font Font to use.
+     * @param showHP Whether to show HP text.
+     */
     public void drawStatus(SpriteBatch batch, com.badlogic.gdx.graphics.g2d.BitmapFont font, boolean showHP) {
         String statusText = null;
         Color color = Color.WHITE;

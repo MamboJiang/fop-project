@@ -6,13 +6,26 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import de.tum.cit.fop.maze.AI.Grid;
 
+/**
+ * A Ghost enemy that ignores walls and moves directly towards the player.
+ */
 public class Ghost extends Enemy {
 
+    /**
+     * Constructor for Ghost.
+     * @param x X pos.
+     * @param y Y pos.
+     * @param grid Logic grid (unused for movement, but required by super).
+     * @param target Target character.
+     */
     public Ghost(float x, float y, Grid grid, Character target) {
 
         super(x, y, de.tum.cit.fop.maze.MapLoader.getMobAnimations(2, 1), grid, target);
     }
         
+    /**
+     * Updates the Ghost's movement logic (flying through walls).
+     */
     @Override
     public void update(float delta) {
         stateTime += delta;
@@ -78,6 +91,9 @@ public class Ghost extends Enemy {
         }
     }
     
+    /**
+     * Draws debug info for Ghost.
+     */
     @Override
     public void drawDebug(com.badlogic.gdx.graphics.glutils.ShapeRenderer sr) {
 

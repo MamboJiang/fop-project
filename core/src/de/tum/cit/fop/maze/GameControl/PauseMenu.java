@@ -9,6 +9,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 
+/**
+ * UI Overlay for the Pause menu.
+ */
 public class PauseMenu extends Table {
     
     private final MazeRunnerGame game;
@@ -19,6 +22,12 @@ public class PauseMenu extends Table {
     private Label difficultyLabel;
     private Label xpLabel;
 
+    /**
+     * Constructor for PauseMenu.
+     * @param game Game instance.
+     * @param onResume Callback for resume.
+     * @param onExit Callback for exit.
+     */
     public PauseMenu(MazeRunnerGame game, Runnable onResume, Runnable onExit) {
         this.game = game;
         this.onResume = onResume;
@@ -90,6 +99,12 @@ public class PauseMenu extends Table {
         setVisible(false);
     }
     
+    /**
+     * Updates stats displayed in the pause menu.
+     * @param score Current score.
+     * @param difficulty Current difficulty.
+     * @param xp Total XP.
+     */
     public void updateStats(int score, int difficulty, int xp) {
         if (scoreLabel != null) scoreLabel.setText("Score: " + score);
         if (difficultyLabel != null) difficultyLabel.setText("Difficulty: " + difficulty);

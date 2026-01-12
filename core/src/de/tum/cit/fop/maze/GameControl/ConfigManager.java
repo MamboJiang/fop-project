@@ -15,6 +15,9 @@ public class ConfigManager {
     private GameConfig config;
     private final Json json;
 
+    /**
+     * Constructor loads the config from file or creates a default one.
+     */
     public ConfigManager() {
         this.json = new Json();
         loadConfig();
@@ -60,6 +63,9 @@ public class ConfigManager {
         if (!keys.containsKey("CONSOLE")) keys.put("CONSOLE", Keys.GRAVE);
     }
 
+    /**
+     * Saves the current configuration to local storage.
+     */
     public void saveConfig() {
         FileHandle file = Gdx.files.local(CONFIG_FILE);
         file.writeString(json.prettyPrint(config), false);
@@ -88,6 +94,11 @@ public class ConfigManager {
         return config.getKeyBindings().getOrDefault(action, Keys.UNKNOWN);
     }
 
+    /**
+     * Sets a key binding.
+     * @param action Action name.
+     * @param keyCode Input.Keys key code.
+     */
     public void setKey(String action, int keyCode) {
         config.getKeyBindings().put(action, keyCode);
         saveConfig();
