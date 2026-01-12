@@ -35,54 +35,90 @@ The source code is organized into the following packages under `de.tum.cit.fop.m
 ```mermaid
 classDiagram
     class MazeRunnerGame {
+        +SpriteBatch spriteBatch
+        +Skin skin
         +create()
-        +goToGame()
+        +goToGame(FileHandle map)
         +goToMenu()
     }
     
     class Screen {
         <<interface>>
+        +show()
+        +render(delta)
+        +resize(width, height)
     }
     
     MazeRunnerGame --> Screen : manages
     Screen <|.. GameScreen
     Screen <|.. MenuScreen
+    Screen <|.. StoryScreen
     
     class GameObject {
         +Vector2 position
+        +Rectangle bounds
         +draw(SpriteBatch)
+        +getBounds()
     }
     
     class MovableObject {
         +float speed
+        +Vector2 velocity
+        +int health
         +update(delta)
+        +takeDamage(amount)
     }
     
     class Character {
+        +PlayerState state
         +handleInput()
+        +update(delta)
     }
     
     class Enemy {
-        +pathFind()
+        +float detectionRange
+        +pathFind(target)
+    }
+    
+    class Collectable {
+        <<interface>>
+        +collect(Character)
     }
     
     GameObject <|-- MovableObject
     GameObject <|-- Wall
-    GameObject <|-- Key
+    GameObject <|-- Trap
+    GameObject <|-- EntryPoint
+    GameObject <|-- Exit
     
     MovableObject <|-- Character
     MovableObject <|-- Enemy
     Enemy <|-- Ghost
+    
+    GameObject <|-- Key
+    GameObject <|-- Heart
+    GameObject <|-- ShieldItem
+    
+    Collectable <|.. Key
+    Collectable <|.. Heart
+    Collectable <|.. ShieldItem
+    
+    Character --> Collectable : collects
 ```
 
 ## How to Run
 
 1.  **Prerequisites**: Ensure you have a Java Development Kit (JDK) 17 or higher installed.
 2.  **Build & Run**:
-    This project uses Gradle. Open a terminal in the project root and run:
+    This project uses Gradle. Open a terminal (PowerShell or CMD) in the project root.
     
-    **Windows**:
-    ```bash
+    **Windows (PowerShell)**:
+    ```powershell
+    .\gradlew desktop:run
+    ```
+    
+    **Windows (CMD)**:
+    ```cmd
     gradlew desktop:run
     ```
     
