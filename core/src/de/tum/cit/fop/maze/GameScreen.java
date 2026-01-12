@@ -26,15 +26,12 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 
 import java.util.List;
 
-/**
- * The GameScreen class is responsible for rendering the gameplay screen.
- * It handles the game logic and rendering of the game elements.
- */
+
 public class GameScreen implements Screen {
 
     private final MazeRunnerGame game;
     private OrthographicCamera camera;
-    private Viewport viewport; // Added Viewport
+    private Viewport viewport;
     private BitmapFont font;
     private ShapeRenderer shapeRenderer;
     private HUD hud;
@@ -60,8 +57,8 @@ public class GameScreen implements Screen {
     private int currentDifficulty = 1;
     private float levelTimer = 0f;
     private int score = 0;
-    private static final int BASE_SCORE_PER_LEVEL = 1000; // 每关基础分
-    private static final int PENALTY_PER_SECOND = 10;     // 每秒扣除的分数
+    private static final int BASE_SCORE_PER_LEVEL = 1000;
+    private static final int PENALTY_PER_SECOND = 10;
     private static final int SCORE_PER_LIFE = 500;
 
     private String playerName = "Player";
@@ -88,8 +85,8 @@ public class GameScreen implements Screen {
         this.isProcedural = isProcedural;
         this.currentDifficulty = 1;
 
-        this.playerName = playerName; // 保存名字
-        this.totalRunScore = 0;       // 初始化总分
+        this.playerName = playerName;
+        this.totalRunScore = 0;
         
         initCommon();
         setupLevel();
@@ -246,7 +243,6 @@ public class GameScreen implements Screen {
         pauseMenu = new PauseMenu(game, 
             () -> togglePause(),
             () -> {
-                // Exit action
                 if (isProcedural) {
                     Dialog dialog = new Dialog("Endless Mode", game.getSkin()) {
                         @Override
@@ -323,7 +319,7 @@ public class GameScreen implements Screen {
         }
 
 
-        List<FileHandle> maps = MapLoader.getMapFiles(); //
+        List<FileHandle> maps = MapLoader.getMapFiles();
         int currentIndex = -1;
 
 
@@ -339,7 +335,7 @@ public class GameScreen implements Screen {
         if (currentIndex != -1 && currentIndex + 1 < maps.size()) {
 
             FileHandle nextMap = maps.get(currentIndex + 1);
-            game.goToGame(nextMap); //
+            game.goToGame(nextMap);
         } else {
 
             game.goToMenu();
@@ -373,7 +369,7 @@ public class GameScreen implements Screen {
     }
 
     private void showGameOverMenu(boolean win) {
-        if (isGameOver) return; // 防止重复触发
+        if (isGameOver) return;
         isGameOver = true;
 
         int awardXP = awardXP(win);
@@ -404,7 +400,7 @@ public class GameScreen implements Screen {
                 () -> {
 
                     if (isProcedural) {
-                        game.goToEndlessMode(playerName); // Restart run
+                        game.goToEndlessMode(playerName);
                     } else {
                         game.goToGame(this.mapFile);
                     }
@@ -483,9 +479,7 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(pauseStage);
     }
 
-    /**
-     * Toggles the pause state and handles input processor switching.
-     */
+
     private void togglePause() {
         isPaused = !isPaused;
         if (isPaused) {
@@ -558,11 +552,11 @@ public class GameScreen implements Screen {
                 }
 
                 if (character.isBlockEffectRequested()) {
-                    System.out.println("Spawning BLOCK effect!"); // 添加这行调试打印
+                    System.out.println("Spawning BLOCK effect!");
                     damageNumbers.add(new de.tum.cit.fop.maze.VFX.DamageNumber(
                             character,
                             "BLOCK",
-                            com.badlogic.gdx.graphics.Color.CYAN // 确保使用了青色
+                            com.badlogic.gdx.graphics.Color.CYAN
                     ));
                     character.clearBlockEffectRequest();
                 }
@@ -721,7 +715,7 @@ public class GameScreen implements Screen {
 
 
     public void resize(int width, int height) {
-        viewport.update(width, height, false); // Update Viewport
+        viewport.update(width, height, false);
         pauseStage.getViewport().update(width, height, true);
         hud.resize(width, height);
     }

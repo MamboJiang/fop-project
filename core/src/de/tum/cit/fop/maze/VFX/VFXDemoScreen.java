@@ -30,7 +30,7 @@ public class VFXDemoScreen implements Screen {
     private LightManager lightManager;
     private Array<PointLight> lights;
     
-    // UI
+
     private Stage stage;
     private PointLight mouseLight;
 
@@ -38,15 +38,15 @@ public class VFXDemoScreen implements Screen {
         this.game = game;
         this.batch = game.getSpriteBatch();
         
-        // Setup Camera (1920x1080)
+
         camera = new OrthographicCamera();
         viewport = new FitViewport(1920, 1080, camera);
         
-        // Setup Lights
+
         lightManager = new LightManager();
         lights = new Array<>();
         
-        // Random Lights
+
         for (int i = 0; i < 10; i++) {
             float x = MathUtils.random(200, 1700);
             float y = MathUtils.random(200, 900);
@@ -55,14 +55,12 @@ public class VFXDemoScreen implements Screen {
             lights.add(new PointLight(x, y, dist, c, 1.0f));
         }
         
-        // Mouse Light (Torch)
+
         mouseLight = new PointLight(0, 0, 800, new Color(1, 0.8f, 0.6f, 1), 1.0f);
         lights.add(mouseLight);
-        
-        // Background (Use existing map assets or generate simple pattern)
-        // We'll just draw a tiled floor pattern or solid color to see lights
+
         bgTexture = new Texture(Gdx.files.internal("basictiles.png")); 
-        // fallback? Let's check logic later.
+
         
         setupUI();
     }
@@ -99,20 +97,17 @@ public class VFXDemoScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        
-        // Update Mouse Light
+
         Vector2 mousePos = new Vector2(Gdx.input.getX(), Gdx.input.getY());
         viewport.unproject(mousePos);
         mouseLight.setPosition(mousePos.x, mousePos.y);
-        
-        // Pulse Effect
+
         mouseLight.distance = 800 + MathUtils.sin(System.currentTimeMillis() / 200f) * 50;
         
         viewport.apply();
         batch.setProjectionMatrix(camera.combined);
         
         batch.begin();
-        // Draw Tiled Background
         for (int x = 0; x < 1920; x+=64) {
             for (int y = 0; y < 1080; y+=64) {
                 batch.setColor(0.5f, 0.5f, 0.5f, 1); // Dim base color
@@ -121,11 +116,9 @@ public class VFXDemoScreen implements Screen {
         }
         batch.setColor(Color.WHITE);
         batch.end();
-        
-        // Render Lights
+
         lightManager.render(batch, viewport, lights);
-        
-        // Render UI
+
         stage.act(delta);
         stage.draw();
     }
