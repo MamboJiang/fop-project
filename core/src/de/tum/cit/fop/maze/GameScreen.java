@@ -798,7 +798,7 @@ public class GameScreen implements Screen {
                     if (enemies != null) {
                         for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
                             if (attackBox.overlaps(enemy.getBounds())) {
-                                enemy.takeDamage(1);
+                                enemy.takeDamage(20);
                                 enemy.knockback(knockbackDir); // Apply knockback
 
                                 // damageNumbers.add(new de.tum.cit.fop.maze.VFX.DamageNumber(enemy, 20));

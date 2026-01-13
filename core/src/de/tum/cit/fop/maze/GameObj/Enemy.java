@@ -241,9 +241,7 @@ public class Enemy extends MovableObject {
 
             Rectangle rect = getBounds();
             if (rect.overlaps(target.getBounds())) {
-                if (target.isShielded()) {
-                    this.takeDamage(20);
-                } else {
+                if (!target.isShielded()) {
                     target.takeDamage();
                 }
             }
