@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.MathUtils;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 
 import java.util.List;
+import de.tum.cit.fop.maze.GameObj.Enemy;
 
 /**
  * The player character controlled by the user.
@@ -204,7 +205,7 @@ public class Character extends MovableObject {
      */
     private void collisionAddressing(GameObject hitObject, float oldPosition, boolean isXAxis) {
         if (hitObject != null) {
-            if (hitObject instanceof Wall) {
+            if (hitObject instanceof Wall || hitObject instanceof EntryPoint) {
                 if (isXAxis) {
                     this.position.x = oldPosition;
                     this.velocity.x = 0;
@@ -254,11 +255,47 @@ public class Character extends MovableObject {
      * @param mapObjects    List of objects in the map.
      * @param configManager Configuration manager for key bindings.
      */
-    public void update(float delta, List<GameObject> mapObjects,
+    public void update(float delta, List<GameObject> mapObjects, List<Enemy> enemies,
             de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
         stateTime += delta;
 
         handleInput(configManager);
+
+        // Attack Logic
+        if (Gdx.input.isKeyJustPressed(Input.Keys.J)) {
+             if (isAttackUnlocked() && !isAttacking) {
+                attack();
+                game.playBlockSound(); 
+
+                Rectangle attackBox = getAttackRect();
+                Vector2 knockbackDir = new Vector2();
+                
+                 switch (currentDirection) {
+                    case UP:
+                        knockbackDir.set(0, 1);
+                        break;
+                    case DOWN:
+                        knockbackDir.set(0, -1);
+                        break;
+                    case LEFT:
+                        knockbackDir.set(-1, 0);
+                        break;
+                    case RIGHT:
+                        knockbackDir.set(1, 0);
+                        break;
+                }
+
+                if (enemies != null) {
+                    for (Enemy enemy : enemies) {
+                        if (attackBox.overlaps(enemy.getBounds())) {
+                            enemy.takeDamage(20);
+                            enemy.knockback(knockbackDir);
+                        }
+                    }
+                }
+            }
+        }
+
 
         if (isAttacking) {
             attackTimer += delta;
@@ -269,6 +306,8 @@ public class Character extends MovableObject {
         }
 
         updatePhysics(delta);
+// ... existing code ...
+
 
         if (isMoving) {
 
@@ -548,7 +587,7 @@ public class Character extends MovableObject {
                 continue;
 
             if (obj instanceof Wall || obj instanceof Key || obj instanceof Exit || obj instanceof Trap
-                    || obj instanceof Collectable) {
+                    || obj instanceof Collectable || obj instanceof EntryPoint) {
                 if (bounds.overlaps(obj.getBounds())) {
                     return obj;
                 }
@@ -647,6 +686,18 @@ public class Character extends MovableObject {
     public void setHasKey(boolean hasKey) {
         this.hasKey = hasKey;
     }
+
+    public void setAttackUnlocked(boolean unlocked) {
+        if (playerState != null) {
+            playerState.setAttackUnlocked(unlocked);
+            game.saveGame(); // Save immediately upon unlocking
+        }
+    }
+
+    public boolean isAttackUnlocked() {
+        return playerState != null && playerState.isAttackUnlocked();
+    }
+
 
     public void setLives(int lives) {
         this.health = lives;
@@ -787,8 +838,36 @@ public class Character extends MovableObject {
         int max = getMaxLives();
         if (this.health > max)
             this.health = max;
-        if (this.health < 0)
             this.health = 0;
+    }
+
+    /**
+     * Calculates the attack hitbox based on current direction.
+     * @return Rectangle representing the attack area.
+     */
+    public Rectangle getAttackRect() {
+        Rectangle attackBox = new Rectangle(getBounds());
+        float range = 16f;
+
+        switch (currentDirection) {
+            case UP:
+                attackBox.y += attackBox.height;
+                attackBox.height = range;
+                break;
+            case DOWN:
+                attackBox.y -= range;
+                attackBox.height = range;
+                break;
+            case LEFT:
+                attackBox.x -= range;
+                attackBox.width = range;
+                break;
+            case RIGHT:
+                attackBox.x += attackBox.width;
+                attackBox.width = range;
+                break;
+        }
+        return attackBox;
     }
 
 }

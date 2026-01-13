@@ -1,0 +1,37 @@
+{
+    "leftCharacterImage": "player/lihui/maincharacterlh.png",
+    "leftScale": 1.2,
+    "leftOffsetX": -200.0,
+    "leftOffsetY": -400.0,
+    "rightCharacterImage": "mobs.png",
+    "rightScale": 1.0,
+    "rightOffsetX": 0.0,
+    "rightOffsetY": 0.0,
+    "lines": [
+        {
+            "text": "Hey! Welcome to the Birth Level.",
+            "speaker": "Stranger",
+            "isLeft": false
+        },
+        {
+            "text": "Is there anything here?",
+            "speaker": "Player",
+            "isLeft": true
+        },
+        {
+            "text": "Absolutely nothing.",
+            "speaker": "Stranger",
+            "isLeft": false
+        },
+        {
+            "text": "That's disappointing.",
+            "speaker": "Player",
+            "isLeft": true
+        },
+        {
+            "text": "Press 'F' again if you want to chat more.",
+            "speaker": "Stranger",
+            "isLeft": false
+        }
+    ]
+}

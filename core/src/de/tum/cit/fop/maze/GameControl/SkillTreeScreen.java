@@ -42,6 +42,11 @@ public class SkillTreeScreen implements Screen {
         xpLabel = new Label("Available XP: " + game.getPlayerState().getCurrentXP(), game.getSkin());
         table.add(xpLabel).padBottom(30).colspan(2).row();
 
+        String attackStatus = game.getPlayerState().isAttackUnlocked() ? "Unlocked" : "Locked";
+        Label attackLabel = new Label("Attack Ability: " + attackStatus, game.getSkin());
+        table.add(attackLabel).padBottom(30).colspan(2).row();
+
+
 
         createUpgradeRow(table, "Health (+1 Max HP)", "HEALTH");
         createUpgradeRow(table, "Speed (+10% Movement)", "SPEED");

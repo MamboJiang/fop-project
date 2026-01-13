@@ -60,6 +60,10 @@ public class PlayerState {
         this.currentRunHealth = -1;
         this.currentRunXP = 0;
     }
+
+    private boolean attackUnlocked = false;
+    public boolean isAttackUnlocked() { return attackUnlocked; }
+    public void setAttackUnlocked(boolean unlocked) { this.attackUnlocked = unlocked; }
     
     public java.util.HashMap<String, Boolean> getUnlockedAchievements() {
         return unlockedAchievements;

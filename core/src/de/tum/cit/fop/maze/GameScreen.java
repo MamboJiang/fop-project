@@ -27,15 +27,6 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-import de.tum.cit.fop.maze.Conversation.DialogueBox;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 import java.util.List;
@@ -82,31 +73,7 @@ public class GameScreen implements Screen {
 
     private String currentLevelName = "Unknown";
 
-    // Dialogue Overlay Fields
-    private Stage dialogueStage;
-    private boolean isDialogueActive = false;
-    private DialogueBox dialogueBox;
-    private Image leftChar;
-    private Image rightChar;
-    private List<String> historyLog;
-    private Window logWindow;
-    private Label logLabel;
-    private int conversationIndex = 0;
 
-    // Simple Dialogue Data (Can be externalized later)
-    private final String[] dialogueTexts = {
-            "Hey! Welcome to the Birth Level.",
-            "There is nothing here.",
-            "Absolutely nothing.",
-            "But at least you can talk to me!",
-            "Press 'F' again if you want to chat more."
-    };
-    private final String[] speakerNames = {
-            "Stranger", "Stranger", "Stranger", "Stranger", "Stranger"
-    };
-    private final boolean[] isLeftSpeaker = {
-            false, false, false, false, false
-    };
 
     /**
      * Constructor for loading a specific map file.
@@ -159,6 +126,12 @@ public class GameScreen implements Screen {
     /**
      * Common initialization for camera, viewport, HUD, and other systems.
      */
+    // Dialogue System
+    private de.tum.cit.fop.maze.Conversation.DialogueManager dialogueManager;
+
+    /**
+     * Common initialization for camera, viewport, HUD, and other systems.
+     */
     private void initCommon() {
         camera = new OrthographicCamera();
         camera.zoom = 0.7f;
@@ -172,8 +145,27 @@ public class GameScreen implements Screen {
         screenShake = new de.tum.cit.fop.maze.VFX.ScreenShake();
 
         setupPauseMenu();
-        setupDialogueUI();
+        
+        // Initialize Dialogue Manager
+        dialogueManager = new de.tum.cit.fop.maze.Conversation.DialogueManager(game.getSkin());
+        // Load dialogue for the current level (e.g. "level-0")
+        if (currentLevelName != null) {
+            dialogueManager.loadDialogue(currentLevelName);
+        }
     }
+
+    public void updateInputProcessor() {
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        if (isPaused) {
+            multiplexer.addProcessor(pauseStage);
+        } else if (dialogueManager.isActive()) {
+            multiplexer.addProcessor(dialogueManager.getStage()); 
+        } else {
+            multiplexer.addProcessor(hud.getStage());
+        }
+        Gdx.input.setInputProcessor(multiplexer);
+    }
+
 
     /**
      * Sets up the level, either loading from file or generating procedurally.
@@ -268,6 +260,28 @@ public class GameScreen implements Screen {
         }
 
         mapObjects.removeAll(toRemove);
+
+        // Special Logic: In Level 2, replace the Key with AttackUnlockItem (The Knife)
+        if ("level-2".equals(currentLevelName)) {
+             List<GameObject> toAdd = new java.util.ArrayList<>();
+             java.util.Iterator<GameObject> iter = mapObjects.iterator();
+             while (iter.hasNext()) {
+                GameObject obj = iter.next();
+                if (obj instanceof de.tum.cit.fop.maze.GameObj.Key) {
+                    iter.remove();
+                    // Create AttackUnlockItem at same position with same texture (or different if we had one)
+                    // Using the Key's texture region
+                    toAdd.add(new de.tum.cit.fop.maze.GameObj.AttackUnlockItem(
+                        obj.getPosition().x, 
+                        obj.getPosition().y, 
+                        obj.getWidth(), 
+                        obj.getHeight(), 
+                        obj.getTextureRegion()));
+                }
+             }
+             mapObjects.addAll(toAdd);
+        }
+
 
         java.util.Map<String, java.util.List<GameObject>> chunks = new java.util.HashMap<>();
         int chunkSize = 16 * 16;
@@ -578,127 +592,7 @@ public class GameScreen implements Screen {
         updateInputProcessor();
     }
 
-    // ==========================================
-    // DIALOGUE SYSTEM METHODS
-    // ==========================================
 
-    private void setupDialogueUI() {
-        dialogueStage = new Stage(new FitViewport(1920, 1080), game.getSpriteBatch());
-        historyLog = new ArrayList<>();
-
-        Table charTable = new Table();
-        charTable.setFillParent(true);
-        dialogueStage.addActor(charTable);
-
-        Texture charTexture = new Texture(Gdx.files.internal("character.png"));
-        Texture mobsTexture = new Texture(Gdx.files.internal("mobs.png"));
-        Texture objectsTexture = new Texture(Gdx.files.internal("objects.png"));
-
-        TextureRegion[][] charTmp = TextureRegion.split(charTexture, 16, 32);
-        TextureRegion[][] mobsTmp = TextureRegion.split(mobsTexture, 16, 16);
-
-        leftChar = new Image(charTmp[0][0]); // Player
-        rightChar = new Image(mobsTmp[0][0]); // NPC
-
-        float rawHeight = 32f;
-        float targetHeight = 1720f * 0.75f;
-        float targetHeight2 = 1080f * 0.75f;
-        float scale = targetHeight / rawHeight;
-        float scale2 = targetHeight2 / rawHeight;
-
-        charTable.bottom();
-        // Position characters at sides
-        charTable.add(leftChar).height(targetHeight).width(16 * scale).padBottom(-100).expandX().left().padLeft(0);
-        charTable.add(rightChar).height(targetHeight2).width(32 * scale2).padBottom(-100).expandX().right()
-                .padRight(-100);
-
-        leftChar.setColor(1, 1, 1, 0); // Hide initially
-        rightChar.setColor(1, 1, 1, 0);
-
-        // UI Layout
-        Table uiTable = new Table();
-        uiTable.setFillParent(true);
-        dialogueStage.addActor(uiTable);
-        uiTable.bottom();
-
-        dialogueBox = new DialogueBox(game.getSkin(), objectsTexture);
-        dialogueBox.setTailDirection(DialogueBox.TailDirection.NONE);
-        dialogueBox.setAutoSize(false);
-        dialogueBox.setSize(1800, 300);
-
-        uiTable.add(dialogueBox).width(1800).height(500).padBottom(50);
-
-        // Click to advance
-        dialogueStage.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                if (isDialogueActive) {
-                    if (!dialogueBox.isFinished()) {
-                        dialogueBox.skipTypewriter();
-                    } else {
-                        advanceDialogue();
-                    }
-                }
-            }
-        });
-    }
-
-    private void startDialogue() {
-        if (isDialogueActive)
-            return;
-        isDialogueActive = true;
-        conversationIndex = 0;
-
-        leftChar.setColor(1, 1, 1, 1);
-        rightChar.setColor(1, 1, 1, 1);
-
-        updateInputProcessor();
-        updateDialogue();
-    }
-
-    private void endDialogue() {
-        isDialogueActive = false;
-        leftChar.setColor(1, 1, 1, 0);
-        rightChar.setColor(1, 1, 1, 0);
-        updateInputProcessor();
-    }
-
-    private void advanceDialogue() {
-        conversationIndex++;
-        if (conversationIndex >= dialogueTexts.length) {
-            endDialogue();
-            return;
-        }
-        updateDialogue();
-    }
-
-    private void updateDialogue() {
-        String text = dialogueTexts[conversationIndex];
-        boolean isLeft = isLeftSpeaker[conversationIndex];
-
-        dialogueBox.show(text, DialogueBox.DialogueType.NORMAL, 1700f);
-
-        // Dim the non-speaking character
-        if (isLeft) {
-            leftChar.setColor(1, 1, 1, 1);
-            rightChar.setColor(0.5f, 0.5f, 0.5f, 1);
-        } else {
-            leftChar.setColor(0.5f, 0.5f, 0.5f, 1);
-            rightChar.setColor(1, 1, 1, 1);
-        }
-    }
-
-    public void updateInputProcessor() {
-        InputMultiplexer multiplexer = new InputMultiplexer();
-        if (isPaused) {
-            multiplexer.addProcessor(pauseStage);
-        } else if (isDialogueActive) {
-            multiplexer.addProcessor(dialogueStage); // Priority to dialogue
-        } else {
-            multiplexer.addProcessor(hud.getStage());
-        }
-        Gdx.input.setInputProcessor(multiplexer);
-    }
 
     /**
      * Toggles debug rendering mode.
@@ -738,7 +632,7 @@ public class GameScreen implements Screen {
         }
 
         if (Gdx.input.isKeyJustPressed(game.getConfigManager().getKey("PAUSE"))) {
-            if (isDialogueActive) {
+            if (dialogueManager.isActive()) {
                 // Maybe allow pausing during dialogue, or just ignore
             } else {
                 togglePause();
@@ -746,7 +640,7 @@ public class GameScreen implements Screen {
         }
 
         // Interaction Check for Dialogue
-        if (!isPaused && !isDialogueActive && character != null) {
+        if (!isPaused && !dialogueManager.isActive() && character != null) {
             if (mapObjects != null) {
                 boolean nearTrigger = false;
                 for (GameObject obj : mapObjects) {
@@ -755,65 +649,26 @@ public class GameScreen implements Screen {
                                 .checkProximity(character.getPosition())) {
                             nearTrigger = true;
                             if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-                                startDialogue();
+                                dialogueManager.startDialogue();
+                                updateInputProcessor(); // Ensure input processor is updated
                             }
                         }
                     }
                 }
                 if (hud != null) {
-                    hud.setPromptVisible(nearTrigger && !isDialogueActive);
+                    hud.setPromptVisible(nearTrigger && !dialogueManager.isActive());
                 }
             }
 
-            // Attack Logic (Level 2 Only)
-            if ("level-2".equals(currentLevelName) && Gdx.input.isKeyJustPressed(Input.Keys.J)) {
-                if (!character.isAttacking()) {
-                    character.attack();
-                    game.playBlockSound(); // Placeholder sound or new attack sound?
-                    // Hit Detection
-                    com.badlogic.gdx.math.Rectangle attackBox = new com.badlogic.gdx.math.Rectangle(
-                            character.getBounds());
-                    float range = 16f; // 1 block range
-                    Vector2 knockbackDir = new Vector2();
+            // Attack Logic (Moved to Character.java)
 
-                    switch (character.getDirection()) {
-                        case UP:
-                            attackBox.y += range;
-                            knockbackDir.set(0, 1);
-                            break;
-                        case DOWN:
-                            attackBox.y -= range;
-                            knockbackDir.set(0, -1);
-                            break;
-                        case LEFT:
-                            attackBox.x -= range;
-                            knockbackDir.set(-1, 0);
-                            break;
-                        case RIGHT:
-                            attackBox.x += range;
-                            knockbackDir.set(1, 0);
-                            break;
-                    }
-
-                    if (enemies != null) {
-                        for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
-                            if (attackBox.overlaps(enemy.getBounds())) {
-                                enemy.takeDamage(20);
-                                enemy.knockback(knockbackDir); // Apply knockback
-
-                                // damageNumbers.add(new de.tum.cit.fop.maze.VFX.DamageNumber(enemy, 20));
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         ScreenUtils.clear(0, 0, 0, 1);
         boolean isLevelCompleted = character.isLevelCompleted();
         levelTimer += delta;
 
-        if (!isPaused && !isGameOver && !isLevelCompleted && !isDialogueActive) {
+        if (!isPaused && !isGameOver && !isLevelCompleted && !dialogueManager.isActive()) {
             if (character != null) {
 
                 if (character.isScreenShakeRequested()) {
@@ -836,7 +691,7 @@ public class GameScreen implements Screen {
                     character.clearDamageNumberRequest();
                 }
 
-                character.update(delta, mapObjects, game.getConfigManager());
+                character.update(delta, mapObjects, enemies, game.getConfigManager());
 
                 float targetX = character.getPosition().x + 8;
                 float targetY = character.getPosition().y + 16;
@@ -960,22 +815,7 @@ public class GameScreen implements Screen {
 
             if (character.isAttacking()) {
                 shapeRenderer.setColor(Color.RED);
-                com.badlogic.gdx.math.Rectangle attackBox = new com.badlogic.gdx.math.Rectangle(character.getBounds());
-                float range = 16f;
-                switch (character.getDirection()) {
-                    case UP:
-                        attackBox.y += range;
-                        break;
-                    case DOWN:
-                        attackBox.y -= range;
-                        break;
-                    case LEFT:
-                        attackBox.x -= range;
-                        break;
-                    case RIGHT:
-                        attackBox.x += range;
-                        break;
-                }
+                com.badlogic.gdx.math.Rectangle attackBox = character.getAttackRect();
                 shapeRenderer.rect(attackBox.x, attackBox.y, attackBox.width, attackBox.height);
             }
 
@@ -987,9 +827,8 @@ public class GameScreen implements Screen {
             pauseStage.draw();
         }
 
-        if (isDialogueActive) {
-            dialogueStage.act(delta);
-            dialogueStage.draw();
+        if (dialogueManager.isActive()) {
+            dialogueManager.render(delta);
         }
 
     }
@@ -1003,8 +842,8 @@ public class GameScreen implements Screen {
     public void resize(int width, int height) {
         viewport.update(width, height, false);
         pauseStage.getViewport().update(width, height, true);
-        if (dialogueStage != null) {
-            dialogueStage.getViewport().update(width, height, true);
+        if (dialogueManager != null) {
+            dialogueManager.resize(width, height);
         }
         hud.resize(width, height);
     }
@@ -1040,6 +879,8 @@ public class GameScreen implements Screen {
             shapeRenderer.dispose();
         if (hud != null)
             hud.dispose();
+        if (dialogueManager != null)
+            dialogueManager.dispose();
     }
 
     /**

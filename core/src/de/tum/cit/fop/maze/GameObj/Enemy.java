@@ -83,6 +83,25 @@ public class Enemy extends MovableObject {
     }
 
     /**
+     * Overrides damage logic to use a specific cooldown for enemies,
+     * allowing for faster consecutive hits compared to the player.
+     */
+    @Override
+    public void takeDamage(int amount) {
+        if (damageCooldownTimer <= 0) {
+            this.health -= amount;
+            this.damageFlashTime = FLASH_DURATION; 
+            // Separate cooldown for enemies: 0.3s (allows combos)
+            this.damageCooldownTimer = 0.3f; 
+
+            if (this.health <= 0) {
+                this.health = 0;
+                setMarkedForRemoval(true);
+            }
+        }
+    }
+
+    /**
      * Updates the enemy's logic and physics.
      * 
      * @param delta Time delta.
