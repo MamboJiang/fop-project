@@ -28,7 +28,7 @@ public class HUD {
     private final TextureRegion[] heartRegions;
     private final TextureRegion keyRegion;
     private final com.badlogic.gdx.graphics.g2d.NinePatch achievementNinePatch;
-    
+
     private Image keyImage;
     private Table table;
     private Table heartsTable; // Container for heart images
@@ -36,44 +36,46 @@ public class HUD {
     private Table debugTable;
     private Label debugInfoLabel;
     private Label timeLabel;
-    
+    private Label promptLabel;
+
     private Table contentTable;
     private com.badlogic.gdx.scenes.scene2d.ui.TextField consoleInput;
-    
+
     private final GameScreen gameScreen;
     private final Skin skin;
     private Character character;
 
     /**
      * Constructor for HUD.
+     * 
      * @param spriteBatch SpriteBatch for rendering.
-     * @param gameScreen Reference to game screen.
-     * @param skin UI skin.
+     * @param gameScreen  Reference to game screen.
+     * @param skin        UI skin.
      */
     public HUD(SpriteBatch spriteBatch, GameScreen gameScreen, Skin skin) {
         this.gameScreen = gameScreen;
         this.skin = skin;
         stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), spriteBatch);
-        
+
         objectsTexture = new Texture(Gdx.files.internal("objects.png"));
         TextureRegion[][] tmp = TextureRegion.split(objectsTexture, 16, 16);
-        
+
         heartRegions = new TextureRegion[5];
         for (int i = 0; i < 5; i++) {
             heartRegions[i] = tmp[0][4 + i];
         }
-        
+
         keyRegion = tmp[4][0];
 
         TextureRegion bgRegion = new TextureRegion(objectsTexture, 4 * 16, 18 * 16, 4 * 16, 2 * 16);
         achievementNinePatch = new com.badlogic.gdx.graphics.g2d.NinePatch(bgRegion, 16, 16, 0, 0);
-        achievementNinePatch.scale(4, 4); 
-        
+        achievementNinePatch.scale(4, 4);
+
         heartImages = new com.badlogic.gdx.utils.Array<>();
-        
+
         setupUI();
         setupDebugMenu();
-        
+
         AchievementManager.getInstance().setHUD(this);
     }
 
@@ -81,21 +83,29 @@ public class HUD {
         table = new Table();
         table.top();
         table.setFillParent(true);
-        
+
         heartsTable = new Table();
         heartsTable.left();
-        
+
         keyImage = new Image(keyRegion);
         timeLabel = new Label("Time: 00:00\nScore: 1000", skin);
-        timeLabel.setAlignment(Align.center); 
+        timeLabel.setAlignment(Align.center);
 
         table.add(heartsTable).expandX().left().pad(10).height(64);
-        table.add(timeLabel).expandX().center().padTop(10);
+
+        // Center Container for Time and Prompt
+        Table centerTable = new Table();
+        centerTable.add(timeLabel).row();
+        promptLabel = new Label("Press F to interact", skin);
+        promptLabel.setVisible(false);
+        centerTable.add(promptLabel).padTop(10);
+
+        table.add(centerTable).expandX().center().padTop(10);
         table.add(keyImage).expandX().right().pad(10).size(64, 64);
-        
+
         stage.addActor(table);
     }
-    
+
     private void setupDebugMenu() {
         debugTable = new Table();
         debugTable.bottom().left();
@@ -107,12 +117,10 @@ public class HUD {
         debugInfoLabel = new Label("Speed: 0\nHP: 4\nKey: false", skin);
         contentTable.add(debugInfoLabel).left().pad(5).row();
 
-
         final Label consoleLog = new Label("Console ready. Type 'help' for commands.", skin);
         consoleLog.setWrap(true);
 
         contentTable.add(consoleLog).width(300).left().pad(5).row();
-
 
         consoleInput = new com.badlogic.gdx.scenes.scene2d.ui.TextField("", skin);
         consoleInput.setMessageText("Enter command...");
@@ -130,7 +138,8 @@ public class HUD {
         consoleInput.setTextFieldFilter(new com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter() {
             @Override
             public boolean acceptChar(com.badlogic.gdx.scenes.scene2d.ui.TextField textField, char c) {
-                if (c == '`' || c == '~') return false;
+                if (c == '`' || c == '~')
+                    return false;
                 return true;
             }
         });
@@ -150,27 +159,28 @@ public class HUD {
                 }
             }
         });
-        
 
         debugTable.add(contentTable).left().pad(5).row();
         debugTable.add(toggleMenuBtn).left().pad(5);
-        
+
         stage.addActor(debugTable);
     }
 
     private String handleCommand(String commandLine) {
         String[] parts = commandLine.split("\\s+");
-        if (parts.length == 0) return "";
-        
+        if (parts.length == 0)
+            return "";
+
         String command = parts[0].toLowerCase();
-        
+
         try {
             switch (command) {
                 case "help":
                     return "Commands: hp <add/set>, key <true/false>, god, shield, zoom <in/out>, debug, leaderboard <clear/add>";
-                
+
                 case "hp":
-                    if (parts.length < 3) return "Usage: hp <add/set> <value>";
+                    if (parts.length < 3)
+                        return "Usage: hp <add/set> <value>";
                     int val = Integer.parseInt(parts[2]);
                     if (character != null) {
                         if (parts[1].equalsIgnoreCase("add")) {
@@ -182,29 +192,30 @@ public class HUD {
                         }
                     }
                     return "Character not found or invalid sub-command.";
-                    
+
                 case "key":
-                    if (parts.length < 2) return "Usage: key <true/false>";
+                    if (parts.length < 2)
+                        return "Usage: key <true/false>";
                     boolean hasKey = Boolean.parseBoolean(parts[1]);
                     if (character != null) {
                         character.setHasKey(hasKey);
                         return "Key set to " + hasKey;
                     }
                     return "Character not found.";
-                    
+
                 case "god":
                     if (character != null) {
-                         boolean newState = !character.isInfiniteHP();
-                         if (parts.length > 1) {
-                             newState = Boolean.parseBoolean(parts[1]);
-                         }
-                         character.setInfiniteHP(newState);
-                         return "Infinite HP: " + newState;
+                        boolean newState = !character.isInfiniteHP();
+                        if (parts.length > 1) {
+                            newState = Boolean.parseBoolean(parts[1]);
+                        }
+                        character.setInfiniteHP(newState);
+                        return "Infinite HP: " + newState;
                     }
                     return "Character not found.";
 
                 case "shield":
-                     if (character != null) {
+                    if (character != null) {
                         if (character.isShielded()) {
                             character.activateShield(0);
                             return "Shield Deactivated";
@@ -212,11 +223,12 @@ public class HUD {
                             character.activateShield(9999f);
                             return "Infinite Shield Activated";
                         }
-                     }
-                     return "Character not found.";
+                    }
+                    return "Character not found.";
 
                 case "zoom":
-                    if (parts.length < 2) return "Usage: zoom <in/out>";
+                    if (parts.length < 2)
+                        return "Usage: zoom <in/out>";
                     if (parts[1].equalsIgnoreCase("in")) {
                         gameScreen.zoomIn();
                         return "Zoomed In";
@@ -225,32 +237,35 @@ public class HUD {
                         return "Zoomed Out";
                     }
                     return "Invalid zoom argument.";
-                    
+
                 case "debug":
                     gameScreen.toggleDebug();
                     return "Debug Mode Toggled";
-                    
-                case "achievement":
-                     if (parts.length < 2) return "Usage: achievement <unlock/list> [id]";
-                     if (parts[1].equalsIgnoreCase("unlock")) {
-                         if (parts.length < 3) return "Specify achievement ID.";
 
-                         AchievementManager.getInstance().debugUnlock(parts[2]);
-                         return "Attempting unlock: " + parts[2];
-                     }
-                     return "Unknown achievement command.";
-                    
+                case "achievement":
+                    if (parts.length < 2)
+                        return "Usage: achievement <unlock/list> [id]";
+                    if (parts[1].equalsIgnoreCase("unlock")) {
+                        if (parts.length < 3)
+                            return "Specify achievement ID.";
+
+                        AchievementManager.getInstance().debugUnlock(parts[2]);
+                        return "Attempting unlock: " + parts[2];
+                    }
+                    return "Unknown achievement command.";
+
                 case "leaderboard":
-                     if (parts.length < 2) return "Usage: leaderboard <clear/add>";
-                     if (parts[1].equalsIgnoreCase("clear")) {
-                         LeaderboardManager.clearOnlineLeaderboard(() -> Gdx.app.log("Console", "Leaderboard Cleared"));
-                         return "Clearing Leaderboard...";
-                     } else if (parts[1].equalsIgnoreCase("add")) {
-                         LeaderboardManager.addDebugEntry();
-                         return "Added dummy entry.";
-                     }
-                     return "Unknown leaderboard command.";
-                     
+                    if (parts.length < 2)
+                        return "Usage: leaderboard <clear/add>";
+                    if (parts[1].equalsIgnoreCase("clear")) {
+                        LeaderboardManager.clearOnlineLeaderboard(() -> Gdx.app.log("Console", "Leaderboard Cleared"));
+                        return "Clearing Leaderboard...";
+                    } else if (parts[1].equalsIgnoreCase("add")) {
+                        LeaderboardManager.addDebugEntry();
+                        return "Added dummy entry.";
+                    }
+                    return "Unknown leaderboard command.";
+
                 default:
                     return "Unknown command: " + command;
             }
@@ -263,6 +278,7 @@ public class HUD {
 
     /**
      * Updates the HUD elements based on character state.
+     * 
      * @param character The player character.
      */
     public void update(Character character) {
@@ -274,9 +290,9 @@ public class HUD {
         int currentLives = character.getLives();
         int maxLives = character.getMaxLives();
 
-        int numHearts = (int)Math.ceil(maxLives / 4.0);
-        if (numHearts < 1) numHearts = 1;
-
+        int numHearts = (int) Math.ceil(maxLives / 4.0);
+        if (numHearts < 1)
+            numHearts = 1;
 
         if (heartImages.size != numHearts) {
             heartsTable.clearChildren();
@@ -287,39 +303,43 @@ public class HUD {
                 heartImages.add(img);
             }
         }
-        
 
         for (int i = 0; i < heartImages.size; i++) {
             Image img = heartImages.get(i);
-            
 
             int heartStartHP = i * 4;
             int hpForThisHeart = currentLives - heartStartHP;
-            
 
-            if (hpForThisHeart > 4) hpForThisHeart = 4;
-            if (hpForThisHeart < 0) hpForThisHeart = 0;
-            
+            if (hpForThisHeart > 4)
+                hpForThisHeart = 4;
+            if (hpForThisHeart < 0)
+                hpForThisHeart = 0;
 
             int textureIndex = 4 - hpForThisHeart;
-            
-            img.setDrawable(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(heartRegions[textureIndex]));
+
+            img.setDrawable(
+                    new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(heartRegions[textureIndex]));
         }
-        
 
         if (character.hasKey()) {
-             keyImage.setColor(Color.WHITE);
+            keyImage.setColor(Color.WHITE);
         } else {
-             keyImage.setColor(Color.DARK_GRAY);
+            keyImage.setColor(Color.DARK_GRAY);
         }
-        
 
         if (debugInfoLabel != null) {
             float speed = character.getVelocity().len();
-            debugInfoLabel.setText(String.format("Speed: %.2f\nHP: %d/%d\nKey: %b", speed, currentLives, maxLives, character.hasKey()));
+            debugInfoLabel.setText(String.format("Speed: %.2f\nHP: %d/%d\nKey: %b", speed, currentLives, maxLives,
+                    character.hasKey()));
         }
     }
-    
+
+    public void setPromptVisible(boolean visible) {
+        if (promptLabel != null) {
+            promptLabel.setVisible(visible);
+        }
+    }
+
     public Stage getStage() {
         return stage;
     }
@@ -328,20 +348,20 @@ public class HUD {
 
         int consoleKey = gameScreen.getGame().getConfigManager().getKey("CONSOLE");
         if (Gdx.input.isKeyJustPressed(consoleKey)) {
-             boolean isVisible = !contentTable.isVisible();
-             contentTable.setVisible(isVisible);
-             if (isVisible) {
-                 stage.setKeyboardFocus(consoleInput);
-             } else {
-                 stage.setKeyboardFocus(null);
-                 Gdx.input.setOnscreenKeyboardVisible(false);
-             }
+            boolean isVisible = !contentTable.isVisible();
+            contentTable.setVisible(isVisible);
+            if (isVisible) {
+                stage.setKeyboardFocus(consoleInput);
+            } else {
+                stage.setKeyboardFocus(null);
+                Gdx.input.setOnscreenKeyboardVisible(false);
+            }
         }
-        
+
         stage.act(delta);
         stage.draw();
     }
-    
+
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
@@ -351,9 +371,9 @@ public class HUD {
         objectsTexture.dispose();
     }
 
-
     /**
      * Displays an achievement unlocked popup.
+     * 
      * @param achievement The achievement to display.
      */
     public void showAchievementPopup(Achievement achievement) {
@@ -371,22 +391,23 @@ public class HUD {
             this.setSize(340, 128);
 
             this.setPosition((1920 - 340) / 2f, 1080 + 10);
-            
+
             Label titleLabel = new Label("Achievement!", skin);
             titleLabel.setFontScale(0.8f);
             this.add(titleLabel).padTop(0).padLeft(100).row();
             Label nameLabel = new Label(achievement.getName(), skin);
-            nameLabel.setFontScale(0.8f); 
+            nameLabel.setFontScale(0.8f);
             this.add(nameLabel).padTop(-5).padLeft(100);
         }
 
         public void animate() {
             this.addAction(com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence(
-                com.badlogic.gdx.scenes.scene2d.actions.Actions.moveTo(this.getX(), 1080 - 150, 0.5f, com.badlogic.gdx.math.Interpolation.swingOut),
-                com.badlogic.gdx.scenes.scene2d.actions.Actions.delay(3f),
-                com.badlogic.gdx.scenes.scene2d.actions.Actions.moveTo(this.getX(), 1080 + 10, 0.5f, com.badlogic.gdx.math.Interpolation.swingIn),
-                com.badlogic.gdx.scenes.scene2d.actions.Actions.removeActor()
-            ));
+                    com.badlogic.gdx.scenes.scene2d.actions.Actions.moveTo(this.getX(), 1080 - 150, 0.5f,
+                            com.badlogic.gdx.math.Interpolation.swingOut),
+                    com.badlogic.gdx.scenes.scene2d.actions.Actions.delay(3f),
+                    com.badlogic.gdx.scenes.scene2d.actions.Actions.moveTo(this.getX(), 1080 + 10, 0.5f,
+                            com.badlogic.gdx.math.Interpolation.swingIn),
+                    com.badlogic.gdx.scenes.scene2d.actions.Actions.removeActor()));
         }
     }
 }

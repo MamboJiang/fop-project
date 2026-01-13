@@ -1,7 +1,7 @@
 package de.tum.cit.fop.maze;
 
-
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -23,13 +23,27 @@ import de.tum.cit.fop.maze.GameControl.PauseMenu;
 import de.tum.cit.fop.maze.GameControl.GameOverMenu;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+import de.tum.cit.fop.maze.Conversation.DialogueBox;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 import java.util.List;
-
+import java.util.ArrayList;
 
 /**
  * The GameScreen class is responsible for the main gameplay loop.
- * It handles rendering, updates, input, and game logic like level generation and game over states.
+ * It handles rendering, updates, input, and game logic like level generation
+ * and game over states.
  */
 public class GameScreen implements Screen {
 
@@ -39,17 +53,14 @@ public class GameScreen implements Screen {
     private BitmapFont font;
     private ShapeRenderer shapeRenderer;
     private HUD hud;
-    
 
     private boolean debugEnabled = false;
-
 
     private boolean isPaused = false;
     private boolean isGameOver = false;
     private Stage pauseStage;
     private PauseMenu pauseMenu;
     private GameOverMenu GameOverMenu;
-
 
     private de.tum.cit.fop.maze.GameObj.Character character;
     private List<GameObject> mapObjects;
@@ -67,13 +78,39 @@ public class GameScreen implements Screen {
 
     private String playerName = "Player";
     private int totalRunScore = 0;
-    
 
     private String currentLevelName = "Unknown";
 
+    // Dialogue Overlay Fields
+    private Stage dialogueStage;
+    private boolean isDialogueActive = false;
+    private DialogueBox dialogueBox;
+    private Image leftChar;
+    private Image rightChar;
+    private List<String> historyLog;
+    private Window logWindow;
+    private Label logLabel;
+    private int conversationIndex = 0;
+
+    // Simple Dialogue Data (Can be externalized later)
+    private final String[] dialogueTexts = {
+            "Hey! Welcome to the Birth Level.",
+            "There is nothing here.",
+            "Absolutely nothing.",
+            "But at least you can talk to me!",
+            "Press 'F' again if you want to chat more."
+    };
+    private final String[] speakerNames = {
+            "Stranger", "Stranger", "Stranger", "Stranger", "Stranger"
+    };
+    private final boolean[] isLeftSpeaker = {
+            false, false, false, false, false
+    };
+
     /**
      * Constructor for loading a specific map file.
-     * @param game The main game class.
+     * 
+     * @param game    The main game class.
      * @param mapFile The map file to load.
      */
     public GameScreen(MazeRunnerGame game, FileHandle mapFile) {
@@ -87,13 +124,13 @@ public class GameScreen implements Screen {
         initCommon();
         setupLevel();
     }
-    
 
     /**
      * Constructor for Procedural / Endless modes.
-     * @param game The main game class.
+     * 
+     * @param game         The main game class.
      * @param isProcedural Whether the level should be generated procedurally.
-     * @param playerName The name of the player.
+     * @param playerName   The name of the player.
      */
     public GameScreen(MazeRunnerGame game, boolean isProcedural, String playerName) {
         this.game = game;
@@ -102,13 +139,14 @@ public class GameScreen implements Screen {
 
         this.playerName = playerName;
         this.totalRunScore = 0;
-        
+
         initCommon();
         setupLevel();
     }
-    
+
     /**
      * Sets the difficulty for procedural generation.
+     * 
      * @param difficulty The difficulty level.
      */
     public void setDifficulty(int difficulty) {
@@ -116,24 +154,24 @@ public class GameScreen implements Screen {
 
         generateProceduralLevel();
     }
-    
+
     /**
      * Common initialization for camera, viewport, HUD, and other systems.
      */
     private void initCommon() {
         camera = new OrthographicCamera();
-        camera.zoom = 0.7f; 
-        
+        camera.zoom = 0.7f;
+
         viewport = new ExtendViewport(640, 360, camera);
 
-
         font = game.getSkin().getFont("font");
-        
+
         shapeRenderer = new ShapeRenderer();
         hud = new HUD(game.getSpriteBatch(), this, game.getSkin());
         screenShake = new de.tum.cit.fop.maze.VFX.ScreenShake();
 
         setupPauseMenu();
+        setupDialogueUI();
     }
 
     /**
@@ -141,14 +179,14 @@ public class GameScreen implements Screen {
      */
     private void setupLevel() {
         if (isProcedural) {
-             generateProceduralLevel();
-             return;
+            generateProceduralLevel();
+            return;
         }
 
-
-        if(this.mapFile ==null || !this.mapFile.exists()){
+        if (this.mapFile == null || !this.mapFile.exists()) {
             Gdx.app.error("GameScreen", "Map file is null or does not exist!");
-            this.mapFile = Gdx.files.internal("maps/level-6.properties");
+            // CHANGED: Default to level-0 for testing
+            this.mapFile = Gdx.files.internal("maps/level-0.properties");
         }
 
         mapObjects = MapLoader.loadMap(this.mapFile);
@@ -162,14 +200,16 @@ public class GameScreen implements Screen {
     private void generateProceduralLevel() {
 
         int size = 40 + (currentDifficulty * 2);
-        if (size > 100) size = 100;
-        
-        de.tum.cit.fop.maze.Procedure.DungeonGenerator generator = new de.tum.cit.fop.maze.Procedure.DungeonGenerator(size, size);
+        if (size > 100)
+            size = 100;
+
+        de.tum.cit.fop.maze.Procedure.DungeonGenerator generator = new de.tum.cit.fop.maze.Procedure.DungeonGenerator(
+                size, size);
         mapObjects = generator.generate(currentDifficulty);
-        
+
         initMapObjects();
     }
-    
+
     /**
      * Initializes game objects (Player, Enemies, Items) from the map data.
      */
@@ -189,7 +229,7 @@ public class GameScreen implements Screen {
 
         if (character == null) {
 
-            character = new Character(spawnX+16, spawnY, game.getPlayerState(), game);
+            character = new Character(spawnX + 16, spawnY, game.getPlayerState(), game);
         } else {
             character.setPosition(spawnX + 16, spawnY);
         }
@@ -204,30 +244,26 @@ public class GameScreen implements Screen {
             }
         }
 
-        
-
         enemies = new java.util.ArrayList<>();
 
         List<GameObject> toRemove = new java.util.ArrayList<>();
         for (GameObject obj : mapObjects) {
-             if (obj instanceof de.tum.cit.fop.maze.GameObj.EnemySpawnPoint) {
-                 enemies.add(new de.tum.cit.fop.maze.GameObj.Enemy(
-                     obj.getPosition().x, 
-                     obj.getPosition().y, 
-                     de.tum.cit.fop.maze.MapLoader.getMobAnimations(0, 0), // Base Enemy: Col 0, Row 0
-                     grid, 
-                     character
-                 ));
-                 toRemove.add(obj);
-             } else if (obj instanceof de.tum.cit.fop.maze.GameObj.GhostSpawnPoint) {
-                 enemies.add(new de.tum.cit.fop.maze.GameObj.Ghost(
-                     obj.getPosition().x, 
-                     obj.getPosition().y, 
-                     grid, 
-                     character
-                 ));
-                 toRemove.add(obj);
-             }
+            if (obj instanceof de.tum.cit.fop.maze.GameObj.EnemySpawnPoint) {
+                enemies.add(new de.tum.cit.fop.maze.GameObj.Enemy(
+                        obj.getPosition().x,
+                        obj.getPosition().y,
+                        de.tum.cit.fop.maze.MapLoader.getMobAnimations(0, 0), // Base Enemy: Col 0, Row 0
+                        grid,
+                        character));
+                toRemove.add(obj);
+            } else if (obj instanceof de.tum.cit.fop.maze.GameObj.GhostSpawnPoint) {
+                enemies.add(new de.tum.cit.fop.maze.GameObj.Ghost(
+                        obj.getPosition().x,
+                        obj.getPosition().y,
+                        grid,
+                        character));
+                toRemove.add(obj);
+            }
         }
 
         mapObjects.removeAll(toRemove);
@@ -240,30 +276,31 @@ public class GameScreen implements Screen {
                 int cx = (int) (obj.getPosition().x / chunkSize);
                 int cy = (int) (obj.getPosition().y / chunkSize);
                 String key = cx + "," + cy;
-                
+
                 if (!chunks.containsKey(key)) {
                     chunks.put(key, new java.util.ArrayList<>());
                 }
                 chunks.get(key).add(obj);
             }
         }
-        
 
         for (java.util.List<GameObject> chunkPaths : chunks.values()) {
-            if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.5f)) { 
+            if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.5f)) {
                 GameObject randomPath = chunkPaths.get(com.badlogic.gdx.math.MathUtils.random(chunkPaths.size() - 1));
-                de.tum.cit.fop.maze.GameObj.Heart heart = new de.tum.cit.fop.maze.GameObj.Heart(randomPath.getPosition().x, randomPath.getPosition().y);
+                de.tum.cit.fop.maze.GameObj.Heart heart = new de.tum.cit.fop.maze.GameObj.Heart(
+                        randomPath.getPosition().x, randomPath.getPosition().y);
                 mapObjects.add(heart);
             }
 
             if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.2f)) {
                 GameObject randomPath = chunkPaths.get(com.badlogic.gdx.math.MathUtils.random(chunkPaths.size() - 1));
 
-                de.tum.cit.fop.maze.GameObj.ShieldItem shield = new de.tum.cit.fop.maze.GameObj.ShieldItem(randomPath.getPosition().x, randomPath.getPosition().y);
+                de.tum.cit.fop.maze.GameObj.ShieldItem shield = new de.tum.cit.fop.maze.GameObj.ShieldItem(
+                        randomPath.getPosition().x, randomPath.getPosition().y);
                 mapObjects.add(shield);
             }
         }
-        
+
         damageNumbers = new java.util.ArrayList<>();
     }
 
@@ -272,50 +309,50 @@ public class GameScreen implements Screen {
      */
     private void setupPauseMenu() {
         pauseStage = new Stage(new FitViewport(1920, 1080), game.getSpriteBatch());
-        
-        pauseMenu = new PauseMenu(game, 
-            () -> togglePause(),
-            () -> {
-                if (isProcedural) {
-                    Dialog dialog = new Dialog("Endless Mode", game.getSkin()) {
-                        @Override
-                        protected void result(Object object) {
-                            if (object instanceof Integer) {
-                                int choice = (Integer) object;
-                                if (choice == 1) {
 
-                                    game.getPlayerState().setEndlessWave(currentDifficulty); 
+        pauseMenu = new PauseMenu(game,
+                () -> togglePause(),
+                () -> {
+                    if (isProcedural) {
+                        Dialog dialog = new Dialog("Endless Mode", game.getSkin()) {
+                            @Override
+                            protected void result(Object object) {
+                                if (object instanceof Integer) {
+                                    int choice = (Integer) object;
+                                    if (choice == 1) {
 
-                                    game.getPlayerState().setCurrentRunScore(totalRunScore);
-                                    if (character != null) {
-                                        game.getPlayerState().setCurrentRunHealth(character.getCurrentHealth());
+                                        game.getPlayerState().setEndlessWave(currentDifficulty);
+
+                                        game.getPlayerState().setCurrentRunScore(totalRunScore);
+                                        if (character != null) {
+                                            game.getPlayerState().setCurrentRunHealth(character.getCurrentHealth());
+                                        }
+
+                                        game.saveGame();
+                                        game.goToMenu();
+                                    } else if (choice == 2) {
+
+                                        game.getPlayerState().resetEndlessWave();
+                                        game.getPlayerState().resetRunState();
+                                        pauseMenu.hide();
+                                        isPaused = false;
+                                        showGameOverMenu(false);
+                                    } else {
+
                                     }
-                                    
-                                    game.saveGame();
-                                    game.goToMenu();
-                                } else if (choice == 2) {
-
-                                    game.getPlayerState().resetEndlessWave(); 
-                                    game.getPlayerState().resetRunState();
-                                    pauseMenu.hide();
-                                    isPaused = false; 
-                                    showGameOverMenu(false); 
-                                } else {
-
                                 }
                             }
-                        }
-                    };
-                    dialog.text("Save Difficulty or End Run (Submit Score)?\nNew Run will be: Lv " + currentDifficulty);
-                    dialog.button("Save & Quit", 1);
-                    dialog.button("End Game (Submit Score)", 2);
-                    dialog.button("Cancel", 0);
-                    dialog.show(pauseStage);
-                } else {
-                    game.goToMenu();
-                }
-            }
-        );
+                        };
+                        dialog.text(
+                                "Save Difficulty or End Run (Submit Score)?\nNew Run will be: Lv " + currentDifficulty);
+                        dialog.button("Save & Quit", 1);
+                        dialog.button("End Game (Submit Score)", 2);
+                        dialog.button("Cancel", 0);
+                        dialog.show(pauseStage);
+                    } else {
+                        game.goToMenu();
+                    }
+                });
         pauseStage.addActor(pauseMenu);
     }
 
@@ -327,10 +364,9 @@ public class GameScreen implements Screen {
         if (isProcedural) {
             totalRunScore += calculateScore();
 
-
             currentDifficulty++;
-            de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onStatusUpdate(de.tum.cit.fop.maze.GameControl.EventType.REACH_DIFFICULTY, currentDifficulty);
-            
+            de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
+                    .onStatusUpdate(de.tum.cit.fop.maze.GameControl.EventType.REACH_DIFFICULTY, currentDifficulty);
 
             isGameOver = false;
             isPaused = false;
@@ -338,7 +374,6 @@ public class GameScreen implements Screen {
             if (character != null) {
                 character.resetForNewLevel();
             }
-            
 
             if (GameOverMenu != null) {
                 GameOverMenu.remove();
@@ -346,19 +381,15 @@ public class GameScreen implements Screen {
             if (pauseMenu != null) {
                 pauseMenu.hide();
             }
-            
 
             updateInputProcessor();
-            
 
             generateProceduralLevel();
             return;
         }
 
-
         List<FileHandle> maps = MapLoader.getMapFiles();
         int currentIndex = -1;
-
 
         for (int i = 0; i < maps.size(); i++) {
 
@@ -367,7 +398,6 @@ public class GameScreen implements Screen {
                 break;
             }
         }
-
 
         if (currentIndex != -1 && currentIndex + 1 < maps.size()) {
 
@@ -381,6 +411,7 @@ public class GameScreen implements Screen {
 
     /**
      * Awards XP to the player.
+     * 
      * @param win Whether the level was won.
      * @return The amount of XP awarded.
      */
@@ -390,9 +421,8 @@ public class GameScreen implements Screen {
             if (!isProcedural && currentLevelName != null) {
                 game.getPlayerState().addCompletedLevel(currentLevelName);
             }
-            
-            int xpEarned = 50;
 
+            int xpEarned = 50;
 
             if (isProcedural) {
                 game.getPlayerState().addCurrentRunXP(xpEarned);
@@ -401,10 +431,9 @@ public class GameScreen implements Screen {
                 game.getPlayerState().addXP(xpEarned);
                 System.out.println("Awarded " + xpEarned + " XP");
             }
-            
 
             game.saveGame();
-            
+
             return xpEarned;
         }
         return 0;
@@ -412,36 +441,35 @@ public class GameScreen implements Screen {
 
     /**
      * Shows the Game Over menu with appropriate options (Win/Loss).
+     * 
      * @param win True if the player won the level/run.
      */
     private void showGameOverMenu(boolean win) {
-        if (isGameOver) return;
+        if (isGameOver)
+            return;
         isGameOver = true;
 
         int awardXP = awardXP(win);
-        
 
         if (isProcedural && !win) {
 
             int runXP = game.getPlayerState().getCurrentRunXP();
             game.getPlayerState().addXP(runXP);
             awardXP = runXP;
-            
+
             game.getPlayerState().resetEndlessWave();
             game.getPlayerState().resetRunState();
             game.saveGame();
         }
 
-
         int currentLevelScore = win ? calculateScore() : 0;
         int finalDisplayScore = isProcedural ? (totalRunScore + currentLevelScore) : currentLevelScore;
-        
 
         int waves = -1;
         if (isProcedural) {
             waves = win ? currentDifficulty : currentDifficulty - 1;
         }
-        
+
         GameOverMenu = new GameOverMenu(game,
                 () -> {
 
@@ -454,7 +482,8 @@ public class GameScreen implements Screen {
                 () -> {
 
                     if (isProcedural && win) {
-                         com.badlogic.gdx.scenes.scene2d.ui.Dialog dialog = new com.badlogic.gdx.scenes.scene2d.ui.Dialog("Endless Mode", game.getSkin()) {
+                        com.badlogic.gdx.scenes.scene2d.ui.Dialog dialog = new com.badlogic.gdx.scenes.scene2d.ui.Dialog(
+                                "Endless Mode", game.getSkin()) {
                             @Override
                             protected void result(Object object) {
                                 if (object instanceof Integer) {
@@ -467,7 +496,7 @@ public class GameScreen implements Screen {
                                         if (character != null) {
                                             game.getPlayerState().setCurrentRunHealth(character.getCurrentHealth());
                                         }
-                                        
+
                                         game.saveGame();
                                         game.goToMenu();
                                     } else if (choice == 2) {
@@ -475,8 +504,9 @@ public class GameScreen implements Screen {
                                         totalRunScore += calculateScore();
                                         game.getPlayerState().resetEndlessWave();
                                         game.getPlayerState().resetRunState();
-                                        
-                                        if (GameOverMenu != null) GameOverMenu.remove();
+
+                                        if (GameOverMenu != null)
+                                            GameOverMenu.remove();
                                         isGameOver = false;
                                         showGameOverMenu(false);
                                     } else {
@@ -485,7 +515,8 @@ public class GameScreen implements Screen {
                                 }
                             }
                         };
-                        dialog.text("Save Difficulty or End Run (Submit Score)?\nNew Run will be: Lv " + (currentDifficulty + 1));
+                        dialog.text("Save Difficulty or End Run (Submit Score)?\nNew Run will be: Lv "
+                                + (currentDifficulty + 1));
                         dialog.button("Save & Quit", 1);
                         dialog.button("End Game (Submit Score)", 2);
                         dialog.button("Cancel", 0);
@@ -500,20 +531,22 @@ public class GameScreen implements Screen {
                 win,
                 waves,
                 finalDisplayScore,
-                awardXP
-        );
+                awardXP);
 
         if (isProcedural) {
 
             if (!win) {
                 de.tum.cit.fop.maze.GameControl.LeaderboardManager.saveScore(playerName, finalDisplayScore, () -> {
-                    if (GameOverMenu != null) GameOverMenu.loadLeaderboard();
+                    if (GameOverMenu != null)
+                        GameOverMenu.loadLeaderboard();
                 });
-                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.GAME_OVER, 1);
+                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
+                        .onEvent(de.tum.cit.fop.maze.GameControl.EventType.GAME_OVER, 1);
             }
         } else {
             if (!win) {
-                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.GAME_OVER, 1);
+                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
+                        .onEvent(de.tum.cit.fop.maze.GameControl.EventType.GAME_OVER, 1);
             }
         }
 
@@ -521,10 +554,8 @@ public class GameScreen implements Screen {
         GameOverMenu.show();
         game.playGameOverSound();
 
-
         Gdx.input.setInputProcessor(pauseStage);
     }
-
 
     /**
      * Toggles the pause state of the game.
@@ -545,28 +576,136 @@ public class GameScreen implements Screen {
         }
         updateInputProcessor();
     }
-    
-    /**
-     * Updates the input processor based on current game state (Paused vs Running).
-     */
+
+    // ==========================================
+    // DIALOGUE SYSTEM METHODS
+    // ==========================================
+
+    private void setupDialogueUI() {
+        dialogueStage = new Stage(new FitViewport(1920, 1080), game.getSpriteBatch());
+        historyLog = new ArrayList<>();
+
+        Table charTable = new Table();
+        charTable.setFillParent(true);
+        dialogueStage.addActor(charTable);
+
+        Texture charTexture = new Texture(Gdx.files.internal("character.png"));
+        Texture mobsTexture = new Texture(Gdx.files.internal("mobs.png"));
+        Texture objectsTexture = new Texture(Gdx.files.internal("objects.png"));
+
+        TextureRegion[][] charTmp = TextureRegion.split(charTexture, 16, 32);
+        TextureRegion[][] mobsTmp = TextureRegion.split(mobsTexture, 16, 16);
+
+        leftChar = new Image(charTmp[0][0]); // Player
+        rightChar = new Image(mobsTmp[0][0]); // NPC
+
+        float rawHeight = 32f;
+        float targetHeight = 1720f * 0.75f;
+        float targetHeight2 = 1080f * 0.75f;
+        float scale = targetHeight / rawHeight;
+        float scale2 = targetHeight2 / rawHeight;
+
+        charTable.bottom();
+        // Position characters at sides
+        charTable.add(leftChar).height(targetHeight).width(16 * scale).padBottom(-100).expandX().left().padLeft(0);
+        charTable.add(rightChar).height(targetHeight2).width(32 * scale2).padBottom(-100).expandX().right()
+                .padRight(-100);
+
+        leftChar.setColor(1, 1, 1, 0); // Hide initially
+        rightChar.setColor(1, 1, 1, 0);
+
+        // UI Layout
+        Table uiTable = new Table();
+        uiTable.setFillParent(true);
+        dialogueStage.addActor(uiTable);
+        uiTable.bottom();
+
+        dialogueBox = new DialogueBox(game.getSkin(), objectsTexture);
+        dialogueBox.setTailDirection(DialogueBox.TailDirection.NONE);
+        dialogueBox.setAutoSize(false);
+        dialogueBox.setSize(1800, 300);
+
+        uiTable.add(dialogueBox).width(1800).height(500).padBottom(50);
+
+        // Click to advance
+        dialogueStage.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (isDialogueActive) {
+                    if (!dialogueBox.isFinished()) {
+                        dialogueBox.skipTypewriter();
+                    } else {
+                        advanceDialogue();
+                    }
+                }
+            }
+        });
+    }
+
+    private void startDialogue() {
+        if (isDialogueActive)
+            return;
+        isDialogueActive = true;
+        conversationIndex = 0;
+
+        leftChar.setColor(1, 1, 1, 1);
+        rightChar.setColor(1, 1, 1, 1);
+
+        updateInputProcessor();
+        updateDialogue();
+    }
+
+    private void endDialogue() {
+        isDialogueActive = false;
+        leftChar.setColor(1, 1, 1, 0);
+        rightChar.setColor(1, 1, 1, 0);
+        updateInputProcessor();
+    }
+
+    private void advanceDialogue() {
+        conversationIndex++;
+        if (conversationIndex >= dialogueTexts.length) {
+            endDialogue();
+            return;
+        }
+        updateDialogue();
+    }
+
+    private void updateDialogue() {
+        String text = dialogueTexts[conversationIndex];
+        boolean isLeft = isLeftSpeaker[conversationIndex];
+
+        dialogueBox.show(text, DialogueBox.DialogueType.NORMAL, 1700f);
+
+        // Dim the non-speaking character
+        if (isLeft) {
+            leftChar.setColor(1, 1, 1, 1);
+            rightChar.setColor(0.5f, 0.5f, 0.5f, 1);
+        } else {
+            leftChar.setColor(0.5f, 0.5f, 0.5f, 1);
+            rightChar.setColor(1, 1, 1, 1);
+        }
+    }
+
     public void updateInputProcessor() {
         InputMultiplexer multiplexer = new InputMultiplexer();
         if (isPaused) {
             multiplexer.addProcessor(pauseStage);
+        } else if (isDialogueActive) {
+            multiplexer.addProcessor(dialogueStage); // Priority to dialogue
         } else {
-
             multiplexer.addProcessor(hud.getStage());
         }
         Gdx.input.setInputProcessor(multiplexer);
     }
-    
+
     /**
      * Toggles debug rendering mode.
      */
     public void toggleDebug() {
         debugEnabled = !debugEnabled;
     }
-    
+
     /**
      * Zooms the camera in.
      */
@@ -574,7 +713,7 @@ public class GameScreen implements Screen {
         camera.zoom = Math.max(0.1f, camera.zoom - 0.1f);
         camera.update();
     }
-    
+
     /**
      * Zooms the camera out.
      */
@@ -583,13 +722,11 @@ public class GameScreen implements Screen {
         camera.update();
     }
 
-
-
     private de.tum.cit.fop.maze.VFX.ScreenShake screenShake;
-
 
     /**
      * Main render loop.
+     * 
      * @param delta Time since last frame in seconds.
      */
     @Override
@@ -599,20 +736,45 @@ public class GameScreen implements Screen {
             toggleDebug();
         }
 
-
         if (Gdx.input.isKeyJustPressed(game.getConfigManager().getKey("PAUSE"))) {
-            togglePause();
+            if (isDialogueActive) {
+                // Maybe allow pausing during dialogue, or just ignore
+            } else {
+                togglePause();
+            }
+        }
+
+        // Interaction Check for Dialogue
+        if (!isPaused && !isDialogueActive && character != null) {
+            if (mapObjects != null) {
+                boolean nearTrigger = false;
+                for (GameObject obj : mapObjects) {
+                    if (obj instanceof de.tum.cit.fop.maze.GameObj.DialogueTrigger) {
+                        if (((de.tum.cit.fop.maze.GameObj.DialogueTrigger) obj)
+                                .checkProximity(character.getPosition())) {
+                            nearTrigger = true;
+                            if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+                                startDialogue();
+                            }
+                        }
+                    }
+                }
+                if (hud != null) {
+                    hud.setPromptVisible(nearTrigger && !isDialogueActive);
+                }
+            }
         }
 
         ScreenUtils.clear(0, 0, 0, 1);
         boolean isLevelCompleted = character.isLevelCompleted();
         levelTimer += delta;
 
-        if (!isPaused && !isGameOver && !isLevelCompleted) {
+        if (!isPaused && !isGameOver && !isLevelCompleted && !isDialogueActive) {
             if (character != null) {
 
                 if (character.isScreenShakeRequested()) {
-                    if (screenShake != null) screenShake.start(0.3f, 0.8f);
+                    if (screenShake != null)
+                        screenShake.start(0.3f, 0.8f);
                     character.clearScreenShakeRequest();
                 }
 
@@ -621,29 +783,23 @@ public class GameScreen implements Screen {
                     damageNumbers.add(new de.tum.cit.fop.maze.VFX.DamageNumber(
                             character,
                             "BLOCK",
-                            com.badlogic.gdx.graphics.Color.CYAN
-                    ));
+                            com.badlogic.gdx.graphics.Color.CYAN));
                     character.clearBlockEffectRequest();
                 }
 
-
-
                 if (character.isDamageNumberRequested()) {
-                     damageNumbers.add(new de.tum.cit.fop.maze.VFX.DamageNumber(character, 1));
-                     character.clearDamageNumberRequest();
+                    damageNumbers.add(new de.tum.cit.fop.maze.VFX.DamageNumber(character, 1));
+                    character.clearDamageNumberRequest();
                 }
 
                 character.update(delta, mapObjects, game.getConfigManager());
 
-
                 float targetX = character.getPosition().x + 8;
                 float targetY = character.getPosition().y + 16;
-                
 
                 float lerpSpeed = 5f;
                 camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
                 camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
-                
 
                 if (screenShake != null) {
                     screenShake.update(delta, camera);
@@ -651,62 +807,59 @@ public class GameScreen implements Screen {
                     camera.update();
                 }
             }
-            if(mapObjects != null){
+            if (mapObjects != null) {
                 mapObjects.removeIf(GameObject::isMarkedForRemoval);
             }
             if (character.isLevelCompleted()) {
-                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.LEVEL_COMPLETE, 1);
+                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
+                        .onEvent(de.tum.cit.fop.maze.GameControl.EventType.LEVEL_COMPLETE, 1);
                 showGameOverMenu(true);
 
             }
-            if(character.isDead()){
+            if (character.isDead()) {
                 showGameOverMenu(false);
             }
         }
-
 
         viewport.apply();
         game.getSpriteBatch().setProjectionMatrix(camera.combined);
         game.getSpriteBatch().begin();
 
-
         if (mapObjects != null) {
             for (GameObject obj : mapObjects) {
                 if (obj instanceof de.tum.cit.fop.maze.GameObj.Heart) {
-                     ((de.tum.cit.fop.maze.GameObj.Heart) obj).update(delta);
+                    ((de.tum.cit.fop.maze.GameObj.Heart) obj).update(delta);
                 } else if (obj instanceof de.tum.cit.fop.maze.GameObj.ShieldItem) {
-                     ((de.tum.cit.fop.maze.GameObj.ShieldItem) obj).update(delta);
+                    ((de.tum.cit.fop.maze.GameObj.ShieldItem) obj).update(delta);
                 }
-                
+
                 if (obj.getTextureRegion() != null) {
-                    game.getSpriteBatch().draw(obj.getTextureRegion(), obj.getPosition().x, obj.getPosition().y, obj.getWidth(), obj.getHeight());
+                    game.getSpriteBatch().draw(obj.getTextureRegion(), obj.getPosition().x, obj.getPosition().y,
+                            obj.getWidth(), obj.getHeight());
                 }
             }
         }
 
-
         if (character != null) {
             character.draw(game.getSpriteBatch());
         }
-        
 
         for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
             enemy.draw(game.getSpriteBatch());
 
             enemy.drawStatus(game.getSpriteBatch(), font, debugEnabled);
         }
-        
 
         if (damageNumbers != null) {
             java.util.Iterator<de.tum.cit.fop.maze.VFX.DamageNumber> iter = damageNumbers.iterator();
             while (iter.hasNext()) {
                 de.tum.cit.fop.maze.VFX.DamageNumber dn = iter.next();
                 dn.render(game.getSpriteBatch(), font);
-                
+
                 if (!isPaused && !isGameOver && !character.isLevelCompleted()) {
                     dn.update(delta);
                 }
-                
+
                 if (dn.isFinished()) {
                     iter.remove();
                 }
@@ -714,7 +867,6 @@ public class GameScreen implements Screen {
         }
 
         game.getSpriteBatch().end();
-        
 
         if (!isPaused && !isGameOver && !character.isLevelCompleted()) {
             java.util.Iterator<de.tum.cit.fop.maze.GameObj.Enemy> enemyIter = enemies.iterator();
@@ -722,44 +874,38 @@ public class GameScreen implements Screen {
                 de.tum.cit.fop.maze.GameObj.Enemy enemy = enemyIter.next();
                 enemy.update(delta);
                 if (enemy.isMarkedForRemoval()) {
-                    de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.KILL_ENEMY, 1);
+                    de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
+                            .onEvent(de.tum.cit.fop.maze.GameControl.EventType.KILL_ENEMY, 1);
                     enemyIter.remove();
                 }
             }
         }
-        
 
         if (character != null) {
             hud.update(character);
             hud.render(delta);
         }
-        
-        
 
         if (debugEnabled && character != null) {
             shapeRenderer.setProjectionMatrix(camera.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-            
 
             shapeRenderer.setColor(Color.RED);
             shapeRenderer.rect(
-                character.getBounds().x, 
-                character.getBounds().y, 
-                character.getBounds().width, 
-                character.getBounds().height
-            );
-            
+                    character.getBounds().x,
+                    character.getBounds().y,
+                    character.getBounds().width,
+                    character.getBounds().height);
 
             shapeRenderer.setColor(Color.GREEN);
             if (mapObjects != null) {
                 for (GameObject obj : mapObjects) {
                     if (obj instanceof de.tum.cit.fop.maze.GameObj.Wall) {
                         shapeRenderer.rect(
-                            obj.getBounds().x, 
-                            obj.getBounds().y, 
-                            obj.getBounds().width, 
-                            obj.getBounds().height
-                        );
+                                obj.getBounds().x,
+                                obj.getBounds().y,
+                                obj.getBounds().width,
+                                obj.getBounds().height);
                     }
                 }
             }
@@ -767,29 +913,36 @@ public class GameScreen implements Screen {
             for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
                 enemy.drawDebug(shapeRenderer);
             }
-            
+
             shapeRenderer.end();
         }
-
 
         if (isPaused || isGameOver || isLevelCompleted) {
             pauseStage.act(delta);
             pauseStage.draw();
         }
-    }
 
+        if (isDialogueActive) {
+            dialogueStage.act(delta);
+            dialogueStage.draw();
+        }
+
+    }
 
     /**
      * Resizes the viewport and UI stages.
-     * @param width New width.
+     * 
+     * @param width  New width.
      * @param height New height.
      */
     public void resize(int width, int height) {
         viewport.update(width, height, false);
         pauseStage.getViewport().update(width, height, true);
+        if (dialogueStage != null) {
+            dialogueStage.getViewport().update(width, height, true);
+        }
         hud.resize(width, height);
     }
-
 
     @Override
     public void pause() {
@@ -816,13 +969,17 @@ public class GameScreen implements Screen {
      */
     @Override
     public void dispose() {
-        if (pauseStage != null) pauseStage.dispose();
-        if (shapeRenderer != null) shapeRenderer.dispose();
-        if (hud != null) hud.dispose();
+        if (pauseStage != null)
+            pauseStage.dispose();
+        if (shapeRenderer != null)
+            shapeRenderer.dispose();
+        if (hud != null)
+            hud.dispose();
     }
 
     /**
      * Calculates the score for the current level.
+     * 
      * @return The calculated score.
      */
     public int calculateScore() {
@@ -834,7 +991,6 @@ public class GameScreen implements Screen {
         int timePenalty = (int) (levelTimer * PENALTY_PER_SECOND);
         int totalScore = BASE_SCORE_PER_LEVEL - timePenalty;
 
-
         if (isProcedural) {
             totalScore *= currentDifficulty;
         }
@@ -844,9 +1000,9 @@ public class GameScreen implements Screen {
         return Math.max(0, totalScore);
     }
 
-
     /**
      * Gets the formatted level timer.
+     * 
      * @return String in MM:SS format.
      */
     public String getFormattedTime() {
@@ -857,6 +1013,7 @@ public class GameScreen implements Screen {
 
     /**
      * Returns the main game instance.
+     * 
      * @return MazeRunnerGame instance.
      */
     public MazeRunnerGame getGame() {
