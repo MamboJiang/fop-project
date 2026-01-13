@@ -8,9 +8,15 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 public class DialogueTrigger extends GameObject {
 
     private boolean isNearPlayer = false;
+    private String dialogueId;
 
     public DialogueTrigger(float x, float y, float width, float height, TextureRegion textureRegion) {
+        this(x, y, width, height, textureRegion, null);
+    }
+
+    public DialogueTrigger(float x, float y, float width, float height, TextureRegion textureRegion, String dialogueId) {
         super(x, y, width, height, textureRegion);
+        this.dialogueId = dialogueId;
     }
 
     /**
@@ -28,5 +34,13 @@ public class DialogueTrigger extends GameObject {
 
     public boolean isNearPlayer() {
         return isNearPlayer;
+    }
+    
+    public String getDialogueId() {
+        return dialogueId;
+    }
+
+    public void setDialogueId(String dialogueId) {
+        this.dialogueId = dialogueId;
     }
 }

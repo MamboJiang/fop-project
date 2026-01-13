@@ -64,6 +64,10 @@ public class PlayerState {
     private boolean attackUnlocked = false;
     public boolean isAttackUnlocked() { return attackUnlocked; }
     public void setAttackUnlocked(boolean unlocked) { this.attackUnlocked = unlocked; }
+
+    private boolean nonoUnlocked = false;
+    public boolean isNonoUnlocked() { return nonoUnlocked; }
+    public void setNonoUnlocked(boolean unlocked) { this.nonoUnlocked = unlocked; }
     
     public java.util.HashMap<String, Boolean> getUnlockedAchievements() {
         return unlockedAchievements;

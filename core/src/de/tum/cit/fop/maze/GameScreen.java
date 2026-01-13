@@ -63,6 +63,8 @@ public class GameScreen implements Screen {
     private boolean isProcedural = false;
     private int currentDifficulty = 1;
     private float levelTimer = 0f;
+    private de.tum.cit.fop.maze.GameObj.Nono nono;
+    private boolean pendingNonoUnlock = false;
     private int score = 0;
     private static final int BASE_SCORE_PER_LEVEL = 1000;
     private static final int PENALTY_PER_SECOND = 10;
@@ -280,6 +282,32 @@ public class GameScreen implements Screen {
                 }
              }
              mapObjects.addAll(toAdd);
+        }
+        
+        // Nono Trigger Logic in Level 0
+        // Nono Trigger Logic in Level 0
+        if ("level-0".equals(currentLevelName)) {
+            // Scan for the existing DialogueTrigger or ensure one exists
+            // We assume map already has one. If not, maybe we should find a specific object type?
+            // User said it uses mobs(4,0). Let's see if we can find it and tag it.
+            
+            for (GameObject obj : mapObjects) {
+                if (obj instanceof de.tum.cit.fop.maze.GameObj.DialogueTrigger) {
+                    // Check if it's the "ghost" trigger?
+                    // MapLoader gave it Type 7.
+                    // Let's assign ID to ALL triggers in Lvl 0 or just the one.
+                    // Since specific Nono trigger description was mobs(4,0) which is likely Type 7 texture.
+                    // We'll tag it.
+                    ((de.tum.cit.fop.maze.GameObj.DialogueTrigger)obj).setDialogueId("nono-unlock");
+                }
+            }
+        }
+        
+        // Spawn Nono if unlocked
+        if (game.getPlayerState().isNonoUnlocked()) {
+            nono = new de.tum.cit.fop.maze.GameObj.Nono(character.getPosition().x, character.getPosition().y, character);
+        } else {
+            nono = null;
         }
 
 
@@ -645,12 +673,17 @@ public class GameScreen implements Screen {
                 boolean nearTrigger = false;
                 for (GameObject obj : mapObjects) {
                     if (obj instanceof de.tum.cit.fop.maze.GameObj.DialogueTrigger) {
-                        if (((de.tum.cit.fop.maze.GameObj.DialogueTrigger) obj)
-                                .checkProximity(character.getPosition())) {
+                        de.tum.cit.fop.maze.GameObj.DialogueTrigger trigger = (de.tum.cit.fop.maze.GameObj.DialogueTrigger) obj;
+                        if (trigger.checkProximity(character.getPosition())) {
                             nearTrigger = true;
                             if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
                                 dialogueManager.startDialogue();
-                                updateInputProcessor(); // Ensure input processor is updated
+                                updateInputProcessor(); 
+                                
+                                // Check if this is the Nono unlock trigger
+                                if ("nono-unlock".equals(trigger.getDialogueId())) {
+                                    pendingNonoUnlock = true;
+                                }
                             }
                         }
                     }
@@ -658,6 +691,18 @@ public class GameScreen implements Screen {
                 if (hud != null) {
                     hud.setPromptVisible(nearTrigger && !dialogueManager.isActive());
                 }
+            }
+            
+            // Check for completed dialogue to unlock Nono
+            if (pendingNonoUnlock && !dialogueManager.isActive()) {
+                pendingNonoUnlock = false;
+                game.getPlayerState().setNonoUnlocked(true);
+                game.saveGame();
+                // Spawn Nono immediately
+                nono = new de.tum.cit.fop.maze.GameObj.Nono(character.getPosition().x, character.getPosition().y, character);
+                
+                // Remove the trigger?
+                // Optional. Let's keep it or remove it.
             }
 
             // Attack Logic (Moved to Character.java)
@@ -742,6 +787,10 @@ public class GameScreen implements Screen {
         if (character != null) {
             character.draw(game.getSpriteBatch());
         }
+        
+        if (nono != null) {
+            nono.draw(game.getSpriteBatch());
+        }
 
         for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
             enemy.draw(game.getSpriteBatch());
@@ -819,8 +868,30 @@ public class GameScreen implements Screen {
                 shapeRenderer.rect(attackBox.x, attackBox.y, attackBox.width, attackBox.height);
             }
 
+            if (character.isAttacking()) {
+                shapeRenderer.setColor(Color.RED);
+                com.badlogic.gdx.math.Rectangle attackBox = character.getAttackRect();
+                shapeRenderer.rect(attackBox.x, attackBox.y, attackBox.width, attackBox.height);
+            }
+
             shapeRenderer.end();
         }
+        
+        if (nono != null && !isPaused && !isGameOver) {
+            nono.update(delta);
+        }
+        
+        // Handle Dialogue Unlock for Nono
+        // If we just finished a dialogue with "nono-unlock" ID? 
+        // DialogueManager handles conversation. We need to know if it finished.
+        // We can check if dialogue WAS active and NOW is not, and we have a flag set.
+        
+        // Or simpler: Check proximity to the trigger and if dialogue just closed.
+        // GameScreen doesn't easily track WHICH dialogue just finished. 
+        // But for Level 0, if we interact with the trigger, we can assume it's the unlock.
+        // Let's refine the trigger logic above.
+        
+
 
         if (isPaused || isGameOver || isLevelCompleted) {
             pauseStage.act(delta);
