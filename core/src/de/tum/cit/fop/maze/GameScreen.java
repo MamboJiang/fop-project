@@ -191,7 +191,7 @@ public class GameScreen implements Screen {
         }
 
         mapObjects = MapLoader.loadMap(this.mapFile);
-
+        System.out.println("number of objects:" + mapObjects.size());
         initMapObjects();
     }
 
