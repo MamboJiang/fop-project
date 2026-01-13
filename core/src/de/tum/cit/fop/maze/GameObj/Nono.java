@@ -77,7 +77,7 @@ public class Nono extends GameObject {
                 
                 // Strength increases with distance beyond leash
                 float excess = dist - LEASH_RADIUS;
-                float force = excess * 20f; // Increased spring stiffness (was 5f)
+                float force = excess * 50f; // Increased stiffness for tighter follow
                 
                 float angle = MathUtils.atan2(pullY, pullX);
                 velocity.x += MathUtils.cos(angle) * force * delta;
