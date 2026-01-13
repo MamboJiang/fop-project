@@ -35,8 +35,40 @@ public class MapLoader {
         try {
             props.load(mapFile.read());
 
-            int mapWidth = Integer.parseInt(props.getProperty("Width", "15"));
-            int mapHeight = Integer.parseInt(props.getProperty("Height", "15"));
+            int mapWidth = 0;
+            int mapHeight = 0;
+
+            if (props.containsKey("Width")) {
+                mapWidth = Integer.parseInt(props.getProperty("Width"));
+            }
+            if (props.containsKey("Height")) {
+                mapHeight = Integer.parseInt(props.getProperty("Height"));
+            }
+
+            // If dimensions are missing, calculate them from keys
+            if (mapWidth == 0 || mapHeight == 0) {
+                for (String key : props.stringPropertyNames()) {
+                    if (key.contains(",")) {
+                        try {
+                            String[] parts = key.split(",");
+                            int x = Integer.parseInt(parts[0]);
+                            int y = Integer.parseInt(parts[1]);
+                            if (x >= mapWidth)
+                                mapWidth = x + 1;
+                            if (y >= mapHeight)
+                                mapHeight = y + 1;
+                        } catch (NumberFormatException e) {
+                            // Ignore non-coordinate keys
+                        }
+                    }
+                }
+            }
+
+            // Default to 15 only if still 0 (empty map or no coordinates)
+            if (mapWidth == 0)
+                mapWidth = 15;
+            if (mapHeight == 0)
+                mapHeight = 15;
 
             for (int y = 0; y < mapHeight; y++) {
                 for (int x = 0; x < mapWidth; x++) {
