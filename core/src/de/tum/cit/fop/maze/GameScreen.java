@@ -7,6 +7,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -763,6 +764,49 @@ public class GameScreen implements Screen {
                     hud.setPromptVisible(nearTrigger && !isDialogueActive);
                 }
             }
+
+            // Attack Logic (Level 2 Only)
+            if ("level-2".equals(currentLevelName) && Gdx.input.isKeyJustPressed(Input.Keys.J)) {
+                if (!character.isAttacking()) {
+                    character.attack();
+                    game.playBlockSound(); // Placeholder sound or new attack sound?
+                    // Hit Detection
+                    com.badlogic.gdx.math.Rectangle attackBox = new com.badlogic.gdx.math.Rectangle(
+                            character.getBounds());
+                    float range = 16f; // 1 block range
+                    Vector2 knockbackDir = new Vector2();
+
+                    switch (character.getDirection()) {
+                        case UP:
+                            attackBox.y += range;
+                            knockbackDir.set(0, 1);
+                            break;
+                        case DOWN:
+                            attackBox.y -= range;
+                            knockbackDir.set(0, -1);
+                            break;
+                        case LEFT:
+                            attackBox.x -= range;
+                            knockbackDir.set(-1, 0);
+                            break;
+                        case RIGHT:
+                            attackBox.x += range;
+                            knockbackDir.set(1, 0);
+                            break;
+                    }
+
+                    if (enemies != null) {
+                        for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
+                            if (attackBox.overlaps(enemy.getBounds())) {
+                                enemy.takeDamage(1);
+                                enemy.knockback(knockbackDir); // Apply knockback
+
+                                // damageNumbers.add(new de.tum.cit.fop.maze.VFX.DamageNumber(enemy, 20));
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         ScreenUtils.clear(0, 0, 0, 1);
@@ -912,6 +956,27 @@ public class GameScreen implements Screen {
 
             for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
                 enemy.drawDebug(shapeRenderer);
+            }
+
+            if (character.isAttacking()) {
+                shapeRenderer.setColor(Color.RED);
+                com.badlogic.gdx.math.Rectangle attackBox = new com.badlogic.gdx.math.Rectangle(character.getBounds());
+                float range = 16f;
+                switch (character.getDirection()) {
+                    case UP:
+                        attackBox.y += range;
+                        break;
+                    case DOWN:
+                        attackBox.y -= range;
+                        break;
+                    case LEFT:
+                        attackBox.x -= range;
+                        break;
+                    case RIGHT:
+                        attackBox.x += range;
+                        break;
+                }
+                shapeRenderer.rect(attackBox.x, attackBox.y, attackBox.width, attackBox.height);
             }
 
             shapeRenderer.end();

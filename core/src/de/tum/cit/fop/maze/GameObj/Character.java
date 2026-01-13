@@ -1,6 +1,5 @@
 package de.tum.cit.fop.maze.GameObj;
 
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
@@ -17,7 +16,8 @@ import java.util.List;
 
 /**
  * The player character controlled by the user.
- * Handles movement input, collision logic with walls/items/exits, and rendering.
+ * Handles movement input, collision logic with walls/items/exits, and
+ * rendering.
  */
 public class Character extends MovableObject {
 
@@ -34,7 +34,6 @@ public class Character extends MovableObject {
     private Animation<TextureRegion> walkLeft;
 
     private Direction currentDirection;
-    
 
     private TextureRegion arrowRegion;
     private Vector2 targetPosition;
@@ -43,6 +42,15 @@ public class Character extends MovableObject {
     private float footstepTimer = 0f;
 
     private boolean blockEffectRequested = false;
+
+    private boolean isAttacking = false;
+    private float attackTimer = 0f;
+    private static final float ATTACK_DURATION = 0.4f;
+
+    private Animation<TextureRegion> attackDown;
+    private Animation<TextureRegion> attackRight;
+    private Animation<TextureRegion> attackUp;
+    private Animation<TextureRegion> attackLeft;
 
     /**
      * Enum for movement direction.
@@ -53,28 +61,28 @@ public class Character extends MovableObject {
 
     /**
      * Constructor for Character.
-     * @param x Starting x.
-     * @param y Starting y.
+     * 
+     * @param x     Starting x.
+     * @param y     Starting y.
      * @param state The player's persistent state (stats, inventory).
-     * @param game The main game instance.
+     * @param game  The main game instance.
      */
     public Character(float x, float y, PlayerState state, MazeRunnerGame game) {
         super(x, y, 16, 32, null);
         this.playerState = state;
         this.health = 4;
         this.speed = WALK_SPEED;
-        
 
         this.maxSpeed = WALK_SPEED;
         this.acceleration = 800f;
         this.friction = 800f;
-        
+
         this.currentDirection = Direction.DOWN;
         this.stateTime = 0f;
 
         loadAnimations();
 
-        this.bounds = new Rectangle(x+4, y+4, 8, 8);
+        this.bounds = new Rectangle(x + 4, y + 4, 8, 8);
 
         int maxLives = state.getMaxLives();
         this.health = maxLives;
@@ -86,9 +94,10 @@ public class Character extends MovableObject {
 
         this.game = game;
     }
-    
+
     /**
      * Sets the position and updates the bounding box.
+     * 
      * @param x New x.
      * @param y New y.
      */
@@ -100,7 +109,7 @@ public class Character extends MovableObject {
     public boolean isLevelCompleted() {
         return isLevelCompleted;
     }
-    
+
     /**
      * Resets temporary state (health, flags) for a new level.
      */
@@ -108,13 +117,12 @@ public class Character extends MovableObject {
         this.isLevelCompleted = false;
         this.hasKey = false;
         this.targetPosition = null;
-        
+
         this.shieldTime = 0f;
         this.invincibleTime = 0f;
         this.damageFlashTime = 0f;
         this.screenShakeRequested = false;
         this.damageNumberRequested = false;
-        
 
         this.velocity.set(0, 0);
         this.acceleration = 800f;
@@ -125,48 +133,78 @@ public class Character extends MovableObject {
      */
     private void loadAnimations() {
         Texture texture = new Texture(Gdx.files.internal("character.png"));
-        TextureRegion[][] tmp = TextureRegion.split(texture, 16, 32);
+        // TextureRegion[][] tmp = TextureRegion.split(texture, 16, 32); // Removed as
+        // we manually split
 
         Texture thingsTexture = new Texture(Gdx.files.internal("assets/things.png"));
         TextureRegion[][] thingsTmp = TextureRegion.split(thingsTexture, 16, 16);
         arrowRegion = thingsTmp[4][0];
-
-
 
         TextureRegion[] downFrames = new TextureRegion[4];
         TextureRegion[] rightFrames = new TextureRegion[4];
         TextureRegion[] upFrames = new TextureRegion[4];
         TextureRegion[] leftFrames = new TextureRegion[4];
 
-        int index = 0;
+        TextureRegion[] attDownFrames = new TextureRegion[4];
+        TextureRegion[] attRightFrames = new TextureRegion[4];
+        TextureRegion[] attUpFrames = new TextureRegion[4];
+        TextureRegion[] attLeftFrames = new TextureRegion[4];
+
+        // Frame extraction
         for (int i = 0; i < 4; i++) {
-            downFrames[i] = tmp[0][i];
-            rightFrames[i] = tmp[1][i];
-            upFrames[i] = tmp[2][i];
-            leftFrames[i] = tmp[3][i];
+            // Walking: Rows 0-3, 16x32
+            downFrames[i] = new TextureRegion(texture, i * 16, 0, 16, 32);
+            rightFrames[i] = new TextureRegion(texture, i * 16, 32, 16, 32);
+            upFrames[i] = new TextureRegion(texture, i * 16, 64, 16, 32);
+            leftFrames[i] = new TextureRegion(texture, i * 16, 96, 16, 32);
+
+            // Attacking: Rows 4-7, 32x32
+            // Row 4 starts at y = 128
+            attDownFrames[i] = new TextureRegion(texture, i * 32, 128, 32, 32);
+            attRightFrames[i] = new TextureRegion(texture, i * 32, 192, 32, 32);
+            attUpFrames[i] = new TextureRegion(texture, i * 32, 160, 32, 32);
+            attLeftFrames[i] = new TextureRegion(texture, i * 32, 224, 32, 32);
         }
 
-
         walkDown = new Animation<>(0.1f, downFrames);
-
         walkRight = new Animation<>(0.1f, rightFrames);
-
         walkUp = new Animation<>(0.1f, upFrames);
-
         walkLeft = new Animation<>(0.1f, leftFrames);
+
+        attackDown = new Animation<>(0.1f, attDownFrames);
+        attackRight = new Animation<>(0.1f, attRightFrames);
+        attackUp = new Animation<>(0.1f, attUpFrames);
+        attackLeft = new Animation<>(0.1f, attLeftFrames);
 
         this.textureRegion = downFrames[0];
     }
 
+    public void attack() {
+        if (!isAttacking) {
+            isAttacking = true;
+            attackTimer = 0f;
+            stateTime = 0f; // Reset animation time for the attack
+        }
+    }
+
+    public boolean isAttacking() {
+        return isAttacking;
+    }
+
+    public Direction getDirection() {
+        return currentDirection;
+    }
+
     /**
      * Handles collision reactions when hitting objects.
-     * @param hitObject The object collided with.
+     * 
+     * @param hitObject   The object collided with.
      * @param oldPosition The position before the move (to revert if wall).
-     * @param isXAxis Whether the movement was on the X axis.
+     * @param isXAxis     Whether the movement was on the X axis.
      */
-    private void collisionAddressing(GameObject hitObject, float oldPosition, boolean isXAxis){
+    private void collisionAddressing(GameObject hitObject, float oldPosition, boolean isXAxis) {
         if (hitObject != null) {
-            if(hitObject instanceof Wall){
+            if (hitObject instanceof Wall) {
                 if (isXAxis) {
                     this.position.x = oldPosition;
                     this.velocity.x = 0;
@@ -175,27 +213,23 @@ public class Character extends MovableObject {
                     this.velocity.y = 0;
                 }
                 updateBounds();
-            }
-            else if(hitObject instanceof Key){
+            } else if (hitObject instanceof Key) {
                 this.hasKey = true;
                 hitObject.setMarkedForRemoval(true);
                 game.playPowerUpSound();
                 System.out.println("Key collected!");
-                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.COLLECT_ITEM, 1);
-            }
-            else if(hitObject instanceof Collectable && !(hitObject instanceof Heart)){
+                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
+                        .onEvent(de.tum.cit.fop.maze.GameControl.EventType.COLLECT_ITEM, 1);
+            } else if (hitObject instanceof Collectable && !(hitObject instanceof Heart)) {
                 ((Collectable) hitObject).collect(this);
                 game.playPowerUpSound();
-            }
-            else if(hitObject instanceof Heart){
+            } else if (hitObject instanceof Heart) {
                 ((Heart) hitObject).collect(this);
-            }
-            else if(hitObject instanceof Exit){
-                if(this.hasKey){
+            } else if (hitObject instanceof Exit) {
+                if (this.hasKey) {
                     this.isLevelCompleted = true;
                     System.out.println("Level Completed!");
-                }
-                else{
+                } else {
                     if (isXAxis) {
                         this.position.x = oldPosition;
                         this.velocity.x = 0;
@@ -205,8 +239,7 @@ public class Character extends MovableObject {
                     }
                     updateBounds();
                 }
-            }
-            else if (hitObject instanceof Trap) {
+            } else if (hitObject instanceof Trap) {
                 this.takeDamage();
                 System.out.println("Stepped on a trap! Lives left: " + getLives());
             }
@@ -216,18 +249,26 @@ public class Character extends MovableObject {
     /**
      * Main update loop for the character.
      * Handles input, physics, collisions, and animation state.
-     * @param delta Time delta.
-     * @param mapObjects List of objects in the map.
+     * 
+     * @param delta         Time delta.
+     * @param mapObjects    List of objects in the map.
      * @param configManager Configuration manager for key bindings.
      */
-    public void update(float delta, List<GameObject> mapObjects, de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
+    public void update(float delta, List<GameObject> mapObjects,
+            de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
         stateTime += delta;
 
         handleInput(configManager);
 
+        if (isAttacking) {
+            attackTimer += delta;
+
+            if (attackTimer >= ATTACK_DURATION) {
+                isAttacking = false;
+            }
+        }
 
         updatePhysics(delta);
-
 
         if (isMoving) {
 
@@ -242,30 +283,23 @@ public class Character extends MovableObject {
             float oldX = position.x;
             float oldY = position.y;
 
-
             position.x += velocity.x * delta;
             updateBounds();
             GameObject colX = checkCollision(mapObjects);
             collisionAddressing(colX, oldX, true);
-
-
 
             position.y += velocity.y * delta;
             updateBounds();
             GameObject colY = checkCollision(mapObjects);
             collisionAddressing(colY, oldY, false);
 
-
-
             handleWallSliding(delta, mapObjects, colX, colY);
         }
 
         float stepInterval = (maxSpeed > 150f) ? 0.25f : 0.35f;
 
-
         if (velocity.len() > 5f) {
             footstepTimer += delta;
-
 
             if (footstepTimer >= stepInterval) {
                 game.playFootstepSound();
@@ -276,46 +310,73 @@ public class Character extends MovableObject {
             footstepTimer = stepInterval;
         }
 
-
-
         Animation<TextureRegion> currentAnim;
-        switch (currentDirection) {
-            case DOWN: currentAnim = walkDown; break;
-            case RIGHT: currentAnim = walkRight; break;
-            case UP: currentAnim = walkUp; break;
-            case LEFT: currentAnim = walkLeft; break;
-            default: currentAnim = walkDown; break;
+
+        if (isAttacking) {
+            switch (currentDirection) {
+                case DOWN:
+                    currentAnim = attackDown;
+                    break;
+                case RIGHT:
+                    currentAnim = attackRight;
+                    break;
+                case UP:
+                    currentAnim = attackUp;
+                    break;
+                case LEFT:
+                    currentAnim = attackLeft;
+                    break;
+                default:
+                    currentAnim = attackDown;
+                    break;
+            }
+        } else {
+            switch (currentDirection) {
+                case DOWN:
+                    currentAnim = walkDown;
+                    break;
+                case RIGHT:
+                    currentAnim = walkRight;
+                    break;
+                case UP:
+                    currentAnim = walkUp;
+                    break;
+                case LEFT:
+                    currentAnim = walkLeft;
+                    break;
+                default:
+                    currentAnim = walkDown;
+                    break;
+            }
         }
 
-        if (isMoving) {
+        if (isMoving || isAttacking) {
             this.textureRegion = currentAnim.getKeyFrame(stateTime, true);
         } else {
             this.textureRegion = currentAnim.getKeyFrame(0, true); // Stand still frame
         }
 
-
         if (damageFlashTime > 0) {
             damageFlashTime -= delta;
         }
-        
 
         if (invincibleTime > 0) {
             invincibleTime -= delta;
         }
-        
+
         if (shieldTime > 0) {
             shieldTime -= delta;
         }
 
         updateTarget(mapObjects);
     }
-    
 
     private float shieldTime = 0f;
     private Animation<TextureRegion> shieldAnimation;
-    
+
     /**
      * Activates a temporary shield.
+     * 
      * @param duration Duration in seconds.
      */
     public void activateShield(float duration) {
@@ -324,65 +385,69 @@ public class Character extends MovableObject {
         }
         this.shieldTime = duration;
     }
-    
+
     private void loadShieldAnimation() {
-         Texture texture = new Texture(Gdx.files.internal("objects.png"));
-         TextureRegion[][] tmp = TextureRegion.split(texture, 16, 16);
-         TextureRegion[] frames = new TextureRegion[7];
-         for (int i = 0; i < 7; i++) {
-             frames[i] = tmp[3][4 + i];
-         }
-         shieldAnimation = new Animation<>(0.1f, frames);
-         shieldAnimation.setPlayMode(Animation.PlayMode.LOOP);
+        Texture texture = new Texture(Gdx.files.internal("objects.png"));
+        TextureRegion[][] tmp = TextureRegion.split(texture, 16, 16);
+        TextureRegion[] frames = new TextureRegion[7];
+        for (int i = 0; i < 7; i++) {
+            frames[i] = tmp[3][4 + i];
+        }
+        shieldAnimation = new Animation<>(0.1f, frames);
+        shieldAnimation.setPlayMode(Animation.PlayMode.LOOP);
     }
-    
+
     public boolean isShielded() {
         return shieldTime > 0;
     }
 
     /**
      * Renders the character, shield, and navigation arrow.
+     * 
      * @param batch The sprite batch.
      */
     public void draw(SpriteBatch batch) {
 
         setupDamageFlash(batch);
-        
-        batch.draw(textureRegion, position.x, position.y, width, height);
+
+        if (isAttacking) {
+            // Draw 32x32 sprite centered on 16x32 body
+            // X: pos.x + 8 (center) - 16 (half width) = pos.x - 8
+            batch.draw(textureRegion, position.x - 8, position.y, 32, 32);
+        } else {
+            batch.draw(textureRegion, position.x, position.y, width, height);
+        }
 
         endDamageFlash(batch);
-        
+
         drawArrow(batch);
-        
+
         batch.setColor(Color.WHITE);
-        
 
         if (shieldTime > 0 && shieldAnimation != null) {
             TextureRegion shieldFrame = shieldAnimation.getKeyFrame(stateTime, true);
-                
 
             batch.setColor(1, 1, 1, 0.5f);
-                
 
             float scaleX = 1.2f;
             float scaleY = 1.5f;
-                
+
             float actualWidth = 16f * scaleX;
             float actualHeight = 16f * scaleY;
 
             float drawX = (position.x + 8) - (actualWidth / 2);
 
             float drawY = position.y + 5;
-                
+
             batch.draw(shieldFrame, drawX, drawY, actualWidth, actualHeight);
-                
+
             batch.setColor(Color.WHITE);
-            }
+        }
     }
 
-    
     /**
      * Updates the logic for the navigation arrow (nearest interesting object).
+     * 
      * @param mapObjects Objects to scan.
      */
     private void updateTarget(List<GameObject> mapObjects) {
@@ -417,16 +482,19 @@ public class Character extends MovableObject {
 
     /**
      * Draws the navigation arrow pointing to the target.
+     * 
      * @param batch SpriteBatch.
      */
     public void drawArrow(SpriteBatch batch) {
-        if (targetPosition == null) return;
+        if (targetPosition == null)
+            return;
 
-        float angle = MathUtils.atan2(targetPosition.y - position.y, targetPosition.x - position.x) * MathUtils.radiansToDegrees;
+        float angle = MathUtils.atan2(targetPosition.y - position.y, targetPosition.x - position.x)
+                * MathUtils.radiansToDegrees;
         float radius = 20f;
 
         float cx = position.x + width / 2;
-        float cy = position.y + height / 2; 
+        float cy = position.y + height / 2;
 
         float arrowX = cx + MathUtils.cosDeg(angle) * (radius);
         float arrowY = cy + MathUtils.sinDeg(angle) * (radius);
@@ -436,16 +504,16 @@ public class Character extends MovableObject {
 
         batch.draw(
                 arrowRegion,
-                arrowX - w/2, arrowY - h/2,
-                w/2, h/2,
+                arrowX - w / 2, arrowY - h / 2,
+                w / 2, h / 2,
                 w, h,
                 1, 1,
-                angle - 90 
-        );
+                angle - 90);
     }
 
     /**
      * Reads keyboard input to set the movement vector.
+     * 
      * @param configManager Config manager.
      */
     private void handleInput(de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
@@ -456,10 +524,14 @@ public class Character extends MovableObject {
         }
 
         inputVector.set(0, 0);
-        if (Gdx.input.isKeyPressed(configManager.getKey("UP"))) inputVector.y = 1;
-        if (Gdx.input.isKeyPressed(configManager.getKey("DOWN"))) inputVector.y = -1;
-        if (Gdx.input.isKeyPressed(configManager.getKey("LEFT"))) inputVector.x = -1;
-        if (Gdx.input.isKeyPressed(configManager.getKey("RIGHT"))) inputVector.x = 1;
+        if (Gdx.input.isKeyPressed(configManager.getKey("UP")))
+            inputVector.y = 1;
+        if (Gdx.input.isKeyPressed(configManager.getKey("DOWN")))
+            inputVector.y = -1;
+        if (Gdx.input.isKeyPressed(configManager.getKey("LEFT")))
+            inputVector.x = -1;
+        if (Gdx.input.isKeyPressed(configManager.getKey("RIGHT")))
+            inputVector.x = 1;
 
         if (inputVector.len2() > 0) {
             inputVector.nor();
@@ -467,14 +539,16 @@ public class Character extends MovableObject {
     }
 
     private void updateBounds() {
-        this.bounds.setPosition(position.x+4, position.y+4);
+        this.bounds.setPosition(position.x + 4, position.y + 4);
     }
 
     private GameObject checkCollision(List<GameObject> mapObjects) {
         for (GameObject obj : mapObjects) {
-            if (obj == this) continue;
+            if (obj == this)
+                continue;
 
-            if (obj instanceof Wall || obj instanceof Key || obj instanceof Exit || obj instanceof Trap || obj instanceof Collectable) {
+            if (obj instanceof Wall || obj instanceof Key || obj instanceof Exit || obj instanceof Trap
+                    || obj instanceof Collectable) {
                 if (bounds.overlaps(obj.getBounds())) {
                     return obj;
                 }
@@ -488,15 +562,16 @@ public class Character extends MovableObject {
     private float invincibleTime = 0f;
     private static final float INVINCIBLE_DURATION = 1.0f;
     private boolean infiniteHP = false;
-    
 
     /**
      * Takes damage, checks for block chance, shields, or invincibility.
+     * 
      * @param amount Damage amount.
      */
     @Override
     public void takeDamage(int amount) {
-        if (invincibleTime > 0) return;
+        if (invincibleTime > 0)
+            return;
 
         if (playerState != null && com.badlogic.gdx.math.MathUtils.random() < playerState.getDamageReductionChance()) {
             System.out.println("Blocked!");
@@ -506,21 +581,22 @@ public class Character extends MovableObject {
             invincibleTime = 0.5f;
             return;
         }
-        
+
         if (damageFlashTime <= 0) {
             if (!infiniteHP) {
 
                 super.takeDamage(amount);
                 damageNumberRequested = true;
                 game.playHitSound();
-                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.TAKE_DAMAGE, 1);
+                de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
+                        .onEvent(de.tum.cit.fop.maze.GameControl.EventType.TAKE_DAMAGE, 1);
             } else {
 
                 damageFlashTime = FLASH_DURATION;
                 damageNumberRequested = true;
             }
 
-            invincibleTime = INVINCIBLE_DURATION; 
+            invincibleTime = INVINCIBLE_DURATION;
             screenShakeRequested = true;
         }
     }
@@ -528,27 +604,27 @@ public class Character extends MovableObject {
     public void takeDamage() {
         takeDamage(1);
     }
-    
+
     public void setInfiniteHP(boolean enabled) {
         this.infiniteHP = enabled;
     }
-    
+
     public boolean isInfiniteHP() {
         return infiniteHP;
     }
-    
+
     public boolean isDamageNumberRequested() {
         return damageNumberRequested;
     }
-    
+
     public void clearDamageNumberRequest() {
         this.damageNumberRequested = false;
     }
-    
+
     public boolean isScreenShakeRequested() {
         return screenShakeRequested;
     }
-    
+
     public void clearScreenShakeRequest() {
         this.screenShakeRequested = false;
     }
@@ -556,14 +632,13 @@ public class Character extends MovableObject {
     public int getLives() {
         return health;
     }
-    
+
     public int getMaxLives() {
         if (playerState != null) {
             return playerState.getMaxLives();
         }
         return 4;
     }
-
 
     public boolean hasKey() {
         return hasKey;
@@ -572,21 +647,24 @@ public class Character extends MovableObject {
     public void setHasKey(boolean hasKey) {
         this.hasKey = hasKey;
     }
-    
 
     public void setLives(int lives) {
         this.health = lives;
         int max = getMaxLives();
-        if (this.health > max) this.health = max;
-        if (this.health < 0) this.health = 0;
+        if (this.health > max)
+            this.health = max;
+        if (this.health < 0)
+            this.health = 0;
     }
-    
+
     public void addLives(int amount) {
         this.health += amount;
         game.playPowerUpSound();
         int max = getMaxLives();
-        if (this.health > max) this.health = max;
-        if (this.health < 0) this.health = 0;
+        if (this.health > max)
+            this.health = max;
+        if (this.health < 0)
+            this.health = 0;
     }
 
     public Vector2 getVelocity() {
@@ -598,29 +676,30 @@ public class Character extends MovableObject {
      */
     private void handleWallSliding(float delta, List<GameObject> mapObjects, GameObject colX, GameObject colY) {
         float SLIDE_THRESHOLD = 8.0f;
-        float slideSpeed = 100f; 
-
+        float slideSpeed = 100f;
 
         if (colX instanceof Wall && Math.abs(inputVector.x) > 0 && Math.abs(inputVector.y) == 0) {
             Rectangle wallBounds = colX.getBounds();
-            float overlapY = Math.min(bounds.y + bounds.height, wallBounds.y + wallBounds.height) - Math.max(bounds.y, wallBounds.y);
-            
+            float overlapY = Math.min(bounds.y + bounds.height, wallBounds.y + wallBounds.height)
+                    - Math.max(bounds.y, wallBounds.y);
+
             if (overlapY > 0 && overlapY <= SLIDE_THRESHOLD) {
-                float centerY = bounds.y + bounds.height/2;
-                float wallCenterY = wallBounds.y + wallBounds.height/2;
+                float centerY = bounds.y + bounds.height / 2;
+                float wallCenterY = wallBounds.y + wallBounds.height / 2;
                 float slideAmount = slideSpeed * delta;
-                
+
                 float newY = position.y;
                 boolean slidingDown = centerY < wallCenterY;
-                
 
                 float checkY = slidingDown ? wallBounds.y - 1 : wallBounds.y + wallBounds.height + 1;
 
                 Rectangle neighborCheck = new Rectangle(wallBounds.x, checkY, wallBounds.width, 1);
-                
+
                 if (!isWallAt(neighborCheck, mapObjects, colX)) {
-                    if (slidingDown) newY -= slideAmount;
-                    else newY += slideAmount;
+                    if (slidingDown)
+                        newY -= slideAmount;
+                    else
+                        newY += slideAmount;
 
                     if (isPositionFree(position.x, newY, mapObjects, this)) {
                         position.y = newY;
@@ -632,22 +711,25 @@ public class Character extends MovableObject {
 
         if (colY instanceof Wall && Math.abs(inputVector.y) > 0 && Math.abs(inputVector.x) == 0) {
             Rectangle wallBounds = colY.getBounds();
-            float overlapX = Math.min(bounds.x + bounds.width, wallBounds.x + wallBounds.width) - Math.max(bounds.x, wallBounds.x);
-            
+            float overlapX = Math.min(bounds.x + bounds.width, wallBounds.x + wallBounds.width)
+                    - Math.max(bounds.x, wallBounds.x);
+
             if (overlapX > 0 && overlapX <= SLIDE_THRESHOLD) {
-                float centerX = bounds.x + bounds.width/2;
-                float wallCenterX = wallBounds.x + wallBounds.width/2;
+                float centerX = bounds.x + bounds.width / 2;
+                float wallCenterX = wallBounds.x + wallBounds.width / 2;
                 float slideAmount = slideSpeed * delta;
-                
+
                 float newX = position.x;
                 boolean slidingLeft = centerX < wallCenterX;
 
                 float checkX = slidingLeft ? wallBounds.x - 1 : wallBounds.x + wallBounds.width + 1;
                 Rectangle neighborCheck = new Rectangle(checkX, wallBounds.y, 1, wallBounds.height);
-                
+
                 if (!isWallAt(neighborCheck, mapObjects, colY)) {
-                    if (slidingLeft) newX -= slideAmount;
-                    else newX += slideAmount;
+                    if (slidingLeft)
+                        newX -= slideAmount;
+                    else
+                        newX += slideAmount;
 
                     if (isPositionFree(newX, position.y, mapObjects, this)) {
                         position.x = newX;
@@ -660,24 +742,28 @@ public class Character extends MovableObject {
 
     private boolean isWallAt(Rectangle area, List<GameObject> mapObjects, GameObject ignoreSelf) {
         for (GameObject obj : mapObjects) {
-            if (obj == ignoreSelf) continue;
+            if (obj == ignoreSelf)
+                continue;
             if (obj instanceof Wall) {
-                if (area.overlaps(obj.getBounds())) return true;
+                if (area.overlaps(obj.getBounds()))
+                    return true;
             }
         }
         return false;
     }
 
     private boolean isPositionFree(float x, float y, List<GameObject> mapObjects, GameObject ignoreSelf) {
-        Rectangle testBounds = new Rectangle(x+4, y+4, 8, 8);
+        Rectangle testBounds = new Rectangle(x + 4, y + 4, 8, 8);
         for (GameObject obj : mapObjects) {
-            if (obj == ignoreSelf) continue;
+            if (obj == ignoreSelf)
+                continue;
             if (obj instanceof Wall || obj instanceof Exit) {
-                 if (obj instanceof Exit && hasKey) continue;
-                 
-                 if (testBounds.overlaps(obj.getBounds())) {
-                     return false;
-                 }
+                if (obj instanceof Exit && hasKey)
+                    continue;
+
+                if (testBounds.overlaps(obj.getBounds())) {
+                    return false;
+                }
             }
         }
         return true;
@@ -690,7 +776,6 @@ public class Character extends MovableObject {
     public void clearBlockEffectRequest() {
         this.blockEffectRequested = false;
     }
-    
 
     public float getCurrentHealth() {
         return (float) this.health;
@@ -700,10 +785,10 @@ public class Character extends MovableObject {
         this.health = (int) health;
 
         int max = getMaxLives();
-        if (this.health > max) this.health = max;
-        if (this.health < 0) this.health = 0;
+        if (this.health > max)
+            this.health = max;
+        if (this.health < 0)
+            this.health = 0;
     }
 
 }
-
-
