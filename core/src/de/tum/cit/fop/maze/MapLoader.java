@@ -31,6 +31,10 @@ public class MapLoader {
 
         Texture texture = new Texture(Gdx.files.internal("basictiles.png"));
         TextureRegion[][] regions = TextureRegion.split(texture, 16, 16);
+        
+        // Custom 32x32 tiles
+        Texture customTexture = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
+        TextureRegion[][] customRegs = TextureRegion.split(customTexture, 32, 32);
 
         try {
             props.load(mapFile.read());
@@ -83,29 +87,30 @@ public class MapLoader {
                     }
 
                     if (type != 0) {
-
-                        objects.add(new Path(worldX, worldY, 16, 16, regions[1][1]));
+                        // PATH used to be regions[1][1], now customRegs[0][1] (1,0)
+                        objects.add(new Path(worldX, worldY, 16, 16, customRegs[1][0]));
                     }
 
                     GameObject obj = null;
                     switch (type) {
                         case 0:
-                            obj = new Wall(worldX, worldY, 16, 16, regions[0][0]);
+                            // WALL used to be regions[0][0], now customRegs[0][0] (0,0)
+                            obj = new Wall(worldX, worldY, 16, 16, customRegs[0][0]);
                             break;
                         case 1:
-                            obj = new EntryPoint(worldX, worldY, 16, 16, regions[6][0]);
+                            obj = new EntryPoint(worldX, worldY, 16, 16, customRegs[0][2]);
                             break;
                         case 2:
-                            obj = new Exit(worldX, worldY, 16, 16, regions[6][2]);
+                            obj = new Exit(worldX, worldY, 16, 16, customRegs[0][1]);
                             break;
                         case 3:
-                            obj = new Trap(worldX, worldY, 16, 16, regions[9][2]);
+                            obj = new Trap(worldX, worldY, 16, 16, customRegs[2][2]);
                             break;
                         case 4:
                             obj = new EnemySpawnPoint(worldX, worldY, 16, 16, regions[3][6]);
                             break;
                         case 5:
-                            obj = new Key(worldX, worldY, 16, 16, regions[4][4]);
+                            obj = new Key(worldX, worldY, 16, 16, customRegs[1][1]);
                             break;
                         case 6:
                             // Ghost
