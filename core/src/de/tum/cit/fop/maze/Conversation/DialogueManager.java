@@ -41,6 +41,7 @@ public class DialogueManager {
     private Image portraitImage;
     private Image backImage; // For cross-fade
     private Texture portraitTexture;
+    private Texture fadingTexture; // For deferred disposal
     private String currentPortraitPath = "";
     
     // Characters (Keeping exist logic for main chars if needed, but primarily using new system)
@@ -288,40 +289,86 @@ public class DialogueManager {
             if (currentPortraitPath == null) return;
             currentPortraitPath = null;
             
+            // Cleanup any pending fade
+            if (fadingTexture != null) {
+                fadingTexture.dispose();
+                fadingTexture = null;
+            }
+            fadingTexture = portraitTexture;
+            portraitTexture = null;
+            
             portraitImage.clearActions();
-            portraitImage.setVisible(false);
+            portraitImage.addAction(Actions.sequence(
+                Actions.fadeOut(0.5f),
+                Actions.run(() -> {
+                    portraitImage.setVisible(false);
+                    if (fadingTexture != null) {
+                        fadingTexture.dispose();
+                        fadingTexture = null;
+                    }
+                })
+            ));
             return; 
         }
         
         if (path.equals(currentPortraitPath)) return;
         currentPortraitPath = path;
         
-        // Load new texture
+        // 1. Dispose any interrupted fade texture immediately
+        if (fadingTexture != null) {
+            fadingTexture.dispose();
+            fadingTexture = null;
+        }
+        
+        // 2. Mark current texture as fading (it will be used by backImage/oldImage)
+        fadingTexture = portraitTexture; 
+        
+        // 3. Load NEW texture
         try {
             TextureRegion region;
             
             if (path.contains("mobs.png")) {
-                if (portraitTexture != null) portraitTexture.dispose();
+                // Load new instance (do not dispose old yet)
                 portraitTexture = new Texture(Gdx.files.internal(path));
                 portraitTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
                 TextureRegion[][] tmp = TextureRegion.split(portraitTexture, 16, 16);
                 region = tmp[0][0];
             } else {
-                if (portraitTexture != null) portraitTexture.dispose();
                 portraitTexture = new Texture(Gdx.files.internal(path));
                 region = new TextureRegion(portraitTexture);
             }
             
-            // Instant Switch
-            portraitImage.clearActions();
+            // Swap Images
+            Image oldImage = portraitImage;
+            Image newImage = backImage;
+            
+            portraitImage = newImage;
+            backImage = oldImage;
+            
+            // Fade out old (using fadingTexture)
             backImage.clearActions();
-            backImage.setVisible(false);
+            backImage.addAction(Actions.sequence(
+                Actions.fadeOut(0.5f),
+                Actions.run(() -> {
+                    backImage.setVisible(false);
+                    // Dispose the texture used by backImage once fade completes
+                    if (fadingTexture != null) {
+                        fadingTexture.dispose();
+                        fadingTexture = null;
+                    }
+                })
+            ));
             
+            // Fade in new
             portraitImage.setDrawable(new TextureRegionDrawable(region));
+            portraitImage.clearActions();
+            portraitImage.setColor(1, 1, 1, 0);
             portraitImage.setVisible(true);
-            portraitImage.setColor(1, 1, 1, 1);
+            portraitImage.toFront();
             
-            updateLayout();
+            updateLayout(); 
+            
+            portraitImage.addAction(Actions.fadeIn(0.5f));
             
         } catch (Exception e) {
             Gdx.app.error("DialogueManager", "Failed to load portrait: " + path, e);

@@ -15,11 +15,18 @@ public class Nono extends GameObject {
 
     private Character target;
     private float stateTime;
-    private Animation<TextureRegion> animDown, animLeft, animRight, animUp;
+    private Animation<TextureRegion> idleDown, idleLeft, idleRight, idleUp;
+    private Animation<TextureRegion> blinkDown, blinkLeft, blinkRight, blinkUp;
     private Animation<TextureRegion> currentAnim;
     private int currentDirection = 0; // 0=Down, 1=Left, 2=Right, 3=Up
     private float hoverOffset = 0f;
     private Vector2 velocity = new Vector2();
+    
+    // Blink Logic
+    private float blinkTimer = 0f;
+    private float nextBlinkTime;
+    private boolean isBlinking = false;
+    private float blinkStateTime = 0f;
     
     // Movement Parameters
     private static final float LEASH_RADIUS = 20f; 
@@ -29,29 +36,44 @@ public class Nono extends GameObject {
     public Nono(float x, float y, Character target) {
         super(x, y, 12, 12, null); 
         this.target = target;
+        this.nextBlinkTime = MathUtils.random(3f, 5f);
         loadAnimation();
     }
     
     private void loadAnimation() {
-        Texture texture = new Texture(Gdx.files.internal("mobs.png"));
-        TextureRegion[][] tmp = TextureRegion.split(texture, 16, 16);
+        Texture texture = new Texture(Gdx.files.internal("assets/player/sprite/nono.png"));
+        TextureRegion[][] tmp = TextureRegion.split(texture, 32, 32);
         
-        // Rows 4-7 (Indices 4-7) for animations
-        // Cols 0-2 (Standard 3 frames)
-        float frameDuration = 0.2f;
+        float blinkDuration = 0.1f;
 
-        animDown = new Animation<>(frameDuration, tmp[4][0], tmp[4][1], tmp[4][2]);
-        animLeft = new Animation<>(frameDuration, tmp[5][0], tmp[5][1], tmp[5][2]);
-        animRight = new Animation<>(frameDuration, tmp[6][0], tmp[6][1], tmp[6][2]);
-        animUp = new Animation<>(frameDuration, tmp[7][0], tmp[7][1], tmp[7][2]);
-
-        animDown.setPlayMode(Animation.PlayMode.LOOP);
-        animLeft.setPlayMode(Animation.PlayMode.LOOP);
-        animRight.setPlayMode(Animation.PlayMode.LOOP);
-        animUp.setPlayMode(Animation.PlayMode.LOOP);
+        // Down (Row 0)
+        idleDown = new Animation<>(1f, tmp[0][0]);
+        blinkDown = new Animation<>(blinkDuration, tmp[0][1], tmp[0][2], tmp[0][1]); // Blink: Open->Half->Shut->Half->Open? User said 2,3 are blinking. Indices 1, 2. Let's do 1->2->1? Or 1->2. Code implies 1-4-1 loop logic for blink often. 
+        // User said "23 is blinking". Usually 1 is open, 2 is shut. 
+        // Let's assume indices 1 and 2. 
+        // Let's do 1 -> 2 -> 1 (Open -> Shut -> Open).
+        // Actually simplest is 1->2. If loop mode is Normal.
         
-        currentAnim = animDown;
-        this.textureRegion = tmp[4][1];
+        blinkDown = new Animation<>(blinkDuration, tmp[0][1], tmp[0][2]);
+        blinkDown.setPlayMode(Animation.PlayMode.NORMAL);
+
+        // Left (Row 1)
+        idleLeft = new Animation<>(1f, tmp[1][0]);
+        blinkLeft = new Animation<>(blinkDuration, tmp[1][1], tmp[1][2]);
+        blinkLeft.setPlayMode(Animation.PlayMode.NORMAL);
+
+        // Right (Row 2)
+        idleRight = new Animation<>(1f, tmp[2][0]);
+        blinkRight = new Animation<>(blinkDuration, tmp[2][1], tmp[2][2]);
+        blinkRight.setPlayMode(Animation.PlayMode.NORMAL);
+
+        // Up (Row 3)
+        idleUp = new Animation<>(1f, tmp[3][0]);
+        blinkUp = new Animation<>(blinkDuration, tmp[3][1], tmp[3][2]);
+        blinkUp.setPlayMode(Animation.PlayMode.NORMAL);
+        
+        currentAnim = idleDown;
+        this.textureRegion = tmp[0][0];
     }
 
     public void update(float delta) {
@@ -95,27 +117,61 @@ public class Nono extends GameObject {
             position.x += velocity.x * delta;
             position.y += velocity.y * delta;
             
-            // Determine Direction from Velocity (if moving significantly)
-            if (velocity.len() > 10f) {
-                if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
-                    if (velocity.x > 0) currentDirection = 2; // Right
-                    else currentDirection = 1; // Left
-                } else {
-                    if (velocity.y > 0) currentDirection = 3; // Up
-                    else currentDirection = 0; // Down
-                }
-            }
-        }
-
-        // Select Animation
-        switch(currentDirection) {
-            case 0: currentAnim = animDown; break;
-            case 1: currentAnim = animLeft; break;
-            case 2: currentAnim = animRight; break;
-            case 3: currentAnim = animUp; break;
+        // Determine Direction
+        if (velocity.len() > 10f) {
+             if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
+                 if (velocity.x > 0) currentDirection = 2; // Right
+                 else currentDirection = 1; // Left
+             } else {
+                 if (velocity.y > 0) currentDirection = 3; // Up
+                 else currentDirection = 0; // Down
+             }
         }
         
-        this.textureRegion = currentAnim.getKeyFrame(stateTime, true);
+        }
+        
+        // Blink Logic
+        if (!isBlinking) {
+            blinkTimer += delta;
+            if (blinkTimer >= nextBlinkTime) {
+                isBlinking = true;
+                blinkStateTime = 0f;
+                blinkTimer = 0f;
+                nextBlinkTime = MathUtils.random(3f, 5f);
+            }
+        } else {
+            blinkStateTime += delta;
+            // Check if animation finished
+            Animation<TextureRegion> checkAnim = null;
+            switch(currentDirection) {
+                case 0: checkAnim = blinkDown; break;
+                case 1: checkAnim = blinkLeft; break;
+                case 2: checkAnim = blinkRight; break;
+                case 3: checkAnim = blinkUp; break;
+            }
+            if (checkAnim != null && checkAnim.isAnimationFinished(blinkStateTime)) {
+                isBlinking = false;
+            }
+        }
+        
+        // Select Animation
+        if (isBlinking) {
+            switch(currentDirection) {
+                case 0: currentAnim = blinkDown; break;
+                case 1: currentAnim = blinkLeft; break;
+                case 2: currentAnim = blinkRight; break;
+                case 3: currentAnim = blinkUp; break;
+            }
+            this.textureRegion = currentAnim.getKeyFrame(blinkStateTime, false);
+        } else {
+            switch(currentDirection) {
+                case 0: currentAnim = idleDown; break;
+                case 1: currentAnim = idleLeft; break;
+                case 2: currentAnim = idleRight; break;
+                case 3: currentAnim = idleUp; break;
+            }
+            this.textureRegion = currentAnim.getKeyFrame(stateTime, true);
+        }
     }
 
     public void draw(SpriteBatch batch) {

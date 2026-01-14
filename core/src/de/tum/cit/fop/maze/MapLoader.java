@@ -142,7 +142,7 @@ public class MapLoader {
 
     public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getRobotAnimations() {
         if (robotTexture == null) {
-            robotTexture = new Texture(Gdx.files.internal("assets/player/sprite/robot.png"));
+            robotTexture = new Texture(Gdx.files.internal("assets/player/sprite/robotsmall.png"));
         }
         
         // Split 32x32

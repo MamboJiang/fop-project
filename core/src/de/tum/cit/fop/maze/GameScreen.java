@@ -290,11 +290,10 @@ public class GameScreen implements Screen {
         if ("level-0".equals(currentLevelName)) {
             // Scan for the existing DialogueTrigger or ensure one exists
             // We assume map already has one. If not, maybe we should find a specific object type?
-            // User said it uses mobs(4,0). Let's see if we can find it and tag it.
             
-            Texture mobsTex = new Texture(Gdx.files.internal("mobs.png"));
-            TextureRegion[][] tmp = TextureRegion.split(mobsTex, 16, 16);
-            TextureRegion nonoFrame = tmp[4][1];
+            Texture nonoTex = new Texture(Gdx.files.internal("assets/player/sprite/nono.png"));
+            TextureRegion[][] tmp = TextureRegion.split(nonoTex, 32, 32);
+            TextureRegion nonoFrame = tmp[0][0];
 
             for (GameObject obj : mapObjects) {
                 if (obj instanceof de.tum.cit.fop.maze.GameObj.DialogueTrigger) {

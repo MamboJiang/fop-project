@@ -1,9 +1,9 @@
 {
-    "leftCharacterImage": "player/lihui/maincharacterlh.png",
+    "leftCharacterImage": "player/lihui/maincharacterlhupscale.png",
     "leftScale": 2,
     "leftOffsetX": -200.0,
     "leftOffsetY": -500,
-    "rightCharacterImage": "mobs.png",
+    "rightCharacterImage": "player/lihui/nonolh.png",
     "rightScale": 1.0,
     "rightOffsetX": 0.0,
     "rightOffsetY": 0.0,
@@ -12,49 +12,49 @@
     "leftPortraitOffsetY": -1300.0,
     "rightPortraitScale": 1.5,
     "rightPortraitOffsetX": -100.0,
-    "rightPortraitOffsetY": -200.0,
+    "rightPortraitOffsetY": -100.0,
     "lines": [
         {
             "text": "Where am I?",
             "speaker": "Player",
             "isLeft": true,
-            "portrait": "player/lihui/maincharacterlh.png"
+            "portrait": "player/lihui/maincharacterlhupscale.png"
         },
         {
             "text": "Hey! Welcome to the Birth Level.",
             "speaker": "Stranger",
             "isLeft": false,
-            "portrait": "mobs.png"
+            "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "What's this place?",
             "speaker": "Player",
             "isLeft": true,
-            "portrait": "player/lihui/maincharacterlh.png"
+            "portrait": "player/lihui/maincharacterlhupscale.png"
         },
         {
             "text": "Is there anything here?",
             "speaker": "Player",
             "isLeft": true,
-            "portrait": "player/lihui/maincharacterlh.png"
+            "portrait": "player/lihui/maincharacterlhupscale.png"
         },
         {
             "text": "Absolutely nothing.",
             "speaker": "Stranger",
             "isLeft": false,
-            "portrait": "mobs.png"
+            "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "That's disappointing.",
             "speaker": "Player",
             "isLeft": true,
-            "portrait": "player/lihui/maincharacterlh.png"
+            "portrait": "player/lihui/maincharacterlhupscale.png"
         },
         {
             "text": "Press 'F' again if you want to chat more.",
             "speaker": "Stranger",
             "isLeft": false,
-            "portrait": "mobs.png"
+            "portrait": "player/lihui/nonolhright.png"
         }
     ]
 }
