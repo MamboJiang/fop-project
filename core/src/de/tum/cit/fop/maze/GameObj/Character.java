@@ -133,7 +133,7 @@ public class Character extends MovableObject {
      * Loads the character sprites and animations.
      */
     private void loadAnimations() {
-        Texture texture = new Texture(Gdx.files.internal("character.png"));
+        Texture texture = new Texture(Gdx.files.internal("assets/player/sprite/aligned_character.png"));
         // TextureRegion[][] tmp = TextureRegion.split(texture, 16, 32); // Removed as
         // we manually split
 
@@ -152,19 +152,21 @@ public class Character extends MovableObject {
         TextureRegion[] attLeftFrames = new TextureRegion[4];
 
         // Frame extraction
-        for (int i = 0; i < 4; i++) {
-            // Walking: Rows 0-3, 16x32
-            downFrames[i] = new TextureRegion(texture, i * 16, 0, 16, 32);
-            rightFrames[i] = new TextureRegion(texture, i * 16, 32, 16, 32);
-            upFrames[i] = new TextureRegion(texture, i * 16, 64, 16, 32);
-            leftFrames[i] = new TextureRegion(texture, i * 16, 96, 16, 32);
+        int frameW = 26;
+        int frameH = 46;
 
-            // Attacking: Rows 4-7, 32x32
-            // Row 4 starts at y = 128
-            attDownFrames[i] = new TextureRegion(texture, i * 32, 128, 32, 32);
-            attRightFrames[i] = new TextureRegion(texture, i * 32, 192, 32, 32);
-            attUpFrames[i] = new TextureRegion(texture, i * 32, 160, 32, 32);
-            attLeftFrames[i] = new TextureRegion(texture, i * 32, 224, 32, 32);
+        for (int i = 0; i < 4; i++) {
+            // Walking: Rows 0-3, 46x26
+            downFrames[i] = new TextureRegion(texture, i * frameW, 0, frameW, frameH);
+            rightFrames[i] = new TextureRegion(texture, i * frameW, frameH*3, frameW, frameH);
+            upFrames[i] = new TextureRegion(texture, i * frameW, frameH * 2, frameW, frameH);
+            leftFrames[i] = new TextureRegion(texture, i * frameW, frameH, frameW, frameH);
+
+            // Attacking: Rows 4-7, 46x26
+            attDownFrames[i] = new TextureRegion(texture, i * frameW, frameH * 4, frameW, frameH);
+            attRightFrames[i] = new TextureRegion(texture, i * frameW, frameH * 5, frameW, frameH);
+            attUpFrames[i] = new TextureRegion(texture, i * frameW, frameH * 6, frameW, frameH);
+            attLeftFrames[i] = new TextureRegion(texture, i * frameW, frameH * 7, frameW, frameH);
         }
 
         walkDown = new Animation<>(0.1f, downFrames);
