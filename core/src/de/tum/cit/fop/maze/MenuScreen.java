@@ -3,20 +3,23 @@ package de.tum.cit.fop.maze;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
+// Animation imports
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.utils.Align;
 
 /**
  * The MenuScreen class represents the main menu of the game.
@@ -25,7 +28,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 public class MenuScreen implements Screen {
 
     private final Stage stage;
-
+    private Table contentTable; 
+    private Table animatedTable; 
 
     /**
      * Constructor for MenuScreen. Initializes the UI stage and buttons.
@@ -35,26 +39,27 @@ public class MenuScreen implements Screen {
         Viewport viewport = new FitViewport(2560, 1440);
         stage = new Stage(viewport, game.getSpriteBatch());
 
-        Table table = new Table();
-        table.setFillParent(true);
-        stage.addActor(table);
-
+        contentTable = new Table();
+        contentTable.setFillParent(true);
+        stage.addActor(contentTable);
 
         boolean isLoaded = (game.getPlayerState() != null && game.getPlayerState().getUsername() != null);
 
         if (!isLoaded) {
 
-            table.add(new Label("Maze Runner", game.getSkin(), "title")).padBottom(80).row();
-
+            contentTable.add(new Label("Maze Runner", game.getSkin(), "title")).padBottom(80).row();
+            
+            // Add animated table for buttons
+            animatedTable = new Table();
+            contentTable.add(animatedTable).row();
 
             int latestSlot = de.tum.cit.fop.maze.GameControl.GameSaveManager.getLatestSaveSlot();
-            TextButton continueButton = new TextButton("Continue Game", game.getSkin());
+            TextButton continueButton = createHoverButton("Continue Game", game.getSkin());
             if (latestSlot != -1) {
                 continueButton.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         if (game.loadGame(latestSlot)) {
-
                              game.goToMenu(); 
                         }
                     }
@@ -63,11 +68,11 @@ public class MenuScreen implements Screen {
                 continueButton.setDisabled(true);
                 continueButton.setColor(0.5f, 0.5f, 0.5f, 1f);
             }
-            table.add(continueButton).padBottom(15).row();
+            animatedTable.add(continueButton).padBottom(15).row();
 
 
-            TextButton newGameButton = new TextButton("New Game", game.getSkin());
-            table.add(newGameButton).padBottom(15).row();
+            TextButton newGameButton = createHoverButton("New Game", game.getSkin());
+            animatedTable.add(newGameButton).padBottom(15).row();
             newGameButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -76,8 +81,8 @@ public class MenuScreen implements Screen {
             });
 
 
-            TextButton loadGameButton = new TextButton("Load Game", game.getSkin());
-            table.add(loadGameButton).padBottom(15).row();
+            TextButton loadGameButton = createHoverButton("Load Game", game.getSkin());
+            animatedTable.add(loadGameButton).padBottom(15).row();
             loadGameButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -86,8 +91,8 @@ public class MenuScreen implements Screen {
             });
             
 
-            TextButton settingsButton = new TextButton("Settings", game.getSkin());
-            table.add(settingsButton).padBottom(15).row();
+            TextButton settingsButton = createHoverButton("Settings", game.getSkin());
+            animatedTable.add(settingsButton).padBottom(15).row();
             settingsButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -96,8 +101,8 @@ public class MenuScreen implements Screen {
             });
 
 
-            TextButton exitButton = new TextButton("Exit", game.getSkin());
-            table.add(exitButton).row();
+            TextButton exitButton = createHoverButton("Exit", game.getSkin());
+            animatedTable.add(exitButton).row();
             exitButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -108,11 +113,14 @@ public class MenuScreen implements Screen {
         } else {
 
             String title = "Welcome, " + game.getPlayerState().getUsername();
-            table.add(new Label(title, game.getSkin(), "title")).padBottom(50).row();
+            contentTable.add(new Label(title, game.getSkin(), "title")).padBottom(50).row();
             
+            // Add animated table for buttons
+            animatedTable = new Table();
+            contentTable.add(animatedTable).row();
 
-            TextButton playButton = new TextButton("Select Level", game.getSkin());
-            table.add(playButton).padBottom(15).row();
+            TextButton playButton = createHoverButton("Select Level", game.getSkin());
+            animatedTable.add(playButton).padBottom(15).row();
             playButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -121,8 +129,8 @@ public class MenuScreen implements Screen {
             });
 
 
-            TextButton endlessButton = new TextButton("Endless Mode", game.getSkin());
-            table.add(endlessButton).padBottom(15).row();
+            TextButton endlessButton = createHoverButton("Endless Mode", game.getSkin());
+            animatedTable.add(endlessButton).padBottom(15).row();
             endlessButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -164,8 +172,8 @@ public class MenuScreen implements Screen {
             });
 
 
-            TextButton skillsButton = new TextButton("Skills & Upgrades", game.getSkin());
-            table.add(skillsButton).padBottom(15).row();
+            TextButton skillsButton = createHoverButton("Skills & Upgrades", game.getSkin());
+            animatedTable.add(skillsButton).padBottom(15).row();
             skillsButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -174,8 +182,8 @@ public class MenuScreen implements Screen {
             });
 
 
-            TextButton achButton = new TextButton("Achievements", game.getSkin());
-            table.add(achButton).padBottom(15).row();
+            TextButton achButton = createHoverButton("Achievements", game.getSkin());
+            animatedTable.add(achButton).padBottom(15).row();
             achButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -184,8 +192,8 @@ public class MenuScreen implements Screen {
             });
             
 
-            TextButton settingsButton = new TextButton("Settings", game.getSkin());
-            table.add(settingsButton).padBottom(15).row();
+            TextButton settingsButton = createHoverButton("Settings", game.getSkin());
+            animatedTable.add(settingsButton).padBottom(15).row();
             settingsButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -194,12 +202,11 @@ public class MenuScreen implements Screen {
             });
 
 
-            TextButton backButton = new TextButton("Return to Title", game.getSkin());
-            table.add(backButton).row();
+            TextButton backButton = createHoverButton("Return to Title", game.getSkin());
+            animatedTable.add(backButton).row();
             backButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-
                     game.unloadGame();
                     game.goToMenu();
                 }
@@ -207,12 +214,37 @@ public class MenuScreen implements Screen {
         }
     }
 
-
-
     /**
-     * Renders the menu screen.
-     * @param delta Time since last frame.
+     * Creates a button with hover scaling effects.
      */
+    private TextButton createHoverButton(String text, Skin skin) {
+        final TextButton button = new TextButton(text, skin);
+        button.setTransform(true); // Enable transform for scaling
+        button.setOrigin(Align.center); // Scale from center
+        
+        button.addListener(new ClickListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                super.enter(event, x, y, pointer, fromActor);
+                if (pointer == -1) { // Mouse move
+                    button.clearActions();
+                    button.addAction(Actions.scaleTo(1.1f, 1.1f, 0.1f, Interpolation.smooth));
+                }
+            }
+            
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                if (pointer == -1) {
+                    button.clearActions();
+                    button.addAction(Actions.scaleTo(1.0f, 1.0f, 0.1f, Interpolation.smooth));
+                }
+            }
+        });
+        
+        return button;
+    }
+
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); 
@@ -220,40 +252,42 @@ public class MenuScreen implements Screen {
         stage.draw();
     }
 
-    /**
-     * Resizes the stage viewport.
-     * @param width New width.
-     * @param height New height.
-     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
-    /**
-     * Disposes of the stage resources.
-     */
     @Override
     public void dispose() {
         stage.dispose();
     }
 
-    /**
-     * Called when this screen becomes the current screen.
-     * Sets the input processor to the stage.
-     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
-
+        
+        // Entrance Animation: Slide up from bottom
+        // We use setTransform(true) on table if needed, but actions on position usually work fine.
+        // We set initial position below screen (-height)
+        // Note: setFillParent(true) layout might interfere if not handled, but Actions often override.
+        // If it snaps back, we might need to disable fillParent, but let's try this standard approach first.
+        
+        if (animatedTable != null) {
+            // Force layout to determine correct center position first
+            contentTable.pack(); // Force layout on the parent table
+            
+            animatedTable.clearActions();
+            animatedTable.addAction(Actions.sequence(
+                Actions.moveBy(0, -stage.getHeight()),
+                Actions.moveBy(0, stage.getHeight(), 0.3f, Interpolation.exp5Out)
+            ));
+        }
     }
 
     @Override
     public void pause() {}
-
     @Override
     public void resume() {}
-
     @Override
     public void hide() {}
 }

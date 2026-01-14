@@ -20,6 +20,8 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import de.tum.cit.fop.maze.MapLoader;
 import de.tum.cit.fop.maze.MazeRunnerGame;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.math.Interpolation;
 
 import java.util.List;
 
@@ -33,6 +35,7 @@ public class LevelSelectionScreen implements Screen {
     private final Stage stage;
     private Label levelNameLabel;
     private Texture frameTexture;
+    private Table contentTable;
 
     /**
      * Constructor for LevelSelectionScreen.
@@ -52,8 +55,12 @@ public class LevelSelectionScreen implements Screen {
         rootTable.setFillParent(true);
         stage.addActor(rootTable);
 
-        // Title
+        // Title (Static)
         rootTable.add(new Label("Select Level", game.getSkin(), "title")).padBottom(50).row();
+        
+        // Animated Content Table
+        contentTable = new Table();
+        rootTable.add(contentTable);
 
         // Container implementation: Stack (Frame + ScrollPane) doesn't work well with Tables naturally, 
         // but we can use a Table with a background or just layer them if we use a Stack.
@@ -138,12 +145,12 @@ public class LevelSelectionScreen implements Screen {
         scrollContainer.add(scrollPane).width(1200).height(200); // Adjust width/height to fit frame
         stack.add(scrollContainer);
         
-        rootTable.add(stack).padBottom(20).row();
+        contentTable.add(stack).padBottom(20).row();
         
         // Level Name Label
         levelNameLabel = new Label("", game.getSkin());
         levelNameLabel.setAlignment(Align.center);
-        rootTable.add(levelNameLabel).padBottom(30).minHeight(40).row();
+        contentTable.add(levelNameLabel).padBottom(30).minHeight(40).row();
         
         // Back Button
         TextButton backButton = new TextButton("Back", game.getSkin(), "short");
@@ -153,7 +160,7 @@ public class LevelSelectionScreen implements Screen {
                 game.goToMenu();
             }
         });
-        rootTable.add(backButton);
+        contentTable.add(backButton);
     }
     
     private void updateLabel(int index, String filename) {
@@ -196,6 +203,14 @@ public class LevelSelectionScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        
+        if (contentTable != null) {
+            contentTable.clearActions();
+            contentTable.addAction(Actions.sequence(
+                Actions.moveBy(0, -stage.getHeight()),
+                Actions.moveBy(0, stage.getHeight(), 0.3f, Interpolation.exp5Out)
+            ));
+        }
     }
 
     @Override public void hide() {}
