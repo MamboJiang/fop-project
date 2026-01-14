@@ -247,7 +247,7 @@ public class GameScreen implements Screen {
                 enemies.add(new de.tum.cit.fop.maze.GameObj.Enemy(
                         obj.getPosition().x,
                         obj.getPosition().y,
-                        de.tum.cit.fop.maze.MapLoader.getMobAnimations(0, 0), // Base Enemy: Col 0, Row 0
+                        de.tum.cit.fop.maze.MapLoader.getRobotAnimations(), // Updated to Robot sprite
                         grid,
                         character));
                 toRemove.add(obj);

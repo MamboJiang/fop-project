@@ -138,6 +138,30 @@ public class MapLoader {
     }
 
     private static Texture mobsTexture;
+    private static Texture robotTexture;
+
+    public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getRobotAnimations() {
+        if (robotTexture == null) {
+            robotTexture = new Texture(Gdx.files.internal("assets/player/sprite/robot.png"));
+        }
+        
+        // Split 32x32
+        TextureRegion[][] tmp = TextureRegion.split(robotTexture, 32, 32);
+        com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] anims = new com.badlogic.gdx.graphics.g2d.Animation[4];
+        float frameDuration = 0.2f;
+
+        // Down (Row 0)
+        anims[0] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[0][0], tmp[0][1], tmp[0][2]);
+        // Left (Row 1)
+        anims[1] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[1][0], tmp[1][1], tmp[1][2]);
+        // Right (Row 2)
+        anims[2] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[2][0], tmp[2][1], tmp[2][2]);
+        // Up (Row 3)
+        anims[3] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[3][0], tmp[3][1], tmp[3][2]);
+
+        return anims;
+    }
+
 
     /**
      * Retrieves the animation set for a specific mob based on its grid position in
