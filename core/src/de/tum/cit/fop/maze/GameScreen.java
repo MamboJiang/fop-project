@@ -291,14 +291,14 @@ public class GameScreen implements Screen {
             // We assume map already has one. If not, maybe we should find a specific object type?
             // User said it uses mobs(4,0). Let's see if we can find it and tag it.
             
+            Texture mobsTex = new Texture(Gdx.files.internal("mobs.png"));
+            TextureRegion[][] tmp = TextureRegion.split(mobsTex, 16, 16);
+            TextureRegion nonoFrame = tmp[4][1];
+
             for (GameObject obj : mapObjects) {
                 if (obj instanceof de.tum.cit.fop.maze.GameObj.DialogueTrigger) {
-                    // Check if it's the "ghost" trigger?
-                    // MapLoader gave it Type 7.
-                    // Let's assign ID to ALL triggers in Lvl 0 or just the one.
-                    // Since specific Nono trigger description was mobs(4,0) which is likely Type 7 texture.
-                    // We'll tag it.
                     ((de.tum.cit.fop.maze.GameObj.DialogueTrigger)obj).setDialogueId("nono-unlock");
+                    ((de.tum.cit.fop.maze.GameObj.DialogueTrigger)obj).setTextureRegion(nonoFrame);
                 }
             }
         }
@@ -701,8 +701,11 @@ public class GameScreen implements Screen {
                 // Spawn Nono immediately
                 nono = new de.tum.cit.fop.maze.GameObj.Nono(character.getPosition().x, character.getPosition().y, character);
                 
-                // Remove the trigger?
-                // Optional. Let's keep it or remove it.
+                // Remove the trigger
+                mapObjects.removeIf(obj -> 
+                    obj instanceof de.tum.cit.fop.maze.GameObj.DialogueTrigger && 
+                    "nono-unlock".equals(((de.tum.cit.fop.maze.GameObj.DialogueTrigger)obj).getDialogueId())
+                );
             }
 
             // Attack Logic (Moved to Character.java)
