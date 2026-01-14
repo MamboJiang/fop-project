@@ -60,6 +60,29 @@ public class DialogueData {
     public float getRightOffsetY() { return rightOffsetY; }
     public void setRightOffsetY(float rightOffsetY) { this.rightOffsetY = rightOffsetY; }
 
+    // Generic portrait fields replaced by specific Left/Right
+    private float leftPortraitScale = 1.0f;
+    private float leftPortraitOffsetX = 0f;
+    private float leftPortraitOffsetY = 0f;
+
+    private float rightPortraitScale = 1.0f;
+    private float rightPortraitOffsetX = 0f;
+    private float rightPortraitOffsetY = 0f;
+
+    public float getLeftPortraitScale() { return leftPortraitScale; }
+    public void setLeftPortraitScale(float scale) { this.leftPortraitScale = scale; }
+    public float getLeftPortraitOffsetX() { return leftPortraitOffsetX; }
+    public void setLeftPortraitOffsetX(float offset) { this.leftPortraitOffsetX = offset; }
+    public float getLeftPortraitOffsetY() { return leftPortraitOffsetY; }
+    public void setLeftPortraitOffsetY(float offset) { this.leftPortraitOffsetY = offset; }
+
+    public float getRightPortraitScale() { return rightPortraitScale; }
+    public void setRightPortraitScale(float scale) { this.rightPortraitScale = scale; }
+    public float getRightPortraitOffsetX() { return rightPortraitOffsetX; }
+    public void setRightPortraitOffsetX(float offset) { this.rightPortraitOffsetX = offset; }
+    public float getRightPortraitOffsetY() { return rightPortraitOffsetY; }
+    public void setRightPortraitOffsetY(float offset) { this.rightPortraitOffsetY = offset; }
+
     public static class DialogueLine {
         private String text;
         private String speaker;
@@ -82,6 +105,25 @@ public class DialogueData {
 
         public void setSpeaker(String speaker) {
             this.speaker = speaker;
+        }
+
+        private String portrait;
+        private String effect;
+
+        public String getPortrait() {
+            return portrait;
+        }
+
+        public void setPortrait(String portrait) {
+            this.portrait = portrait;
+        }
+
+        public String getEffect() {
+            return effect;
+        }
+
+        public void setEffect(String effect) {
+            this.effect = effect;
         }
 
         public boolean isLeft() {

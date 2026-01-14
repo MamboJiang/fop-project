@@ -4,14 +4,20 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import java.util.ArrayList;
@@ -23,7 +29,21 @@ public class DialogueManager {
     private final Skin skin;
     
     private boolean isDialogueActive = false;
-    private DialogueBox dialogueBox;
+    
+    // New UI Elements
+    private Table uiTable;
+    private Table textTable;
+    private Image gradientBg;
+    private Label dialogueText;
+    private Label speakerName;
+    
+    // Portrait
+    private Image portraitImage;
+    private Image backImage; // For cross-fade
+    private Texture portraitTexture;
+    private String currentPortraitPath = "";
+    
+    // Characters (Keeping exist logic for main chars if needed, but primarily using new system)
     private Image leftChar;
     private Image rightChar;
     
@@ -31,9 +51,22 @@ public class DialogueManager {
     private DialogueData currentDialogueData;
     private int conversationIndex = 0;
     
-    // For cleaning up textures if we load them dynamically
+    // Resources
     private Texture leftTexture;
     private Texture rightTexture;
+    private Texture gradientTexture;
+    
+    // Effects
+    private String currentEffect = "";
+    private float effectTimer = 0f;
+    private float shakeAmount = 0f;
+    private float wiggleAmount = 0f;
+    
+    // Typewriter
+    private String targetText = "";
+    private float charTimer = 0;
+    private float charsPerSecond = 30;
+    private boolean typingFinished = true;
 
     public DialogueManager(Skin skin) {
         this.skin = skin;
@@ -46,58 +79,112 @@ public class DialogueManager {
     private Table charTable;
 
     private void setupUI() {
+        // 0. Background Scrim (Shadow for game world)
+        Image scrim = new Image(skin.newDrawable("white", 0, 0, 0, 0.5f)); 
+        // Assuming 'white' exists in skin. If not, use Pixmap.
+        // Let's create a Pixmap safely.
+        
+        Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        p.setColor(0, 0, 0, 0.4f);
+        p.fill();
+        Texture scrimTex = new Texture(p);
+        p.dispose();
+        Image scrimImg = new Image(scrimTex);
+        scrimImg.setFillParent(true);
+        stage.addActor(scrimImg);
+
+        // 1. Scene Layer (Characters standing)
         charTable = new Table();
         charTable.setFillParent(true);
         stage.addActor(charTable);
 
-        // Placeholder images, will be updated when dialogue loads
-        leftChar = new Image(); 
+        leftChar = new Image();
+        leftChar.setScaling(com.badlogic.gdx.utils.Scaling.fit);
         rightChar = new Image();
+        rightChar.setScaling(com.badlogic.gdx.utils.Scaling.fit);
 
-        float rawHeight = 32f;
-        float targetHeight = 1720f * 0.75f; 
-        float targetHeight2 = 1080f * 0.75f;
-        
-        // We might need to adjust scaling dynamically if image sizes differ
-        // For now, keeping the scaling logic but checking image size later might be better.
-        // But let's stick to the structure from GameScreen first.
-
+        // Standardize size - will be updated in layout
+        float targetHeight = 1080f * 0.75f;
         charTable.bottom();
-        // Position characters at sides. 
-        leftCell = charTable.add(leftChar).height(targetHeight).padBottom(-100).expandX().left().padLeft(0);
-        rightCell = charTable.add(rightChar).height(targetHeight2).padBottom(-100).expandX().right().padRight(-100);
+        leftCell = charTable.add(leftChar).height(targetHeight).padBottom(-50).expandX().left().padLeft(100);
+        rightCell = charTable.add(rightChar).height(targetHeight).padBottom(-50).expandX().right().padRight(100);
 
-
-        leftChar.setColor(1, 1, 1, 0); // Hide initially
-        rightChar.setColor(1, 1, 1, 0);
-
-        // UI Layout
-        Table uiTable = new Table();
+        leftChar.setColor(1, 1, 1, 1); 
+        rightChar.setColor(1, 1, 1, 1); // No initial hide? StartDialogue handles it.
+     
+        // 2. UI Layer (Gradient + Text)
+        uiTable = new Table();
         uiTable.setFillParent(true);
         stage.addActor(uiTable);
         uiTable.bottom();
 
-        // We need a texture for objects (arrow tail etc), relying on existing specific loading or passing it in
-        // For now let's assume we can load it here or pass it. 
-        // GameScreen used "objects.png".
-        Texture objectsTexture = new Texture(Gdx.files.internal("objects.png")); 
-        
-        dialogueBox = new DialogueBox(skin, objectsTexture);
-        dialogueBox.setTailDirection(DialogueBox.TailDirection.NONE);
-        dialogueBox.setAutoSize(false);
-        dialogueBox.setSize(1800, 300);
+        // Create Gradient Texture (Deep Blue to Transparent)
+        Pixmap pixmap = new Pixmap(1, 500, Pixmap.Format.RGBA8888);
+        for (int y = 0; y < 500; y++) {
+            // Gradient from bottom (alpha 1) to top (alpha 0)
+            // Color: Deep Blue (0, 0, 0.5f)
+            float alpha = 1.0f - ((float)y / 500f);
+            pixmap.setColor(0f, 0f, 0.4f, alpha * 0.9f); // Dark Blue
+            pixmap.drawPixel(0, 499 - y);
+        }
+        gradientTexture = new Texture(pixmap);
+        pixmap.dispose();
 
-        uiTable.add(dialogueBox).width(1800).height(500).padBottom(50);
+        gradientBg = new Image(gradientTexture);
+        
+        // Arrange UI
+        // Bottom container for Text and Portrait
+        Table bottomContainer = new Table();
+        bottomContainer.setBackground(new TextureRegionDrawable(new TextureRegion(gradientTexture)));
+        
+        uiTable.add(bottomContainer).growX().height(450).bottom();
+
+        // Inside bottom container: Portrait | Text
+        bottomContainer.left().bottom();
+        
+        portraitImage = new Image();
+        backImage = new Image();
+        
+        // Group for cross-fade (Back + Front)
+        com.badlogic.gdx.scenes.scene2d.Group group = new com.badlogic.gdx.scenes.scene2d.Group();
+        group.addActor(backImage);
+        group.addActor(portraitImage);
+        
+        // Use a container to clip and fix size
+        com.badlogic.gdx.scenes.scene2d.ui.Container<com.badlogic.gdx.scenes.scene2d.Group> container = new com.badlogic.gdx.scenes.scene2d.ui.Container<>(group);
+        container.setClip(true);
+        container.align(Align.bottomLeft);
+        container.fill(); // Group fills the container
+        
+        // Fixed 300x400 cell
+        portraitCell = bottomContainer.add(container).size(300, 400).bottom().left().pad(20);
+        
+        Table textContainer = new Table();
+        bottomContainer.add(textContainer).grow().top().padTop(140).padLeft(30).padRight(30).padBottom(30);
+        
+        speakerName = new Label("", skin);
+        speakerName.setColor(Color.CYAN); 
+        speakerName.setFontScale(1.5f);
+        
+        dialogueText = new Label("", skin);
+        dialogueText.setWrap(true);
+        dialogueText.setColor(Color.WHITE);
+        dialogueText.setFontScale(1.2f);
+        dialogueText.setAlignment(Align.topLeft);
+
+        textContainer.add(speakerName).expandX().left().padBottom(10).row();
+        textContainer.add(dialogueText).grow().top().left();
     }
     
     private void setupInput() {
-        // Click to advance
         stage.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (isDialogueActive) {
-                    if (!dialogueBox.isFinished()) {
-                        dialogueBox.skipTypewriter();
+                    if (!typingFinished) {
+                        // Skip typewriter
+                        dialogueText.setText(targetText);
+                        typingFinished = true;
                     } else {
                         advanceDialogue();
                     }
@@ -106,90 +193,66 @@ public class DialogueManager {
         });
     }
 
-    // We need to keep references to the cells to update layout dynamically
+    // UI Cells for dynamic updates
     private com.badlogic.gdx.scenes.scene2d.ui.Cell<Image> leftCell;
     private com.badlogic.gdx.scenes.scene2d.ui.Cell<Image> rightCell;
-
-    public void loadDialogue(String levelName) {
-        Json json = new Json();
-        FileHandle file = Gdx.files.internal("conversations/" + levelName + ".json");
-        if (!file.exists()) {
-            Gdx.app.error("DialogueManager", "Dialogue file not found: " + file.path());
-            return;
-        }
-        
-        currentDialogueData = json.fromJson(DialogueData.class, file);
-        
-        // Load Textures
-        if (currentDialogueData.getLeftCharacterImage() != null) {
-            updateLeftImage(currentDialogueData.getLeftCharacterImage());
-        }
-        if (currentDialogueData.getRightCharacterImage() != null) {
-            updateRightImage(currentDialogueData.getRightCharacterImage());
-        }
-        
-        updateLayout();
-    }
-
+    private com.badlogic.gdx.scenes.scene2d.ui.Cell portraitCell;
+    
     private void updateLayout() {
-        if (currentDialogueData == null) return;
-
-        float targetHeight = 1720f * 0.75f;
-        float targetHeight2 = 1080f * 0.75f; // Base target height
-
-        // Update Left Character Layout
-        if (leftCell != null) {
+         if (currentDialogueData == null) return;
+         if (conversationIndex >= currentDialogueData.getLines().size()) return;
+         
+         float baseHeight = 1080f * 0.75f;
+         
+         // Left Character
+         if (leftCell != null && leftChar.getDrawable() != null) {
+             float aspect = leftChar.getDrawable().getMinWidth() / leftChar.getDrawable().getMinHeight();
              float scale = currentDialogueData.getLeftScale();
-             // If user sets scale, we multiply width. 
-             // Default logic was: height=targetHeight.
-             // We can let user override width/height via scale? 
-             // Or just scale the width relative to the image aspect ratio?
-             // GameScreen had hardcoded behavior. 
-             // Let's assume Scale=1.0 means "Standard Size defined in GameSreen"
-             // Standard Left: height=targetHeight (1290), width=16 * (1290/32) = 645.
+             float h = baseHeight * scale;
+             float w = h * aspect;
              
-             // Let's rely on drawable size if possible, or force size.
-             // If we want to allow user to tweak position:
+             leftCell.size(w, h);
              leftCell.padLeft(currentDialogueData.getLeftOffsetX());
-             leftCell.padBottom(-100 + currentDialogueData.getLeftOffsetY()); // Base pad -100
-             
-             // Apply scale to dimensions? 
-             // Let's say scale acts as a multiplier on top of the "Standard" size.
-             // But simpler: just use scale to multiply the width/height.
-             
-             // Re-calculating base size from GameScreen logic for consistency:
-             // float rawHeight = 32f; float scale = targetHeight / rawHeight; -> Width = 16 * scale;
-             // That logic depended on the input texture being 16x32.
-             // If the new texture is different, we might distort it.
-             // Better: preserve aspect ratio. Height = targetHeight * scale. 
-             
-             if (leftChar.getDrawable() != null) {
-                 float aspect = leftChar.getDrawable().getMinWidth() / leftChar.getDrawable().getMinHeight();
-                 float h = targetHeight * scale;
-                 float w = h * aspect;
-                 leftCell.size(w, h);
-             }
-        }
-
-        // Update Right Character Layout
-        if (rightCell != null) {
+             leftCell.padBottom(-50 + currentDialogueData.getLeftOffsetY());
+         }
+         
+         // Right Character
+         if (rightCell != null && rightChar.getDrawable() != null) {
+             float aspect = rightChar.getDrawable().getMinWidth() / rightChar.getDrawable().getMinHeight();
              float scale = currentDialogueData.getRightScale();
+             float h = baseHeight * scale;
+             float w = h * aspect;
              
-             // Base logic: height=targetHeight2 (810).
-             // Mobs were 16x16.
+             rightCell.size(w, h);
+             rightCell.padRight(currentDialogueData.getRightOffsetX());
+             rightCell.padBottom(-50 + currentDialogueData.getRightOffsetY());
+         }
+         
+         // Portrait
+         if (portraitCell != null) {
+             DialogueData.DialogueLine line = currentDialogueData.getLines().get(conversationIndex);
+             boolean isLeft = line.isLeft();
              
-             if (rightChar.getDrawable() != null) {
-                 float aspect = rightChar.getDrawable().getMinWidth() / rightChar.getDrawable().getMinHeight();
-                 float h = targetHeight2 * scale;
+             float scale = isLeft ? currentDialogueData.getLeftPortraitScale() : currentDialogueData.getRightPortraitScale();
+             float offX = isLeft ? currentDialogueData.getLeftPortraitOffsetX() : currentDialogueData.getRightPortraitOffsetX();
+             float offY = isLeft ? currentDialogueData.getLeftPortraitOffsetY() : currentDialogueData.getRightPortraitOffsetY();
+             
+             float baseSize = 350f;
+             if (portraitImage.getDrawable() != null) {
+                 float aspect = portraitImage.getDrawable().getMinWidth() / portraitImage.getDrawable().getMinHeight();
+                 float h = baseSize * scale;
                  float w = h * aspect;
-                 rightCell.size(w, h);
+                 portraitImage.setSize(w, h);
              }
              
-             rightCell.padRight(-100 + currentDialogueData.getRightOffsetX());
-             rightCell.padBottom(-100 + currentDialogueData.getRightOffsetY());
-        }
-        
-        charTable.invalidateHierarchy();
+             portraitImage.setPosition(offX, offY);
+             
+             // Ensure Cell stays fixed
+             portraitCell.size(300, 400); 
+         }
+         
+         charTable.invalidateHierarchy();
+         if (uiTable != null) uiTable.invalidateHierarchy();
     }
     
     private void updateLeftImage(String path) {
@@ -207,6 +270,7 @@ public class DialogueManager {
         try {
             if (path.contains("mobs.png")) {
                  Texture mobsTexture = new Texture(Gdx.files.internal(path));
+                 mobsTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
                  TextureRegion[][] mobsTmp = TextureRegion.split(mobsTexture, 16, 16);
                  rightChar.setDrawable(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(mobsTmp[0][0]));
                  rightTexture = mobsTexture; 
@@ -218,7 +282,51 @@ public class DialogueManager {
             Gdx.app.error("DialogueManager", "Failed to load right image: " + path, e);
         }
     }
-
+    
+    private void updatePortrait(String path) {
+        if (path == null) {
+            if (currentPortraitPath == null) return;
+            currentPortraitPath = null;
+            
+            portraitImage.clearActions();
+            portraitImage.setVisible(false);
+            return; 
+        }
+        
+        if (path.equals(currentPortraitPath)) return;
+        currentPortraitPath = path;
+        
+        // Load new texture
+        try {
+            TextureRegion region;
+            
+            if (path.contains("mobs.png")) {
+                if (portraitTexture != null) portraitTexture.dispose();
+                portraitTexture = new Texture(Gdx.files.internal(path));
+                portraitTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+                TextureRegion[][] tmp = TextureRegion.split(portraitTexture, 16, 16);
+                region = tmp[0][0];
+            } else {
+                if (portraitTexture != null) portraitTexture.dispose();
+                portraitTexture = new Texture(Gdx.files.internal(path));
+                region = new TextureRegion(portraitTexture);
+            }
+            
+            // Instant Switch
+            portraitImage.clearActions();
+            backImage.clearActions();
+            backImage.setVisible(false);
+            
+            portraitImage.setDrawable(new TextureRegionDrawable(region));
+            portraitImage.setVisible(true);
+            portraitImage.setColor(1, 1, 1, 1);
+            
+            updateLayout();
+            
+        } catch (Exception e) {
+            Gdx.app.error("DialogueManager", "Failed to load portrait: " + path, e);
+        }
+    }
     public void startDialogue() {
         if (isDialogueActive) return;
         if (currentDialogueData == null || currentDialogueData.getLines().isEmpty()) return;
@@ -228,6 +336,8 @@ public class DialogueManager {
 
         leftChar.setColor(1, 1, 1, 1);
         rightChar.setColor(1, 1, 1, 1);
+        
+        if (uiTable != null) uiTable.setVisible(true);
 
         updateDialogue();
     }
@@ -236,7 +346,8 @@ public class DialogueManager {
         isDialogueActive = false;
         leftChar.setColor(1, 1, 1, 0);
         rightChar.setColor(1, 1, 1, 0);
-        // Maybe callback to game screen?
+        
+        if (uiTable != null) uiTable.setVisible(false);
     }
 
     public void advanceDialogue() {
@@ -248,22 +359,124 @@ public class DialogueManager {
         updateDialogue();
     }
 
+    public void loadDialogue(String levelName) {
+        Json json = new Json();
+        FileHandle file = Gdx.files.internal("conversations/" + levelName + ".json");
+        if (!file.exists()) {
+            Gdx.app.error("DialogueManager", "Dialogue file not found: " + file.path());
+            return;
+        }
+        
+        currentDialogueData = json.fromJson(DialogueData.class, file);
+        
+        // Load Scene Characters (Left/Right)
+        if (currentDialogueData.getLeftCharacterImage() != null) {
+            updateLeftImage(currentDialogueData.getLeftCharacterImage());
+        }
+        if (currentDialogueData.getRightCharacterImage() != null) {
+            updateRightImage(currentDialogueData.getRightCharacterImage());
+        }
+    }
+    
+
+
     private void updateDialogue() {
         if (currentDialogueData == null) return;
         
         DialogueData.DialogueLine line = currentDialogueData.getLines().get(conversationIndex);
         
-        dialogueBox.show(line.getText(), DialogueBox.DialogueType.NORMAL, 1700f);
-
-        // Dim the non-speaking character
-        if (line.isLeft()) {
-            leftChar.setColor(1, 1, 1, 1);
-            rightChar.setColor(0.5f, 0.5f, 0.5f, 1);
-        } else {
-            leftChar.setColor(0.5f, 0.5f, 0.5f, 1);
-            rightChar.setColor(1, 1, 1, 1);
+        // 1. Text & Name
+        targetText = line.getText();
+        dialogueText.setText("");
+        typingFinished = false;
+        charTimer = 0;
+        
+        speakerName.setText(line.getSpeaker());
+        
+        // 2. Portrait
+        if (line.getPortrait() != null) {
+            updatePortrait(line.getPortrait());
         }
+        
+        // 3. Effects
+        currentEffect = line.getEffect() != null ? line.getEffect() : "";
+        effectTimer = 0;
+        shakeAmount = 0;
+        wiggleAmount = 0;
+        
+        // 4. Scene Characters Dimming - REMOVED
+        leftChar.setColor(1, 1, 1, 1);
+        rightChar.setColor(1, 1, 1, 1);
     }
+    
+    public void render(float delta) {
+        stage.act(delta);
+        
+        // Typewriter logic
+        if (!typingFinished && targetText != null) {
+            charTimer += delta;
+            // Adjustable Speed? Fixed for now
+            if (charTimer >= 0.03f) { 
+                charTimer = 0;
+                int currentLen = dialogueText.getText().length;
+                if (currentLen < targetText.length()) {
+                    dialogueText.setText(targetText.substring(0, currentLen + 1));
+                } else {
+                    typingFinished = true;
+                }
+            }
+        }
+        
+        // Effects Logic (Shake / Wiggle)
+        if (currentEffect != null && !currentEffect.isEmpty()) {
+            effectTimer += delta;
+            float offsetX = 0;
+            float offsetY = 0;
+            
+            if (currentEffect.equals("shake")) {
+                 // Vertical shake (damped sine wave)
+                 if (effectTimer < 0.5f) {
+                     offsetY = (float)Math.sin(effectTimer * 50) * 10f * (1f - effectTimer/0.5f);
+                 }
+            } else if (currentEffect.equals("wiggle")) {
+                 // Horizontal wiggle
+                 if (effectTimer < 0.5f) {
+                     offsetX = (float)Math.sin(effectTimer * 50) * 10f * (1f - effectTimer/0.5f);
+                 }
+            }
+            
+            // Apply effects locally for this frame
+            float originalPortraitX = portraitImage.getX();
+            float originalPortraitY = portraitImage.getY();
+            
+            float originalLeftX = leftChar.getX();
+            float originalLeftY = leftChar.getY();
+            
+            float originalRightX = rightChar.getX();
+            float originalRightY = rightChar.getY();
+            
+            // Apply Offset
+            portraitImage.setPosition(originalPortraitX + offsetX, originalPortraitY + offsetY);
+            
+            DialogueData.DialogueLine line = currentDialogueData.getLines().get(conversationIndex);
+            if (line.isLeft()) {
+                leftChar.setPosition(originalLeftX + offsetX, originalLeftY + offsetY);
+            } else {
+                rightChar.setPosition(originalRightX + offsetX, originalRightY + offsetY);
+            }
+            
+            stage.draw();
+            
+            // Restore positions to prevent layout drift
+            portraitImage.setPosition(originalPortraitX, originalPortraitY);
+            leftChar.setPosition(originalLeftX, originalLeftY);
+            rightChar.setPosition(originalRightX, originalRightY);
+            return; // Skip default draw
+        }
+
+        stage.draw();
+    }
+
 
     public Stage getStage() {
         return stage;
@@ -273,10 +486,7 @@ public class DialogueManager {
         return isDialogueActive;
     }
     
-    public void render(float delta) {
-        stage.act(delta);
-        stage.draw();
-    }
+
     
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
@@ -286,5 +496,7 @@ public class DialogueManager {
         stage.dispose();
         if (leftTexture != null) leftTexture.dispose();
         if (rightTexture != null) rightTexture.dispose();
+        if (gradientTexture != null) gradientTexture.dispose();
+        if (portraitTexture != null) portraitTexture.dispose();
     }
 }

@@ -1,37 +1,60 @@
 {
     "leftCharacterImage": "player/lihui/maincharacterlh.png",
-    "leftScale": 1.2,
+    "leftScale": 2,
     "leftOffsetX": -200.0,
-    "leftOffsetY": -400.0,
+    "leftOffsetY": -500,
     "rightCharacterImage": "mobs.png",
     "rightScale": 1.0,
     "rightOffsetX": 0.0,
     "rightOffsetY": 0.0,
+    "leftPortraitScale": 5,
+    "leftPortraitOffsetX": -450.0,
+    "leftPortraitOffsetY": -1300.0,
+    "rightPortraitScale": 1.5,
+    "rightPortraitOffsetX": -100.0,
+    "rightPortraitOffsetY": -200.0,
     "lines": [
+        {
+            "text": "Where am I?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlh.png"
+        },
         {
             "text": "Hey! Welcome to the Birth Level.",
             "speaker": "Stranger",
-            "isLeft": false
+            "isLeft": false,
+            "portrait": "mobs.png"
+        },
+        {
+            "text": "What's this place?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlh.png"
         },
         {
             "text": "Is there anything here?",
             "speaker": "Player",
-            "isLeft": true
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlh.png"
         },
         {
             "text": "Absolutely nothing.",
             "speaker": "Stranger",
-            "isLeft": false
+            "isLeft": false,
+            "portrait": "mobs.png"
         },
         {
             "text": "That's disappointing.",
             "speaker": "Player",
-            "isLeft": true
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlh.png"
         },
         {
             "text": "Press 'F' again if you want to chat more.",
             "speaker": "Stranger",
-            "isLeft": false
+            "isLeft": false,
+            "portrait": "mobs.png"
         }
     ]
 }
