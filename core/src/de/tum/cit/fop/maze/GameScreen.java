@@ -255,6 +255,7 @@ public class GameScreen implements Screen {
                 enemies.add(new de.tum.cit.fop.maze.GameObj.Ghost(
                         obj.getPosition().x,
                         obj.getPosition().y,
+                        de.tum.cit.fop.maze.MapLoader.getDroneAnimations(), // Updated to Drone sprite
                         grid,
                         character));
                 toRemove.add(obj);

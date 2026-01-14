@@ -18,9 +18,8 @@ public class Ghost extends Enemy {
      * @param grid Logic grid (unused for movement, but required by super).
      * @param target Target character.
      */
-    public Ghost(float x, float y, Grid grid, Character target) {
-
-        super(x, y, de.tum.cit.fop.maze.MapLoader.getMobAnimations(2, 1), grid, target);
+    public Ghost(float x, float y, Animation<TextureRegion>[] anims, Grid grid, Character target) {
+        super(x, y, anims, grid, target);
     }
         
     /**
