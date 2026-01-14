@@ -52,7 +52,7 @@ public class DungeonGenerator {
         floorRegion = regions[1][0]; // Row 1, Col 0
         entryRegion = regions[0][2];
         exitRegion = regions[0][1];
-        trapRegion = regions[1][2];
+        trapRegion = regions[2][2];
         chestRegion = regions[1][1];
     }
     
