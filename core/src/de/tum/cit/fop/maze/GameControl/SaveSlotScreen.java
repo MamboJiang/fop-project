@@ -8,6 +8,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.math.Interpolation;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 
 /**
@@ -18,6 +20,7 @@ public class SaveSlotScreen implements Screen {
     private final MazeRunnerGame game;
     private final Stage stage;
     private final boolean isLoading; // true = Load Game, false = New Game
+    private Table buttonsTable;
 
     /**
      * Constructor for SaveSlotScreen.
@@ -35,6 +38,10 @@ public class SaveSlotScreen implements Screen {
         
         String titleText = isLoading ? "Load Game - Select Slot" : "New Game - Select Slot";
         table.add(new Label(titleText, game.getSkin(), "title")).padBottom(50).row();
+        
+        // Container for animated buttons
+        buttonsTable = new Table();
+        table.add(buttonsTable).row();
         
         // 3 Slots
         for (int i = 0; i < 3; i++) {
@@ -75,7 +82,7 @@ public class SaveSlotScreen implements Screen {
                 slotButton.setDisabled(true);
             }
             
-            table.add(slotButton).width(600).height(80).padBottom(20).row();
+            buttonsTable.add(slotButton).width(600).height(80).padBottom(20).row();
         }
 
 
@@ -86,7 +93,7 @@ public class SaveSlotScreen implements Screen {
                 game.goToMenu();
             }
         });
-        table.add(backButton).padTop(30);
+        buttonsTable.add(backButton).padTop(30);
     }
     
     private void showOverwriteDialog(int slotIndex) {
@@ -99,8 +106,8 @@ public class SaveSlotScreen implements Screen {
             }
         };
         dialog.text("Slot " + (slotIndex + 1) + " is not empty.\nOverwrite it?");
-        dialog.button("Yes", true);
-        dialog.button("No", false);
+        dialog.button(new TextButton("Yes", game.getSkin(), "short"), true);
+        dialog.button(new TextButton("No", game.getSkin(), "short"), false);
         dialog.show(stage);
     }
     
@@ -113,19 +120,30 @@ public class SaveSlotScreen implements Screen {
                      String name = nameField.getText();
                      if (name.trim().isEmpty()) name = "Player";
                      game.startNewGame(name, slotIndex);
+                     game.setScreen(new CinematicScreen(game));
                 }
             }
         };
         dialog.getContentTable().add(new Label("Name:", game.getSkin())).padRight(10);
         dialog.getContentTable().add(nameField).width(200).row();
-        dialog.button("Start", true);
-        dialog.button("Cancel", false);
+        dialog.button(new TextButton("Start", game.getSkin(), "short"), true);
+        dialog.button(new TextButton("Cancel", game.getSkin(), "short"), false);
         dialog.show(stage);
     }
 
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        
+        // Entrance Animation
+        if (buttonsTable != null) {
+            buttonsTable.clearActions();
+            // Start below screen
+            buttonsTable.addAction(Actions.sequence(
+                Actions.moveBy(0, -stage.getHeight()),
+                Actions.moveBy(0, stage.getHeight(), 0.3f, Interpolation.exp5Out)
+            ));
+        }
     }
 
     @Override

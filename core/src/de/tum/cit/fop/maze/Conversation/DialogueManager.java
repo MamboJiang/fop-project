@@ -1,6 +1,7 @@
 package de.tum.cit.fop.maze.Conversation;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -43,6 +44,9 @@ public class DialogueManager {
     private Texture portraitTexture;
     private Texture fadingTexture; // For deferred disposal
     private String currentPortraitPath = "";
+    
+    private Image arrowImage;
+    private Texture arrowTexture;
     
     // Characters (Keeping exist logic for main chars if needed, but primarily using new system)
     private Image leftChar;
@@ -161,37 +165,106 @@ public class DialogueManager {
         portraitCell = bottomContainer.add(container).size(300, 400).bottom().left().pad(20);
         
         Table textContainer = new Table();
-        bottomContainer.add(textContainer).grow().top().padTop(140).padLeft(30).padRight(30).padBottom(30);
+        bottomContainer.add(textContainer).grow().top().padTop(155).padLeft(30).padRight(30).padBottom(30);
         
-        speakerName = new Label("", skin);
-        speakerName.setColor(Color.CYAN); 
-        speakerName.setFontScale(1.5f);
+        // Fonts
+        Label.LabelStyle nameStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.WHITE);
+        Label.LabelStyle textStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.WHITE);
+
+        speakerName = new Label("", nameStyle);
+        // User requested: Name Blue and Larger
+        speakerName.setColor(0.5f, 0.8f, 1f, 1f); // Sky Blue
+        speakerName.setFontScale(1.5f); // Larger than 1.2
         
-        dialogueText = new Label("", skin);
+        dialogueText = new Label("", textStyle);
         dialogueText.setWrap(true);
         dialogueText.setColor(Color.WHITE);
         dialogueText.setFontScale(1.2f);
         dialogueText.setAlignment(Align.topLeft);
 
+        // Arrow Setup
+        createArrowTexture();
+        arrowImage = new Image(arrowTexture);
+        arrowImage.setOrigin(Align.center);
+        startBobbing();
+
+        // Text Section
         textContainer.add(speakerName).expandX().left().padBottom(10).row();
         textContainer.add(dialogueText).grow().top().left();
+        
+        // Add Arrow to right of TextContainer
+        bottomContainer.add(arrowImage).bottom().right().padRight(40).padBottom(20);
     }
     
     private void setupInput() {
         stage.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (isDialogueActive) {
-                    if (!typingFinished) {
-                        // Skip typewriter
-                        dialogueText.setText(targetText);
-                        typingFinished = true;
-                    } else {
-                        advanceDialogue();
-                    }
+                handleInput();
+                // Arrow feedback
+                if (arrowImage != null) {
+                    playArrowFeedback();
                 }
             }
+            
+            @Override
+            public boolean keyDown(InputEvent event, int keycode) {
+                if (keycode == Input.Keys.SPACE) {
+                    handleInput();
+                    // Arrow feedback
+                     if (arrowImage != null) {
+                        playArrowFeedback();
+                    }
+                    return true;
+                }
+                return false;
+            }
         });
+    }
+    
+    private void startBobbing() {
+        if (arrowImage == null) return;
+        arrowImage.clearActions();
+        arrowImage.addAction(Actions.forever(
+            Actions.sequence(
+                Actions.moveBy(0, -5, 0.5f, Interpolation.sine),
+                Actions.moveBy(0, 5, 0.5f, Interpolation.sine)
+            )
+        ));
+    }
+
+    private void playArrowFeedback() {
+        if (arrowImage == null) return;
+        arrowImage.clearActions();
+        arrowImage.addAction(Actions.sequence(
+            Actions.scaleTo(1.3f, 1.3f, 0.05f),
+            Actions.scaleTo(1f, 1f, 0.05f),
+            Actions.run(this::startBobbing)
+        ));
+    }
+    
+    private void handleInput() {
+        if (isDialogueActive) {
+            if (!typingFinished) {
+                // Skip typewriter
+                dialogueText.setText(targetText);
+                typingFinished = true;
+            } else {
+                advanceDialogue();
+            }
+        }
+    }
+
+    private void createArrowTexture() {
+        // Draw a white triangle V
+        Pixmap p = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
+        p.setColor(1, 1, 1, 1);
+        for (int i = 0; i < 4; i++) {
+             p.drawLine(4+i, 4, 16, 28-i);
+             p.drawLine(28-i, 4, 16, 28-i);
+        }
+        arrowTexture = new Texture(p);
+        p.dispose();
     }
 
     // UI Cells for dynamic updates
@@ -545,5 +618,6 @@ public class DialogueManager {
         if (rightTexture != null) rightTexture.dispose();
         if (gradientTexture != null) gradientTexture.dispose();
         if (portraitTexture != null) portraitTexture.dispose();
+        if (arrowTexture != null) arrowTexture.dispose();
     }
 }
