@@ -388,9 +388,9 @@ public class GameScreen implements Screen {
                         };
                         dialog.text(
                                 "Save Difficulty or End Run (Submit Score)?\nNew Run will be: Lv " + currentDifficulty);
-                        dialog.button("Save & Quit", 1);
-                        dialog.button("End Game (Submit Score)", 2);
-                        dialog.button("Cancel", 0);
+                        dialog.button(new com.badlogic.gdx.scenes.scene2d.ui.TextButton("Save & Quit", game.getSkin(), "short"), 1);
+                        dialog.button(new com.badlogic.gdx.scenes.scene2d.ui.TextButton("End Game (Submit Score)", game.getSkin(), "short"), 2);
+                        dialog.button(new com.badlogic.gdx.scenes.scene2d.ui.TextButton("Cancel", game.getSkin(), "short"), 0);
                         dialog.show(pauseStage);
                     } else {
                         game.goToMenu();

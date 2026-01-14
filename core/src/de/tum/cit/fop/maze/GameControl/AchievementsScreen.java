@@ -68,14 +68,14 @@ public class AchievementsScreen implements Screen {
         
         rootTable.add(scrollPane).width(800).height(500).padBottom(20).row();
 
-        TextButton backButton = new TextButton("Back", skin);
+        TextButton backButton = new TextButton("Back", skin, "short");
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.goToMenu();
             }
         });
-        rootTable.add(backButton).width(200);
+        rootTable.add(backButton);
     }
 
     private void addAchievementRow(Table table, Achievement a) {

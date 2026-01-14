@@ -53,14 +53,14 @@ public class SkillTreeScreen implements Screen {
         createUpgradeRow(table, "Defense (+10% Block Chance)", "DEFENSE");
 
 
-        TextButton backButton = new TextButton("Back to Menu", game.getSkin());
+        TextButton backButton = new TextButton("Back to Menu", game.getSkin(), "short");
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.goToMenu();
             }
         });
-        table.add(backButton).width(300).colspan(2).padTop(50);
+        table.add(backButton).colspan(2).padTop(50);
     }
 
     private void createUpgradeRow(Table table, String name, String type) {
@@ -74,7 +74,7 @@ public class SkillTreeScreen implements Screen {
 
 
         int cost = state.getUpgradeCost(type);
-        TextButton btn = new TextButton("Upgrade (" + cost + " XP)", game.getSkin());
+        TextButton btn = new TextButton("Upgrade (" + cost + " XP)", game.getSkin(), "short");
 
         btn.addListener(new ChangeListener() {
             @Override
@@ -95,7 +95,7 @@ public class SkillTreeScreen implements Screen {
             btn.setColor(0.5f, 0.5f, 0.5f, 1f);
         }
 
-        table.add(btn).width(200).pad(10).row();
+        table.add(btn).pad(10).row();
     }
 
     @Override

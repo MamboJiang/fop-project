@@ -63,7 +63,7 @@ public class PauseMenu extends Table {
         content.add(xpLabel).pad(5).padBottom(20).row();
         
 
-        TextButton resumeBtn = new TextButton("Resume", skin);
+        TextButton resumeBtn = new TextButton("Resume", skin, "short");
         resumeBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -71,10 +71,10 @@ public class PauseMenu extends Table {
                 setVisible(false);
             }
         });
-        content.add(resumeBtn).width(300).pad(10).row();
+        content.add(resumeBtn).pad(10).row();
         
 
-        TextButton exitBtn = new TextButton("Exit to Menu", skin);
+        TextButton exitBtn = new TextButton("Exit to Menu", skin, "short");
         exitBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -85,7 +85,7 @@ public class PauseMenu extends Table {
                 }
             }
         });
-        content.add(exitBtn).width(300).pad(10).row();
+        content.add(exitBtn).pad(10).row();
         
         add(content);
     }

@@ -75,6 +75,118 @@ public class MazeRunnerGame extends Game {
 
         spriteBatch = new SpriteBatch();
         skin = new Skin(Gdx.files.internal("craft/craftacular-ui.json"));
+        
+        // --- Custom UI Setup ---
+        try {
+            // Load custom font
+            com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator generator = 
+                new com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator(Gdx.files.internal("other/Hoefler Text Regular.ttf"));
+            com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter parameter = 
+                new com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter();
+            parameter.size = 36;
+            // Optional: Add border for visibility if buttons are light, but assuming dark text or white on dark
+            // User requested specific font, I'll keep it simple first
+            com.badlogic.gdx.graphics.g2d.BitmapFont customFont = generator.generateFont(parameter);
+            generator.dispose();
+            skin.add("hoefler", customFont);
+            
+            // Load button textures
+            Texture btnBase = new Texture(Gdx.files.internal("selfmade/uielements/buttonbase.png"));
+            Texture btnOn = new Texture(Gdx.files.internal("selfmade/uielements/buttonon.png"));
+            Texture btnPressed = new Texture(Gdx.files.internal("selfmade/uielements/buttonpressed.png"));
+            
+            // Overwrite "default" TextButtonStyle
+            com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle style = new com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle();
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableUp = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnBase));
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableOver = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnOn));
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableDown = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnPressed));
+            
+            float scale = 0.4f;
+            drawableUp.setMinWidth(drawableUp.getMinWidth() * scale);
+            drawableUp.setMinHeight(drawableUp.getMinHeight() * scale);
+            drawableOver.setMinWidth(drawableOver.getMinWidth() * scale);
+            drawableOver.setMinHeight(drawableOver.getMinHeight() * scale);
+            drawableDown.setMinWidth(drawableDown.getMinWidth() * scale);
+            drawableDown.setMinHeight(drawableDown.getMinHeight() * scale);
+            
+            style.up = drawableUp;
+            style.over = drawableOver;
+            style.down = drawableDown;
+            style.font = customFont;
+            style.fontColor = com.badlogic.gdx.graphics.Color.BLACK; // Using Black text for now, assuming light button or vice versa. 
+            // Wait, "buttonbase" often implies wood/stone. Let's try White first? Or check user intent.
+            // craft/craftacular usually has white text on dark buttons.
+            style.fontColor = com.badlogic.gdx.graphics.Color.WHITE; 
+            
+            skin.add("default", style, com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
+
+            // Load SHORT button textures
+            Texture btnBaseShort = new Texture(Gdx.files.internal("selfmade/uielements/buttonbaseshort.png"));
+            Texture btnOnShort = new Texture(Gdx.files.internal("selfmade/uielements/buttononshort.png"));
+            Texture btnPressedShort = new Texture(Gdx.files.internal("selfmade/uielements/buttonpressedshort.png"));
+
+            // Define "short" style
+            com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle shortStyle = new com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle();
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableUpShort = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnBaseShort));
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableOverShort = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnOnShort));
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableDownShort = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnPressedShort));
+            
+            // Apply scale to short buttons too
+            drawableUpShort.setMinWidth(drawableUpShort.getMinWidth() * scale);
+            drawableUpShort.setMinHeight(drawableUpShort.getMinHeight() * scale);
+            drawableOverShort.setMinWidth(drawableOverShort.getMinWidth() * scale);
+            drawableOverShort.setMinHeight(drawableOverShort.getMinHeight() * scale);
+            drawableDownShort.setMinWidth(drawableDownShort.getMinWidth() * scale);
+            drawableDownShort.setMinHeight(drawableDownShort.getMinHeight() * scale);
+            
+            shortStyle.up = drawableUpShort;
+            shortStyle.over = drawableOverShort;
+            shortStyle.down = drawableDownShort;
+            shortStyle.font = customFont;
+            shortStyle.fontColor = com.badlogic.gdx.graphics.Color.WHITE;
+
+            skin.add("short", shortStyle, com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
+
+            // Define "keybinding" style (Short texture, 0.75 scale)
+            com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle keyBindingStyle = new com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle();
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable kbUp = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnBaseShort));
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable kbOver = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnOnShort));
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable kbDown = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnPressedShort));
+            
+            float kbScale = 0.3f;
+            kbUp.setMinWidth(kbUp.getMinWidth() * kbScale);
+            kbUp.setMinHeight(kbUp.getMinHeight() * kbScale);
+            kbOver.setMinWidth(kbOver.getMinWidth() * kbScale);
+            kbOver.setMinHeight(kbOver.getMinHeight() * kbScale);
+            kbDown.setMinWidth(kbDown.getMinWidth() * kbScale);
+            kbDown.setMinHeight(kbDown.getMinHeight() * kbScale);
+            
+            keyBindingStyle.up = kbUp;
+            keyBindingStyle.over = kbOver;
+            keyBindingStyle.down = kbDown;
+            keyBindingStyle.font = customFont;
+            keyBindingStyle.fontColor = com.badlogic.gdx.graphics.Color.WHITE;
+
+            skin.add("keybinding", keyBindingStyle, com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
+            
+            // Load LEVEL SELECT button textures
+            Texture btnLevelBase = new Texture(Gdx.files.internal("selfmade/uielements/levelbuttonbase.png"));
+            Texture btnLevelOn = new Texture(Gdx.files.internal("selfmade/uielements/levelbuttonon.png"));
+            
+            com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle levelStyle = new com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle();
+            levelStyle.up = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnLevelBase));
+            levelStyle.over = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnLevelOn));
+            levelStyle.down = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnLevelOn));
+            levelStyle.font = customFont;
+            levelStyle.fontColor = com.badlogic.gdx.graphics.Color.WHITE; 
+            
+            skin.add("level", levelStyle, com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
+            
+        } catch (Exception e) {
+            Gdx.app.error("MazeRunnerGame", "Failed to load custom UI assets", e);
+        }
+        // -----------------------
+
         this.loadCharacterAnimation();
         playerState = null;
 

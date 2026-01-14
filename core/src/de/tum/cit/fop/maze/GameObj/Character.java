@@ -152,21 +152,28 @@ public class Character extends MovableObject {
         TextureRegion[] attLeftFrames = new TextureRegion[4];
 
         // Frame extraction
+        // Frame extraction for Walking
         int frameW = 26;
         int frameH = 46;
+        
+        // Load Attack Texture
+        Texture attSheet = new Texture(Gdx.files.internal("assets/player/sprite/aligned_character_mask_knife.png"));
+        int attFrameW = 32;
+        int attFrameH = 48;
 
         for (int i = 0; i < 4; i++) {
-            // Walking: Rows 0-3, 46x26
+            // Walking: Rows 0-3, 46x26 from 'texture'
             downFrames[i] = new TextureRegion(texture, i * frameW, 0, frameW, frameH);
             rightFrames[i] = new TextureRegion(texture, i * frameW, frameH*3, frameW, frameH);
             upFrames[i] = new TextureRegion(texture, i * frameW, frameH * 2, frameW, frameH);
             leftFrames[i] = new TextureRegion(texture, i * frameW, frameH, frameW, frameH);
 
-            // Attacking: Rows 4-7, 46x26
-            attDownFrames[i] = new TextureRegion(texture, i * frameW, frameH * 4, frameW, frameH);
-            attRightFrames[i] = new TextureRegion(texture, i * frameW, frameH * 5, frameW, frameH);
-            attUpFrames[i] = new TextureRegion(texture, i * frameW, frameH * 6, frameW, frameH);
-            attLeftFrames[i] = new TextureRegion(texture, i * frameW, frameH * 7, frameW, frameH);
+            // Attacking: Rows 0-3 from 'attSheet', 32x48
+            // Order assumption: Down(0), Right(1), Up(2), Left(3) to match previous logic
+            attDownFrames[i] = new TextureRegion(attSheet, i * attFrameW, 0, attFrameW, attFrameH);
+            attRightFrames[i] = new TextureRegion(attSheet, i * attFrameW, attFrameH*3, attFrameW, attFrameH);
+            attUpFrames[i] = new TextureRegion(attSheet, i * attFrameW, attFrameH * 2, attFrameW, attFrameH);
+            attLeftFrames[i] = new TextureRegion(attSheet, i * attFrameW, attFrameH, attFrameW, attFrameH);
         }
 
         walkDown = new Animation<>(0.1f, downFrames);
@@ -452,9 +459,8 @@ public class Character extends MovableObject {
         setupDamageFlash(batch);
 
         if (isAttacking) {
-            // Draw 32x32 sprite centered on 16x32 body
-            // X: pos.x + 8 (center) - 16 (half width) = pos.x - 8
-            batch.draw(textureRegion, position.x - 8, position.y, 32, 32);
+            // Draw 24x36 sprite centered on 16x32 body (width difference 8 -> offset -4)
+            batch.draw(textureRegion, position.x -2, position.y, 20, 32);
         } else {
             batch.draw(textureRegion, position.x, position.y, width, height);
         }

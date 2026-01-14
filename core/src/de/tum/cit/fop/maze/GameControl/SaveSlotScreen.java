@@ -79,14 +79,14 @@ public class SaveSlotScreen implements Screen {
         }
 
 
-        TextButton backButton = new TextButton("Back", game.getSkin());
+        TextButton backButton = new TextButton("Back", game.getSkin(), "short");
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.goToMenu();
             }
         });
-        table.add(backButton).width(200).padTop(30);
+        table.add(backButton).padTop(30);
     }
     
     private void showOverwriteDialog(int slotIndex) {

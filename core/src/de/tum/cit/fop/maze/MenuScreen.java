@@ -63,11 +63,11 @@ public class MenuScreen implements Screen {
                 continueButton.setDisabled(true);
                 continueButton.setColor(0.5f, 0.5f, 0.5f, 1f);
             }
-            table.add(continueButton).width(300).padBottom(15).row();
+            table.add(continueButton).padBottom(15).row();
 
 
             TextButton newGameButton = new TextButton("New Game", game.getSkin());
-            table.add(newGameButton).width(300).padBottom(15).row();
+            table.add(newGameButton).padBottom(15).row();
             newGameButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -77,7 +77,7 @@ public class MenuScreen implements Screen {
 
 
             TextButton loadGameButton = new TextButton("Load Game", game.getSkin());
-            table.add(loadGameButton).width(300).padBottom(15).row();
+            table.add(loadGameButton).padBottom(15).row();
             loadGameButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -87,7 +87,7 @@ public class MenuScreen implements Screen {
             
 
             TextButton settingsButton = new TextButton("Settings", game.getSkin());
-            table.add(settingsButton).width(300).padBottom(15).row();
+            table.add(settingsButton).padBottom(15).row();
             settingsButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -97,7 +97,7 @@ public class MenuScreen implements Screen {
 
 
             TextButton exitButton = new TextButton("Exit", game.getSkin());
-            table.add(exitButton).width(300).row();
+            table.add(exitButton).row();
             exitButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -112,7 +112,7 @@ public class MenuScreen implements Screen {
             
 
             TextButton playButton = new TextButton("Select Level", game.getSkin());
-            table.add(playButton).width(300).padBottom(15).row();
+            table.add(playButton).padBottom(15).row();
             playButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -122,7 +122,7 @@ public class MenuScreen implements Screen {
 
 
             TextButton endlessButton = new TextButton("Endless Mode", game.getSkin());
-            table.add(endlessButton).width(300).padBottom(15).row();
+            table.add(endlessButton).padBottom(15).row();
             endlessButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -165,7 +165,7 @@ public class MenuScreen implements Screen {
 
 
             TextButton skillsButton = new TextButton("Skills & Upgrades", game.getSkin());
-            table.add(skillsButton).width(300).padBottom(15).row();
+            table.add(skillsButton).padBottom(15).row();
             skillsButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -175,7 +175,7 @@ public class MenuScreen implements Screen {
 
 
             TextButton achButton = new TextButton("Achievements", game.getSkin());
-            table.add(achButton).width(300).padBottom(15).row();
+            table.add(achButton).padBottom(15).row();
             achButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -185,7 +185,7 @@ public class MenuScreen implements Screen {
             
 
             TextButton settingsButton = new TextButton("Settings", game.getSkin());
-            table.add(settingsButton).width(300).padBottom(15).row();
+            table.add(settingsButton).padBottom(15).row();
             settingsButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -195,7 +195,7 @@ public class MenuScreen implements Screen {
 
 
             TextButton backButton = new TextButton("Return to Title", game.getSkin());
-            table.add(backButton).width(300).row();
+            table.add(backButton).row();
             backButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {

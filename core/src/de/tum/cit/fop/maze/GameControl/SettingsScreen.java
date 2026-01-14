@@ -77,14 +77,14 @@ public class SettingsScreen implements Screen {
         addKeyBindingRow(table, skin, "Open Console", "CONSOLE");
 
 
-        TextButton backButton = new TextButton("Back", skin);
+        TextButton backButton = new TextButton("Back", skin, "short");
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.goToMenu();
             }
         });
-        table.add(backButton).colspan(2).padTop(20).width(200);
+        table.add(backButton).colspan(2).padTop(20);
         
 
         stage.addListener(new InputListener() {
@@ -107,7 +107,7 @@ public class SettingsScreen implements Screen {
         table.add(new Label(labelText + ":", skin)).right().padRight(10);
         
         String currentKey = Input.Keys.toString(game.getConfigManager().getKey(actionName));
-        final TextButton keyButton = new TextButton(currentKey, skin);
+        final TextButton keyButton = new TextButton(currentKey, skin, "keybinding");
         
         keyButton.addListener(new ChangeListener() {
             @Override
@@ -121,7 +121,7 @@ public class SettingsScreen implements Screen {
             }
         });
         
-        table.add(keyButton).width(150).padBottom(5).row();
+        table.add(keyButton).padBottom(5).row();
     }
 
     @Override
