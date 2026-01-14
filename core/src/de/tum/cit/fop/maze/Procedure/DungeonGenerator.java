@@ -45,15 +45,15 @@ public class DungeonGenerator {
     }
     
     private void loadResources() {
-        Texture texture = new Texture(Gdx.files.internal("basictiles.png"));
-        TextureRegion[][] regions = TextureRegion.split(texture, 16, 16);
+        Texture texture = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
+        TextureRegion[][] regions = TextureRegion.split(texture, 32, 32);
         
         wallRegion = regions[0][0];
-        floorRegion = regions[1][1];
-        entryRegion = regions[6][0];
-        exitRegion = regions[6][2];
-        trapRegion = regions[9][2];
-        chestRegion = regions[4][4];
+        floorRegion = regions[1][0]; // Row 1, Col 0
+        entryRegion = regions[0][2];
+        exitRegion = regions[0][1];
+        trapRegion = regions[1][2];
+        chestRegion = regions[1][1];
     }
     
     /**
