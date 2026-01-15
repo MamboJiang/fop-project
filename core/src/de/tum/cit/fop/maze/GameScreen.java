@@ -773,7 +773,9 @@ public class GameScreen implements Screen {
 
         ScreenUtils.clear(0, 0, 0, 1);
         boolean isLevelCompleted = character.isLevelCompleted();
-        levelTimer += delta;
+        if (!dialogueManager.isActive()) {
+            levelTimer += delta;
+        }
 
         if (!isPaused && !isGameOver && !isLevelCompleted && !dialogueManager.isActive()) {
             if (character != null) {
@@ -868,7 +870,7 @@ public class GameScreen implements Screen {
                 de.tum.cit.fop.maze.VFX.DamageNumber dn = iter.next();
                 dn.render(game.getSpriteBatch(), font);
 
-                if (!isPaused && !isGameOver && !character.isLevelCompleted()) {
+                if (!isPaused && !isGameOver && !character.isLevelCompleted() && !dialogueManager.isActive()) {
                     dn.update(delta);
                 }
 
@@ -880,7 +882,7 @@ public class GameScreen implements Screen {
 
         game.getSpriteBatch().end();
 
-        if (!isPaused && !isGameOver && !character.isLevelCompleted()) {
+        if (!isPaused && !isGameOver && !character.isLevelCompleted() && !dialogueManager.isActive()) {
             java.util.Iterator<de.tum.cit.fop.maze.GameObj.Enemy> enemyIter = enemies.iterator();
             while (enemyIter.hasNext()) {
                 de.tum.cit.fop.maze.GameObj.Enemy enemy = enemyIter.next();
@@ -941,7 +943,8 @@ public class GameScreen implements Screen {
             shapeRenderer.end();
         }
         
-        if (nono != null && !isPaused && !isGameOver) {
+        if (nono != null && !isPaused && !isGameOver && !dialogueManager.isActive()) {
+            nono.setMapObjects(mapObjects);
             nono.update(delta);
         }
         

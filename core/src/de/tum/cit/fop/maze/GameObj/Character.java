@@ -492,9 +492,9 @@ public class Character extends MovableObject {
         }
 
         endDamageFlash(batch);
-
-        drawArrow(batch);
-
+        
+        // drawArrow(batch); // Disabled as per user request
+        
         batch.setColor(Color.WHITE);
 
         if (shieldTime > 0 && shieldAnimation != null) {

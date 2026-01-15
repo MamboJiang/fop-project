@@ -29,7 +29,7 @@ public class Nono extends GameObject {
     private float blinkStateTime = 0f;
     
     // Movement Parameters
-    private static final float LEASH_RADIUS = 20f; 
+    private static final float LEASH_RADIUS = 30f; 
     private static final float MAX_SPEED = 200f; // Increased from 100f
     private static final float FRICTION = 0.9f;
 
@@ -76,6 +76,13 @@ public class Nono extends GameObject {
         this.textureRegion = tmp[0][0];
     }
 
+    private Vector2 objectivePosition = null;
+    private java.util.List<GameObject> mapObjects;
+    
+    public void setMapObjects(java.util.List<GameObject> mapObjects) {
+        this.mapObjects = mapObjects;
+    }
+    
     public void update(float delta) {
         stateTime += delta;
         
@@ -83,24 +90,51 @@ public class Nono extends GameObject {
         hoverOffset = MathUtils.sin(stateTime * 5f) * 1.5f; 
 
         if (target != null) {
+            // Update objective position
+            updateObjective();
+            
             // Center-to-center distance check
             float targetCenterX = target.getPosition().x + target.getWidth()/2;
             float targetCenterY = target.getPosition().y + target.getHeight()/2;
             float myCenterX = position.x + width/2;
             float myCenterY = position.y + height/2;
             
-            float dist = Vector2.dst(myCenterX, myCenterY, targetCenterX, targetCenterY);
+            float distToPlayer = Vector2.dst(myCenterX, myCenterY, targetCenterX, targetCenterY);
             
-            // Leash Logic
-            if (dist > LEASH_RADIUS) {
-                // Calculate pull vector
-                float pullX = targetCenterX - myCenterX;
-                float pullY = targetCenterY - myCenterY;
+            // Determine where Nono should fly
+            Vector2 desiredPosition = new Vector2(targetCenterX, targetCenterY);
+            
+            if (objectivePosition != null) {
+                // Fly towards objective, but not beyond leash range from player
+                float objX = objectivePosition.x;
+                float objY = objectivePosition.y;
                 
-                // Strength increases with distance beyond leash
-                float excess = dist - LEASH_RADIUS;
-                float force = excess * 50f; // Increased stiffness for tighter follow
+                // Calculate direction from player to objective
+                float dirX = objX - targetCenterX;
+                float dirY = objY - targetCenterY;
+                float distToObj = (float) Math.sqrt(dirX * dirX + dirY * dirY);
                 
+                if (distToObj > 0.1f) {
+                    // Normalize direction
+                    dirX /= distToObj;
+                    dirY /= distToObj;
+                    
+                    // Nono's ideal position is along the line from player to objective
+                    // but clamped to LEASH_RADIUS from player
+                    float maxDist = Math.min(LEASH_RADIUS, distToObj);
+                    desiredPosition.x = targetCenterX + dirX * maxDist * 0.8f; // 80% of max distance
+                    desiredPosition.y = targetCenterY + dirY * maxDist * 0.8f;
+                }
+            }
+            
+            // Calculate pull towards desired position
+            float pullX = desiredPosition.x - myCenterX;
+            float pullY = desiredPosition.y - myCenterY;
+            float distToDesired = (float) Math.sqrt(pullX * pullX + pullY * pullY);
+            
+            // Apply force towards desired position
+            if (distToDesired > 2f) { // Dead zone to prevent jitter
+                float force = distToDesired * 30f; // Adjust stiffness
                 float angle = MathUtils.atan2(pullY, pullX);
                 velocity.x += MathUtils.cos(angle) * force * delta;
                 velocity.y += MathUtils.sin(angle) * force * delta;
@@ -171,6 +205,72 @@ public class Nono extends GameObject {
                 case 3: currentAnim = idleUp; break;
             }
             this.textureRegion = currentAnim.getKeyFrame(stateTime, true);
+        }
+    }
+    
+    private void updateObjective() {
+        objectivePosition = null;
+        if (mapObjects == null || target == null) return;
+        
+        float minDst = Float.MAX_VALUE;
+        boolean hasKey = target.hasKey();
+        
+        // Priority order: MaskItem > Key > AttackUnlockItem (if no key) > Exit (if has key)
+        for (GameObject obj : mapObjects) {
+            if (obj instanceof MaskItem) {
+                float dst = Vector2.dst2(target.getPosition().x, target.getPosition().y, 
+                                        obj.getPosition().x, obj.getPosition().y);
+                if (dst < minDst) {
+                    minDst = dst;
+                    objectivePosition = new Vector2(obj.getPosition().x + obj.getWidth()/2, 
+                                                   obj.getPosition().y + obj.getHeight()/2);
+                }
+            }
+        }
+        
+        // If no MaskItem, look for Key
+        if (objectivePosition == null && !hasKey) {
+            for (GameObject obj : mapObjects) {
+                if (obj instanceof Key) {
+                    float dst = Vector2.dst2(target.getPosition().x, target.getPosition().y, 
+                                            obj.getPosition().x, obj.getPosition().y);
+                    if (dst < minDst) {
+                        minDst = dst;
+                        objectivePosition = new Vector2(obj.getPosition().x + obj.getWidth()/2, 
+                                                       obj.getPosition().y + obj.getHeight()/2);
+                    }
+                }
+            }
+        }
+        
+        // If no Key and no key held, look for AttackUnlockItem
+        if (objectivePosition == null && !hasKey) {
+            for (GameObject obj : mapObjects) {
+                if (obj instanceof AttackUnlockItem) {
+                    float dst = Vector2.dst2(target.getPosition().x, target.getPosition().y, 
+                                            obj.getPosition().x, obj.getPosition().y);
+                    if (dst < minDst) {
+                        minDst = dst;
+                        objectivePosition = new Vector2(obj.getPosition().x + obj.getWidth()/2, 
+                                                       obj.getPosition().y + obj.getHeight()/2);
+                    }
+                }
+            }
+        }
+        
+        // If has key or no items found, look for Exit
+        if (objectivePosition == null || hasKey) {
+            for (GameObject obj : mapObjects) {
+                if (obj instanceof Exit) {
+                    float dst = Vector2.dst2(target.getPosition().x, target.getPosition().y, 
+                                            obj.getPosition().x, obj.getPosition().y);
+                    if (dst < minDst) {
+                        minDst = dst;
+                        objectivePosition = new Vector2(obj.getPosition().x + obj.getWidth()/2, 
+                                                       obj.getPosition().y + obj.getHeight()/2);
+                    }
+                }
+            }
         }
     }
 
