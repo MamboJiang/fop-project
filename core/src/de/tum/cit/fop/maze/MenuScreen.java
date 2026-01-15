@@ -54,6 +54,17 @@ public class MenuScreen implements Screen {
             contentTable.add(animatedTable).row();
 
             int latestSlot = de.tum.cit.fop.maze.GameControl.GameSaveManager.getLatestSaveSlot();
+            
+            // Story Mode Button
+            TextButton storyButton = createHoverButton("Story Mode", game.getSkin());
+            animatedTable.add(storyButton).padBottom(15).row();
+            storyButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    game.setScreen(new de.tum.cit.fop.maze.GameControl.StoryMenu(game));
+                }
+            });
+
             TextButton continueButton = createHoverButton("Continue Game", game.getSkin());
             if (latestSlot != -1) {
                 continueButton.addListener(new ChangeListener() {
