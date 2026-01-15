@@ -881,7 +881,7 @@ public class Character extends MovableObject {
      */
     public Rectangle getAttackRect() {
         Rectangle attackBox = new Rectangle(getBounds());
-        float range = 16f;
+        float range = 32f; // Doubled from 16f
 
         switch (currentDirection) {
             case UP:

@@ -110,7 +110,13 @@ public class MapLoader {
                             obj = new EnemySpawnPoint(worldX, worldY, 16, 16, regions[3][6]);
                             break;
                         case 5:
-                            obj = new Key(worldX, worldY, 16, 16, customRegs[1][1]);
+                            // Use knife texture for Level 2, chest for others
+                            TextureRegion keyTexture = customRegs[1][1]; // Default chest
+                            if (mapFile.nameWithoutExtension().equals("level-2")) {
+                                Texture knifeTexture = new Texture(Gdx.files.internal("assets/selfmade/knifeitem.png"));
+                                keyTexture = new TextureRegion(knifeTexture);
+                            }
+                            obj = new Key(worldX, worldY, 16, 16, keyTexture);
                             break;
                         case 6:
                             // Ghost
