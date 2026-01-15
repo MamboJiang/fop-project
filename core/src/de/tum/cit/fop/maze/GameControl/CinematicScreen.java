@@ -55,8 +55,8 @@ public class CinematicScreen implements Screen {
         this.stage = new Stage(new ExtendViewport(1920, 1080), game.getSpriteBatch());
 
         loadData();
+        loadData();
         setupUI();
-        nextFrame(); // Start first frame
     }
     
     private void loadData() {
@@ -297,12 +297,24 @@ public class CinematicScreen implements Screen {
         dispose();
     }
 
+    private float inputDelayTimer = 0.5f;
+    private boolean started = false;
+
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        if (!started) {
+            started = true;
+            nextFrame();
+        }
+
+        if (inputDelayTimer > 0) {
+            inputDelayTimer -= delta;
+        }
+
+        if (inputDelayTimer <= 0 && Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             // Simulate click on arrow for feedback
             playArrowFeedback();
             nextFrame();

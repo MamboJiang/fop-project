@@ -169,6 +169,34 @@ public class MazeRunnerGame extends Game {
 
             skin.add("keybinding", keyBindingStyle, com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
             
+            // Load MIDDLE button textures
+            Texture btnBaseMiddle = new Texture(Gdx.files.internal("selfmade/uielements/buttonbasemiddle.png"));
+            Texture btnOnMiddle = new Texture(Gdx.files.internal("selfmade/uielements/buttononmiddle.png"));
+            Texture btnPressedMiddle = new Texture(Gdx.files.internal("selfmade/uielements/buttonpressedmiddle.png"));
+
+            // Define "middle" style
+            com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle middleStyle = new com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle();
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableUpMiddle = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnBaseMiddle));
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableOverMiddle = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnOnMiddle));
+            com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableDownMiddle = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnPressedMiddle));
+            
+            // Apply scale (assuming same scale as others)
+            float middleScale = 0.4f;
+            drawableUpMiddle.setMinWidth(drawableUpMiddle.getMinWidth() * middleScale);
+            drawableUpMiddle.setMinHeight(drawableUpMiddle.getMinHeight() * middleScale);
+            drawableOverMiddle.setMinWidth(drawableOverMiddle.getMinWidth() * middleScale);
+            drawableOverMiddle.setMinHeight(drawableOverMiddle.getMinHeight() * middleScale);
+            drawableDownMiddle.setMinWidth(drawableDownMiddle.getMinWidth() * middleScale);
+            drawableDownMiddle.setMinHeight(drawableDownMiddle.getMinHeight() * middleScale);
+            
+            middleStyle.up = drawableUpMiddle;
+            middleStyle.over = drawableOverMiddle;
+            middleStyle.down = drawableDownMiddle;
+            middleStyle.font = customFont;
+            middleStyle.fontColor = com.badlogic.gdx.graphics.Color.WHITE;
+
+            skin.add("middle", middleStyle, com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
+
             // Load LEVEL SELECT button textures
             Texture btnLevelBase = new Texture(Gdx.files.internal("selfmade/uielements/levelbuttonbase.png"));
             Texture btnLevelOn = new Texture(Gdx.files.internal("selfmade/uielements/levelbuttonon.png"));
@@ -195,15 +223,16 @@ public class MazeRunnerGame extends Game {
         backgroundMusic.setVolume(configManager.getMusicVolume());
         backgroundMusic.play();
 
-        goToMenu();
+        // Start with StoryMenu instead of MenuScreen
+        setScreen(new de.tum.cit.fop.maze.GameControl.StoryMenu(this));
     }
 
 
     /**
-     * Switches to the Main Menu screen.
+     * Switches to the Main Menu screen (Now redirects to StoryMenu in Game Hub mode).
      */
     public void goToMenu() {
-        this.setScreen(new MenuScreen(this));
+        this.setScreen(new de.tum.cit.fop.maze.GameControl.StoryMenu(this, true));
         if (gameScreen != null) {
             gameScreen.dispose();
             gameScreen = null;
@@ -484,7 +513,6 @@ public class MazeRunnerGame extends Game {
         de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().resetAchievements();
 
         saveGame();
-        goToMenu();
     }
 
     /**

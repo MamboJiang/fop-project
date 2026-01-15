@@ -59,7 +59,7 @@ public class SaveSlotScreen implements Screen {
                     if (isLoading) {
                         if (exists) {
                             if (game.loadGame(slotIndex)) {
-                                game.goToLevelSelect();
+                                game.goToMenu();
                             }
                         } else {
 
