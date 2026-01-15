@@ -545,7 +545,7 @@ public class Enemy extends MovableObject {
 
     public void draw(SpriteBatch batch) {
         setupDamageFlash(batch);
-        batch.draw(getTextureRegion(), getPosition().x - 10, getPosition().y - 10, 30, 30);
+        batch.draw(getTextureRegion(), getPosition().x -2, getPosition().y-2, 20, 20);
         endDamageFlash(batch);
     }
 
