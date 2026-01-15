@@ -1,0 +1,42 @@
+{
+    "leftCharacterImage": "player/lihui/maincharacterlhmask.png",
+    "leftScale": 2,
+    "leftOffsetX": -200.0,
+    "leftOffsetY": -500,
+    "rightCharacterImage": "player/lihui/nonolh.png",
+    "rightScale": 1.0,
+    "rightOffsetX": 0.0,
+    "rightOffsetY": 0.0,
+    "leftPortraitScale": 5,
+    "leftPortraitOffsetX": -450.0,
+    "leftPortraitOffsetY": -1300.0,
+    "rightPortraitScale": 1.5,
+    "rightPortraitOffsetX": -100.0,
+    "rightPortraitOffsetY": -100.0,
+    "lines": [
+        {
+            "text": "(Sighs deeply) That was a close call.",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "......",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        },
+        {
+            "text": "Judging by your moves... I think you need a weapon.",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "Cut the chatter. Just lead the way.",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        }
+    ]
+}

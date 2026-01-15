@@ -1,0 +1,48 @@
+{
+    "leftCharacterImage": "player/lihui/maincharacterlhmaskknife.png",
+    "leftScale": 2,
+    "leftOffsetX": -200.0,
+    "leftOffsetY": -500,
+    "rightCharacterImage": "player/lihui/nonolh.png",
+    "rightScale": 1.0,
+    "rightOffsetX": 0.0,
+    "rightOffsetY": 0.0,
+    "leftPortraitScale": 5,
+    "leftPortraitOffsetX": -450.0,
+    "leftPortraitOffsetY": -1300.0,
+    "rightPortraitScale": 1.5,
+    "rightPortraitOffsetX": -100.0,
+    "rightPortraitOffsetY": -100.0,
+    "lines": [
+        {
+            "text": "This feels surprisingly good in the hand.",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmaskknife.png"
+        },
+        {
+            "text": "Naturally. After all, back in the...",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "Back in the what? What happened?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmaskknife.png"
+        },
+        {
+            "text": "N-Nothing... Never mind. Watch out for the robot ahead!",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "Time for some action.",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmaskknife.png"
+        }
+    ]
+}

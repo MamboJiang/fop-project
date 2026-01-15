@@ -232,6 +232,11 @@ public class GameScreen implements Screen {
             character.setPosition(spawnX + 16, spawnY);
         }
 
+        // Load mask appearance for all levels except Level 0
+        if (!"level-0".equals(currentLevelName)) {
+            character.loadMaskAppearance();
+        }
+
         if (isProcedural) {
             de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
             if (state.getCurrentRunScore() > 0) {
@@ -672,7 +677,7 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         if ("level-0".equals(currentLevelName) && !levelStartDialoguePlayed) {
             levelStartTimer += delta;
-            if (levelStartTimer >= 0.2f) {
+            if (levelStartTimer >= 0.3f) {
                 levelStartDialoguePlayed = true;
                 dialogueManager.loadDialogue("level-0-pre");
                 dialogueManager.startDialogue();
@@ -684,6 +689,44 @@ public class GameScreen implements Screen {
         if ("level-0".equals(currentLevelName) && !levelAfterDialoguePlayed && character != null && character.hasKey()) {
             levelAfterDialoguePlayed = true;
              dialogueManager.loadDialogue("level-0-after");
+             dialogueManager.startDialogue();
+             updateInputProcessor();
+        }
+
+        // Level 1 Start Dialogue
+        if ("level-1".equals(currentLevelName) && !levelStartDialoguePlayed) {
+            levelStartTimer += delta;
+            if (levelStartTimer >= 0.3f) {
+                levelStartDialoguePlayed = true;
+                dialogueManager.loadDialogue("level-1-pre");
+                dialogueManager.startDialogue();
+                updateInputProcessor();
+            }
+        }
+
+        // Level 1 After Dialogue (Key Pickup)
+        if ("level-1".equals(currentLevelName) && !levelAfterDialoguePlayed && character != null && character.hasKey()) {
+            levelAfterDialoguePlayed = true;
+             dialogueManager.loadDialogue("level-1-after");
+             dialogueManager.startDialogue();
+             updateInputProcessor();
+        }
+
+        // Level 2 Start Dialogue
+        if ("level-2".equals(currentLevelName) && !levelStartDialoguePlayed) {
+            levelStartTimer += delta;
+            if (levelStartTimer >= 0.3f) {
+                levelStartDialoguePlayed = true;
+                dialogueManager.loadDialogue("level-2-pre");
+                dialogueManager.startDialogue();
+                updateInputProcessor();
+            }
+        }
+
+        // Level 2 After Dialogue (Key Pickup)
+        if ("level-2".equals(currentLevelName) && !levelAfterDialoguePlayed && character != null && character.hasKey()) {
+            levelAfterDialoguePlayed = true;
+             dialogueManager.loadDialogue("level-2-after");
              dialogueManager.startDialogue();
              updateInputProcessor();
         }
@@ -801,6 +844,34 @@ public class GameScreen implements Screen {
                 }
 
                 character.update(delta, mapObjects, enemies, game.getConfigManager());
+                
+                // Tutorial Hints Logic
+                if ("level-0".equals(currentLevelName)) {
+                    // Show movement hint at start
+                    hud.showMoveHint();
+                    hud.showSprintHint();
+                    
+                    // Dismiss move hint if WASD pressed
+                    if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.A) ||
+                        Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+                        hud.dismissMoveHint();
+                    }
+                    
+                    // Dismiss sprint hint if Shift pressed
+                    if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+                        hud.dismissSprintHint();
+                    }
+                }
+                
+                // Level 2: Show attack hint after getting weapon
+                if ("level-2".equals(currentLevelName) && character.isAttackUnlocked()) {
+                    hud.showAttackHint();
+                    
+                    // Dismiss attack hint if J pressed
+                    if (Gdx.input.isKeyPressed(Input.Keys.J)) {
+                        hud.dismissAttackHint();
+                    }
+                }
 
                 float targetX = character.getPosition().x + 8;
                 float targetY = character.getPosition().y + 16;

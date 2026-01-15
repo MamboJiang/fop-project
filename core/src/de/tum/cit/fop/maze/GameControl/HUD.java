@@ -40,6 +40,14 @@ public class HUD {
     private Label debugInfoLabel;
     private Label timeLabel;
     private Label promptLabel;
+    
+    // Tutorial hints
+    private Label moveHintLabel;
+    private Label sprintHintLabel;
+    private Label attackHintLabel;
+    private boolean moveHintDismissed = false;
+    private boolean sprintHintDismissed = false;
+    private boolean attackHintDismissed = false;
 
     private Table contentTable;
     private com.badlogic.gdx.scenes.scene2d.ui.TextField consoleInput;
@@ -103,12 +111,28 @@ public class HUD {
         centerTable.add(timeLabel).row();
         
         Label.LabelStyle blueStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.CYAN);
-        promptLabel = new Label("Press [F] to Interact", blueStyle);
-        promptLabel.setFontScale(1f);
-        promptLabel.setVisible(false);
-        stage.addActor(promptLabel);
+    promptLabel = new Label("Press [F] to Interact", blueStyle);
+    promptLabel.setFontScale(1f);
+    promptLabel.setVisible(false);
+    stage.addActor(promptLabel);
+    
+    // Tutorial hints
+    moveHintLabel = new Label("Press [WASD] to Move", blueStyle);
+    moveHintLabel.setFontScale(1f);
+    moveHintLabel.setVisible(false);
+    stage.addActor(moveHintLabel);
+    
+    sprintHintLabel = new Label("Hold [Shift] to Run", blueStyle);
+    sprintHintLabel.setFontScale(1f);
+    sprintHintLabel.setVisible(false);
+    stage.addActor(sprintHintLabel);
+    
+    attackHintLabel = new Label("Press [J] to Attack", blueStyle);
+    attackHintLabel.setFontScale(1f);
+    attackHintLabel.setVisible(false);
+    stage.addActor(attackHintLabel);
 
-        table.add(centerTable).expandX().center().padTop(10);
+    table.add(centerTable).expandX().center().padTop(10);
         table.add(keyImage).expandX().right().pad(10).size(64, 64);
 
         stage.addActor(table);
@@ -350,11 +374,70 @@ public class HUD {
             
             promptLabel.setPosition(stagePos.x, stagePos.y, Align.center | Align.top);
         }
+        
+        // Update Tutorial Hints Position
+        Vector3 worldPos2 = new Vector3(character.getPosition().x + character.getWidth() / 2f, character.getPosition().y - 12f, 0);
+        Vector3 screenPos2 = gameScreen.getCamera().project(worldPos2);
+        Vector2 stagePos2 = stage.screenToStageCoordinates(new Vector2(screenPos2.x, screenPos2.y));
+        
+        // Stack hints vertically below character
+        float yOffset = 0;
+        if (moveHintLabel.isVisible()) {
+            moveHintLabel.setPosition(stagePos2.x, stagePos2.y + yOffset, Align.center | Align.top);
+            yOffset -= 30; // Space between hints
+        }
+        if (sprintHintLabel.isVisible()) {
+            sprintHintLabel.setPosition(stagePos2.x, stagePos2.y + yOffset, Align.center | Align.top);
+            yOffset -= 30;
+        }
+        if (attackHintLabel.isVisible()) {
+            attackHintLabel.setPosition(stagePos2.x, stagePos2.y + yOffset, Align.center | Align.top);
+        }
     }
 
     public void setPromptVisible(boolean visible) {
         if (promptLabel != null) {
             promptLabel.setVisible(visible);
+        }
+    }
+    
+    // Tutorial hint control methods
+    public void showMoveHint() {
+        if (!moveHintDismissed && moveHintLabel != null) {
+            moveHintLabel.setVisible(true);
+        }
+    }
+    
+    public void dismissMoveHint() {
+        moveHintDismissed = true;
+        if (moveHintLabel != null) {
+            moveHintLabel.setVisible(false);
+        }
+    }
+    
+    public void showSprintHint() {
+        if (!sprintHintDismissed && sprintHintLabel != null) {
+            sprintHintLabel.setVisible(true);
+        }
+    }
+    
+    public void dismissSprintHint() {
+        sprintHintDismissed = true;
+        if (sprintHintLabel != null) {
+            sprintHintLabel.setVisible(false);
+        }
+    }
+    
+    public void showAttackHint() {
+        if (!attackHintDismissed && attackHintLabel != null) {
+            attackHintLabel.setVisible(true);
+        }
+    }
+    
+    public void dismissAttackHint() {
+        attackHintDismissed = true;
+        if (attackHintLabel != null) {
+            attackHintLabel.setVisible(false);
         }
     }
 
