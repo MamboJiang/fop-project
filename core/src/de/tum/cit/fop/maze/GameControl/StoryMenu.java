@@ -54,6 +54,16 @@ public class StoryMenu implements Screen {
     private Texture bossTexture;
     private Texture gradientTexture;
     private Texture arrowTexture;
+
+    private Texture backgroundTexture;
+    private Image backgroundImage1;
+    private Image backgroundImage2;
+    private float scrollSpeed = 25f;
+
+    private Image cinematicBarTop;
+    private Image cinematicBarBottom;
+    private Texture blackTexture;
+    private static final float CINEMATIC_RATIO = 0.125f;
     
     private boolean isGameMenu = false;
 
@@ -83,7 +93,30 @@ public class StoryMenu implements Screen {
         gradientBg = new Image(gradientTexture);
         gradientBg.setFillParent(false);
         gradientBg.setSize(stage.getWidth(), 500); // Fixed height
-        
+
+        backgroundTexture = new Texture(Gdx.files.internal("selfmade/background.png"));
+
+        backgroundImage1 = new Image(backgroundTexture);
+        backgroundImage2 = new Image(backgroundTexture);
+
+        backgroundImage1.setScaling(Scaling.stretch);
+        backgroundImage1.setSize(stage.getWidth(), stage.getHeight());
+
+        backgroundImage2.setScaling(Scaling.stretch);
+        backgroundImage2.setSize(stage.getWidth(), stage.getHeight());
+
+        backgroundImage1.setPosition(0, 0);
+        backgroundImage2.setPosition(stage.getWidth(), 0);
+
+
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.BLACK);
+        pixmap.fill();
+        blackTexture = new Texture(pixmap);
+        pixmap.dispose();
+
+        cinematicBarTop = new Image(blackTexture);
+        cinematicBarBottom = new Image(blackTexture);
         // ---------------------------------------------------------
         // Layer 1: Boss Table (Behind Gradient)
         // ---------------------------------------------------------
@@ -101,7 +134,11 @@ public class StoryMenu implements Screen {
         textLayerTable.setSize(initialWidth, stage.getHeight());
 
         // Add to stage in correct order
-        stage.addActor(bossTable);      // Bottom
+        stage.addActor(backgroundImage1);
+        stage.addActor(backgroundImage2);
+        stage.addActor(bossTable);
+        stage.addActor(cinematicBarBottom);
+        stage.addActor(cinematicBarTop);// Bottom
         stage.addActor(gradientBg);     // Middle
         stage.addActor(textLayerTable); // Top of Left Section
         
@@ -584,7 +621,9 @@ public class StoryMenu implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        
+
+        updateBackground(delta);
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
              handleInput();
         }
@@ -600,6 +639,28 @@ public class StoryMenu implements Screen {
         stage.draw();
     }
 
+
+    private void updateBackground(float delta) {
+        if (backgroundImage1 == null || backgroundImage2 == null) return;
+
+        backgroundImage1.setX(backgroundImage1.getX() - scrollSpeed * delta);
+        backgroundImage2.setX(backgroundImage2.getX() - scrollSpeed * delta);
+
+        float width = backgroundImage1.getWidth();
+
+
+        if (backgroundImage1.getX() + width <= 0) {
+
+            backgroundImage1.setX(backgroundImage2.getX() + width);
+        }
+
+
+        if (backgroundImage2.getX() + width <= 0) {
+            // 把它放到第一张图的屁股后面
+            backgroundImage2.setX(backgroundImage1.getX() + width);
+        }
+    }
+
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -608,7 +669,29 @@ public class StoryMenu implements Screen {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
-        
+
+        if (backgroundImage1 != null && backgroundImage2 != null) {
+            float stageW = stage.getWidth();
+            float stageH = stage.getHeight();
+
+            backgroundImage1.setSize(stageW, stageH);
+            backgroundImage2.setSize(stageW, stageH);
+        }
+
+        if (cinematicBarTop != null && cinematicBarBottom != null) {
+            float stageW = stage.getWidth();
+            float stageH = stage.getHeight();
+
+            float barHeight = stageH * CINEMATIC_RATIO;
+
+            cinematicBarBottom.setSize(stageW, barHeight);
+            cinematicBarBottom.setPosition(0, 0);
+
+
+            cinematicBarTop.setSize(stageW, barHeight);
+            cinematicBarTop.setPosition(0, stageH - barHeight); // 放在最顶端
+        }
+
         if (gradientBg != null) {
             gradientBg.setSize(stage.getWidth(), 500);
         }
@@ -652,5 +735,7 @@ public class StoryMenu implements Screen {
         if (bossTexture != null) bossTexture.dispose();
         if (gradientTexture != null) gradientTexture.dispose();
         if (arrowTexture != null) arrowTexture.dispose();
+        if (backgroundTexture != null) backgroundTexture.dispose();
+        if (blackTexture != null) blackTexture.dispose();
     }
 }
