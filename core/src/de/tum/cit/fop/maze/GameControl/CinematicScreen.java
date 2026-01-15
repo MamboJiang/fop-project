@@ -252,7 +252,7 @@ public class CinematicScreen implements Screen {
             
             // NO Overshoot for Rect (One time in place) -> exp5Out
             blueRect.clearActions();
-            blueRect.addAction(Actions.scaleTo(1.0f, 1.0f, 0.2f, Interpolation.exp5Out)); // 0.2s Fast
+            blueRect.addAction(Actions.scaleTo(1.0f, 1.0f, 0.2f, Interpolation.swingOut)); // 0.2s Fast
             
             // Load Image
             if (frame.getImage() != null) {
@@ -283,7 +283,7 @@ public class CinematicScreen implements Screen {
             storyImage.clearActions();
             // Wait for Rect (0.2s) then fade in fast (0.1s)
             storyImage.addAction(Actions.sequence(
-                Actions.delay(0.1f), 
+                Actions.delay(0.1f),
                 Actions.fadeIn(0.1f)
             ));
         } else {
