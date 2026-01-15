@@ -26,18 +26,18 @@ public class Enemy extends MovableObject {
     }
 
     protected State currentState;
-    private float speed = 20f;
+    protected float speed = 20f;
 
-    private Grid grid;
+    protected Grid grid;
     protected Character target;
-    private List<Vector2> currentPath;
-    private int pathIndex = 0;
-    private float pathTimer = 0;
-    private static final float PATH_UPDATE_INTERVAL = 0.5f;
-    private float detectionRange = 64f; // 4 Tiles (16 * 4)
+    protected List<Vector2> currentPath;
+    protected int pathIndex = 0;
+    protected float pathTimer = 0;
+    protected static final float PATH_UPDATE_INTERVAL = 0.5f;
+    protected float detectionRange = 64f; // 4 Tiles (16 * 4)
 
-    private float confusedTimer = 0f;
-    private float stunTimer = 0f;
+    protected float confusedTimer = 0f;
+    protected float stunTimer = 0f;
 
     protected Animation<TextureRegion> walkDown;
     protected Animation<TextureRegion> walkLeft;
@@ -46,7 +46,7 @@ public class Enemy extends MovableObject {
 
     protected float stateTime;
 
-    private float waitTimer = 0f;
+    protected float waitTimer = 0f;
 
     /**
      * Constructor for Enemy.
@@ -511,7 +511,7 @@ public class Enemy extends MovableObject {
         }
     }
 
-    private void updateBounds() {
+    protected void updateBounds() {
         this.bounds.setPosition(position.x + 4, position.y + 4);
     }
 

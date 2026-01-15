@@ -20,6 +20,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.Vector2;
 import de.tum.cit.fop.maze.GameObj.Character;
 import de.tum.cit.fop.maze.GameScreen;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Color;
+import de.tum.cit.fop.maze.GameObj.Boss;
 
 /**
  * Heads-Up Display (HUD) for the game.
@@ -40,7 +43,7 @@ public class HUD {
     private Label debugInfoLabel;
     private Label timeLabel;
     private Label promptLabel;
-    
+
     // Tutorial hints
     private Label moveHintLabel;
     private Label sprintHintLabel;
@@ -55,6 +58,13 @@ public class HUD {
     private final GameScreen gameScreen;
     private final Skin skin;
     private Character character;
+
+
+    private Table bossTable;
+    private Image bossHealthBar;
+    private Label bossNameLabel;
+    private Texture blankTexture; // 用代码生成的纯白图片
+    private float bossBarMaxWidth = 400f; // 血条最大宽度
 
     /**
      * Constructor for HUD.
@@ -85,10 +95,60 @@ public class HUD {
         heartImages = new com.badlogic.gdx.utils.Array<>();
 
         setupUI();
+        setupBossHUD();
         setupDebugMenu();
 
         AchievementManager.getInstance().setHUD(this);
     }
+
+    private void setupBossHUD() {
+        // 1. 动态生成一个 1x1 的纯白纹理，用于做血条
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
+        blankTexture = new Texture(pixmap);
+        pixmap.dispose();
+
+        // 2. 创建 Boss 血条的容器 Table
+        bossTable = new Table();
+        bossTable.top(); // 靠上对齐
+        bossTable.setFillParent(true);
+        bossTable.setVisible(false); // 默认隐藏，只有Boss出现时才显示
+
+        // 3. 创建 Boss 名字标签
+        Label.LabelStyle nameStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.RED);
+        bossNameLabel = new Label("BIG BOSS", nameStyle);
+        bossNameLabel.setFontScale(0.8f);
+
+        // 4. 创建血条组合 (背景黑条 + 前景红条)
+        // 使用 Stack 让红条覆盖在黑条上面
+        com.badlogic.gdx.scenes.scene2d.ui.Stack barStack = new com.badlogic.gdx.scenes.scene2d.ui.Stack();
+
+        // 背景 (黑色)
+        Image bgBar = new Image(blankTexture);
+        bgBar.setColor(Color.BLACK);
+
+        // 前景 (红色)
+        bossHealthBar = new Image(blankTexture);
+        bossHealthBar.setColor(Color.RED);
+
+        // 注意：这里需要把 Image 包装一下或者直接操作，为了简单，我们让 Stack 决定大小
+        barStack.add(bgBar);
+
+        // 为了让红条能缩短，我们需要把它放在一个左对齐的容器里，否则 Stack 会强制拉伸它
+        Table innerTable = new Table();
+        innerTable.left(); // 关键：左对齐
+        innerTable.add(bossHealthBar).width(bossBarMaxWidth).height(20);
+        barStack.add(innerTable);
+
+        // 5. 布局到 bossTable
+        // 位置：在屏幕顶部向下偏移 80 像素 (避开你的心和时间)
+        bossTable.add(bossNameLabel).padBottom(10).row();
+        bossTable.add(barStack).width(bossBarMaxWidth).height(20).padBottom(50);// 血条距离屏幕底部 50 像素
+
+        stage.addActor(bossTable);
+    }
+
 
     private void setupUI() {
         table = new Table();
@@ -115,18 +175,18 @@ public class HUD {
     promptLabel.setFontScale(1f);
     promptLabel.setVisible(false);
     stage.addActor(promptLabel);
-    
+
     // Tutorial hints
     moveHintLabel = new Label("Press [WASD] to Move", blueStyle);
     moveHintLabel.setFontScale(1f);
     moveHintLabel.setVisible(false);
     stage.addActor(moveHintLabel);
-    
+
     sprintHintLabel = new Label("Hold [Shift] to Run", blueStyle);
     sprintHintLabel.setFontScale(1f);
     sprintHintLabel.setVisible(false);
     stage.addActor(sprintHintLabel);
-    
+
     attackHintLabel = new Label("Press [J] to Attack", blueStyle);
     attackHintLabel.setFontScale(1f);
     attackHintLabel.setVisible(false);
@@ -359,6 +419,25 @@ public class HUD {
             keyImage.setColor(Color.DARK_GRAY);
         }
 
+        Boss boss = gameScreen.getActiveBoss();
+        if (boss != null && !boss.isDead()) {
+            bossTable.setVisible(true); // 显示血条
+            bossNameLabel.setVisible(true);
+
+
+            float percent = boss.getHealthPercentage();
+
+
+            bossHealthBar.setWidth(bossBarMaxWidth * percent);
+
+
+            bossHealthBar.invalidate();
+        } else {
+            // 如果没有 Boss 或 Boss 死了，隐藏血条
+            bossTable.setVisible(false);
+        }
+
+
         if (debugInfoLabel != null) {
             float speed = character.getVelocity().len();
             debugInfoLabel.setText(String.format("Speed: %.2f\nHP: %d/%d\nKey: %b", speed, currentLives, maxLives,
@@ -374,12 +453,12 @@ public class HUD {
             
             promptLabel.setPosition(stagePos.x, stagePos.y, Align.center | Align.top);
         }
-        
+
         // Update Tutorial Hints Position
         Vector3 worldPos2 = new Vector3(character.getPosition().x + character.getWidth() / 2f, character.getPosition().y - 12f, 0);
         Vector3 screenPos2 = gameScreen.getCamera().project(worldPos2);
         Vector2 stagePos2 = stage.screenToStageCoordinates(new Vector2(screenPos2.x, screenPos2.y));
-        
+
         // Stack hints vertically below character
         float yOffset = 0;
         if (moveHintLabel.isVisible()) {
@@ -400,40 +479,40 @@ public class HUD {
             promptLabel.setVisible(visible);
         }
     }
-    
+
     // Tutorial hint control methods
     public void showMoveHint() {
         if (!moveHintDismissed && moveHintLabel != null) {
             moveHintLabel.setVisible(true);
         }
     }
-    
+
     public void dismissMoveHint() {
         moveHintDismissed = true;
         if (moveHintLabel != null) {
             moveHintLabel.setVisible(false);
         }
     }
-    
+
     public void showSprintHint() {
         if (!sprintHintDismissed && sprintHintLabel != null) {
             sprintHintLabel.setVisible(true);
         }
     }
-    
+
     public void dismissSprintHint() {
         sprintHintDismissed = true;
         if (sprintHintLabel != null) {
             sprintHintLabel.setVisible(false);
         }
     }
-    
+
     public void showAttackHint() {
         if (!attackHintDismissed && attackHintLabel != null) {
             attackHintLabel.setVisible(true);
         }
     }
-    
+
     public void dismissAttackHint() {
         attackHintDismissed = true;
         if (attackHintLabel != null) {

@@ -126,6 +126,9 @@ public class MapLoader {
                             // Dialogue Trigger
                             obj = new DialogueTrigger(worldX, worldY, 16, 16, regions[2][1]);
                             break;
+                        case 8:
+                            obj = new BossSpawnPoint(worldX, worldY, 16, 16, regions[3][6]);
+                            break;
                         default:
 
                             break;
@@ -153,6 +156,28 @@ public class MapLoader {
         
         // Split 32x32
         TextureRegion[][] tmp = TextureRegion.split(robotTexture, 32, 32);
+        com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] anims = new com.badlogic.gdx.graphics.g2d.Animation[4];
+        float frameDuration = 0.2f;
+
+        // Down (Row 0)
+        anims[0] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[0][0], tmp[0][1], tmp[0][2]);
+        // Left (Row 1)
+        anims[1] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[1][0], tmp[1][1], tmp[1][2]);
+        // Right (Row 2)
+        anims[2] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[2][0], tmp[2][1], tmp[2][2]);
+        // Up (Row 3)
+        anims[3] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[3][0], tmp[3][1], tmp[3][2]);
+
+        return anims;
+    }
+
+    public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getBossAnimations() {
+        if (robotTexture == null) {
+            robotTexture = new Texture(Gdx.files.internal("assets/character.png"));
+        }
+
+        // Split 32x32
+        TextureRegion[][] tmp = TextureRegion.split(robotTexture, 16, 32);
         com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] anims = new com.badlogic.gdx.graphics.g2d.Animation[4];
         float frameDuration = 0.2f;
 

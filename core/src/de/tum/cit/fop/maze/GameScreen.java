@@ -16,9 +16,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import de.tum.cit.fop.maze.GameControl.LeaderboardManager;
-import de.tum.cit.fop.maze.GameObj.Character;
-import de.tum.cit.fop.maze.GameObj.EntryPoint;
-import de.tum.cit.fop.maze.GameObj.GameObject;
+import de.tum.cit.fop.maze.GameObj.*;
 import de.tum.cit.fop.maze.GameControl.HUD;
 import de.tum.cit.fop.maze.GameControl.PauseMenu;
 import de.tum.cit.fop.maze.GameControl.GameOverMenu;
@@ -28,6 +26,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import de.tum.cit.fop.maze.GameObj.Character;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -77,6 +76,9 @@ public class GameScreen implements Screen {
     private boolean levelStartDialoguePlayed = false;
     private float levelStartTimer = 0f;
     private boolean levelAfterDialoguePlayed = false;
+    private List<Projectile> projectiles;
+    private TextureRegion bulletTex;
+    private Boss activeBoss;
 
 
 
@@ -212,7 +214,15 @@ public class GameScreen implements Screen {
      * Initializes game objects (Player, Enemies, Items) from the map data.
      */
     private void initMapObjects() {
+        projectiles = new ArrayList<>();
+        com.badlogic.gdx.graphics.Pixmap pixmap = new com.badlogic.gdx.graphics.Pixmap(16, 16, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
+        pixmap.setColor(com.badlogic.gdx.graphics.Color.RED);
+        pixmap.fill();
+        Texture tempRedTexture = new Texture(pixmap);
+        bulletTex = new TextureRegion(tempRedTexture);
 
+
+        pixmap.dispose();
         grid = new de.tum.cit.fop.maze.AI.Grid(0, 0, mapObjects);
 
         float spawnX = 0;
@@ -266,6 +276,21 @@ public class GameScreen implements Screen {
                         de.tum.cit.fop.maze.MapLoader.getDroneAnimations(), // Updated to Drone sprite
                         grid,
                         character));
+                toRemove.add(obj);
+            }
+            else if(obj instanceof de.tum.cit.fop.maze.GameObj.BossSpawnPoint){
+
+                Boss boss = new de.tum.cit.fop.maze.GameObj.Boss(
+                        obj.getPosition().x,
+                        obj.getPosition().y,
+                        de.tum.cit.fop.maze.MapLoader.getBossAnimations(),
+                        grid,
+                        character,
+                        projectiles,
+                        bulletTex
+                );
+                this.activeBoss = boss;
+                enemies.add(boss);
                 toRemove.add(obj);
             }
         }
@@ -796,16 +821,16 @@ public class GameScreen implements Screen {
                 Texture maskTex = new Texture(Gdx.files.internal("assets/selfmade/maskitem.png"));
                 TextureRegion maskRegion = new TextureRegion(maskTex);
                 de.tum.cit.fop.maze.GameObj.MaskItem maskItem = new de.tum.cit.fop.maze.GameObj.MaskItem(
-                    nono.getPosition().x, 
-                    nono.getPosition().y + 32, 
-                    16, 16, 
+                    nono.getPosition().x,
+                    nono.getPosition().y + 32,
+                    16, 16,
                     maskRegion
                 );
                 mapObjects.add(maskItem);
-                
+
                 // Remove the NonoNPC
                 mapObjects.removeIf(obj -> 
-                    obj instanceof de.tum.cit.fop.maze.GameObj.NonoNPC && 
+                    obj instanceof de.tum.cit.fop.maze.GameObj.NonoNPC &&
                     "nono-unlock".equals(((de.tum.cit.fop.maze.GameObj.NonoNPC)obj).getDialogueId())
                 );
             }
@@ -819,6 +844,8 @@ public class GameScreen implements Screen {
         if (!dialogueManager.isActive()) {
             levelTimer += delta;
         }
+
+
 
         if (!isPaused && !isGameOver && !isLevelCompleted && !dialogueManager.isActive()) {
             if (character != null) {
@@ -844,29 +871,29 @@ public class GameScreen implements Screen {
                 }
 
                 character.update(delta, mapObjects, enemies, game.getConfigManager());
-                
+
                 // Tutorial Hints Logic
                 if ("level-0".equals(currentLevelName)) {
                     // Show movement hint at start
                     hud.showMoveHint();
                     hud.showSprintHint();
-                    
+
                     // Dismiss move hint if WASD pressed
                     if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.A) ||
                         Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.D)) {
                         hud.dismissMoveHint();
                     }
-                    
+
                     // Dismiss sprint hint if Shift pressed
                     if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
                         hud.dismissSprintHint();
                     }
                 }
-                
+
                 // Level 2: Show attack hint after getting weapon
                 if ("level-2".equals(currentLevelName) && character.isAttackUnlocked()) {
                     hud.showAttackHint();
-                    
+
                     // Dismiss attack hint if J pressed
                     if (Gdx.input.isKeyPressed(Input.Keys.J)) {
                         hud.dismissAttackHint();
@@ -885,6 +912,40 @@ public class GameScreen implements Screen {
                 } else {
                     camera.update();
                 }
+
+                if (projectiles != null) {
+                    java.util.Iterator<de.tum.cit.fop.maze.GameObj.Projectile> pIter = projectiles.iterator();
+                    while (pIter.hasNext()) {
+                        de.tum.cit.fop.maze.GameObj.Projectile p = pIter.next();
+                        p.update(delta);
+
+                        // 1. 简单的撞墙检测 (如果子弹中心在不可行走的格子上)
+                        int gx = (int) (p.getPosition().x / 16);
+                        int gy = (int) (p.getPosition().y / 16);
+                        // grid 必须在 GameScreen 中可访问，确保你在 setupLevel 中初始化了 grid
+                        if (grid != null && !grid.isWalkable(gx, gy)) {
+                            p.setMarkedForRemoval(true);
+                        }
+
+                        // 2. 击中玩家检测 (Boss打玩家)
+                        if (p.isEnemyProjectile() && character != null) {
+                            if (p.getBounds().overlaps(character.getBounds())) {
+                                if (character.isShielded()) {
+                                    game.playBlockSound();
+                                } else {
+                                    character.takeDamage(1);
+                                }
+                                p.setMarkedForRemoval(true);
+                            }
+                        }
+
+                        if (p.isMarkedForRemoval()) {
+                            pIter.remove();
+                        }
+                    }
+                }
+
+
             }
             if (mapObjects != null) {
                 mapObjects.removeIf(GameObject::isMarkedForRemoval);
@@ -928,7 +989,12 @@ public class GameScreen implements Screen {
         if (nono != null) {
             nono.draw(game.getSpriteBatch());
         }
+        if (projectiles != null) {
+            for (de.tum.cit.fop.maze.GameObj.Projectile p : projectiles) {
 
+                game.getSpriteBatch().draw(p.getTextureRegion(), p.getPosition().x, p.getPosition().y, 8, 8);
+            }
+        }
         for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
             enemy.draw(game.getSpriteBatch());
 
@@ -1133,5 +1199,9 @@ public class GameScreen implements Screen {
      */
     public MazeRunnerGame getGame() {
         return game;
+    }
+
+    public Boss getActiveBoss() {
+        return activeBoss;
     }
 }
