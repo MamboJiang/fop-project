@@ -52,6 +52,8 @@ public class Character extends MovableObject {
     private Animation<TextureRegion> attackRight;
     private Animation<TextureRegion> attackUp;
     private Animation<TextureRegion> attackLeft;
+    
+    private Texture characterTexture;
 
     /**
      * Enum for movement direction.
@@ -133,7 +135,7 @@ public class Character extends MovableObject {
      * Loads the character sprites and animations.
      */
     private void loadAnimations() {
-        Texture texture = new Texture(Gdx.files.internal("assets/player/sprite/aligned_character.png"));
+        characterTexture = new Texture(Gdx.files.internal("assets/player/sprite/aligned_character.png"));
         // TextureRegion[][] tmp = TextureRegion.split(texture, 16, 32); // Removed as
         // we manually split
 
@@ -163,10 +165,10 @@ public class Character extends MovableObject {
 
         for (int i = 0; i < 4; i++) {
             // Walking: Rows 0-3, 46x26 from 'texture'
-            downFrames[i] = new TextureRegion(texture, i * frameW, 0, frameW, frameH);
-            rightFrames[i] = new TextureRegion(texture, i * frameW, frameH*3, frameW, frameH);
-            upFrames[i] = new TextureRegion(texture, i * frameW, frameH * 2, frameW, frameH);
-            leftFrames[i] = new TextureRegion(texture, i * frameW, frameH, frameW, frameH);
+            downFrames[i] = new TextureRegion(characterTexture, i * frameW, 0, frameW, frameH);
+            rightFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH*3, frameW, frameH);
+            upFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH * 2, frameW, frameH);
+            leftFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH, frameW, frameH);
 
             // Attacking: Rows 0-3 from 'attSheet', 32x48
             // Order assumption: Down(0), Right(1), Up(2), Left(3) to match previous logic
@@ -187,6 +189,30 @@ public class Character extends MovableObject {
         attackLeft = new Animation<>(0.1f, attLeftFrames);
 
         this.textureRegion = downFrames[0];
+    }
+
+    public void loadMaskAppearance() {
+       if (characterTexture != null) characterTexture.dispose();
+       characterTexture = new Texture(Gdx.files.internal("assets/player/sprite/aligned_character_mask.png"));
+       
+       int frameW = 26;
+       int frameH = 46;
+       // Recreate animations
+       TextureRegion[] downFrames = new TextureRegion[4];
+       TextureRegion[] rightFrames = new TextureRegion[4];
+       TextureRegion[] upFrames = new TextureRegion[4];
+       TextureRegion[] leftFrames = new TextureRegion[4];
+
+       for (int i = 0; i < 4; i++) {
+            downFrames[i] = new TextureRegion(characterTexture, i * frameW, 0, frameW, frameH);
+            rightFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH*3, frameW, frameH);
+            upFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH * 2, frameW, frameH);
+            leftFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH, frameW, frameH);
+       }
+        walkDown = new Animation<>(0.1f, downFrames);
+        walkRight = new Animation<>(0.1f, rightFrames);
+        walkUp = new Animation<>(0.1f, upFrames);
+        walkLeft = new Animation<>(0.1f, leftFrames);
     }
 
     public void attack() {

@@ -133,5 +133,14 @@ public class DialogueData {
         public void setLeft(boolean left) {
             isLeft = left;
         }
+        
+        private boolean hideLeft = false;
+        private boolean hideRight = false;
+        
+        public boolean isHideLeft() { return hideLeft; }
+        public void setHideLeft(boolean hideLeft) { this.hideLeft = hideLeft; }
+        
+        public boolean isHideRight() { return hideRight; }
+        public void setHideRight(boolean hideRight) { this.hideRight = hideRight; }
     }
 }

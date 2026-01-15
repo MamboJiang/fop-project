@@ -524,9 +524,20 @@ public class DialogueManager {
         shakeAmount = 0;
         wiggleAmount = 0;
         
-        // 4. Scene Characters Dimming - REMOVED
-        leftChar.setColor(1, 1, 1, 1);
-        rightChar.setColor(1, 1, 1, 1);
+        // 4. Portrait Visibility
+        if (line.isHideLeft()) {
+            leftChar.setVisible(false);
+        } else {
+            leftChar.setVisible(true);
+            leftChar.setColor(1, 1, 1, 1);
+        }
+        
+        if (line.isHideRight()) {
+            rightChar.setVisible(false);
+        } else {
+            rightChar.setVisible(true);
+            rightChar.setColor(1, 1, 1, 1);
+        }
     }
     
     public void render(float delta) {

@@ -74,6 +74,9 @@ public class GameScreen implements Screen {
     private int totalRunScore = 0;
 
     private String currentLevelName = "Unknown";
+    private boolean levelStartDialoguePlayed = false;
+    private float levelStartTimer = 0f;
+    private boolean levelAfterDialoguePlayed = false;
 
 
 
@@ -667,6 +670,23 @@ public class GameScreen implements Screen {
      */
     @Override
     public void render(float delta) {
+        if ("level-0".equals(currentLevelName) && !levelStartDialoguePlayed) {
+            levelStartTimer += delta;
+            if (levelStartTimer >= 0.2f) {
+                levelStartDialoguePlayed = true;
+                dialogueManager.loadDialogue("level-0-pre");
+                dialogueManager.startDialogue();
+                updateInputProcessor();
+            }
+        }
+
+        // Level 0 After Dialogue (Mask Pickup)
+        if ("level-0".equals(currentLevelName) && !levelAfterDialoguePlayed && character != null && character.hasKey()) {
+            levelAfterDialoguePlayed = true;
+             dialogueManager.loadDialogue("level-0-after");
+             dialogueManager.startDialogue();
+             updateInputProcessor();
+        }
 
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F3)) {
             toggleDebug();
@@ -704,6 +724,9 @@ public class GameScreen implements Screen {
                         if (npc.checkProximity(character.getPosition())) {
                             nearTrigger = true;
                             if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+                                if ("level-0".equals(currentLevelName)) {
+                                    dialogueManager.loadDialogue("level-0");
+                                }
                                 dialogueManager.startDialogue();
                                 updateInputProcessor();
                                 if ("nono-unlock".equals(npc.getDialogueId())) {
@@ -726,10 +749,21 @@ public class GameScreen implements Screen {
                 // Spawn Nono immediately
                 nono = new de.tum.cit.fop.maze.GameObj.Nono(character.getPosition().x, character.getPosition().y, character);
                 
-                // Remove the trigger
+                // Spawn MaskItem above Nono
+                Texture maskTex = new Texture(Gdx.files.internal("assets/selfmade/maskitem.png"));
+                TextureRegion maskRegion = new TextureRegion(maskTex);
+                de.tum.cit.fop.maze.GameObj.MaskItem maskItem = new de.tum.cit.fop.maze.GameObj.MaskItem(
+                    nono.getPosition().x, 
+                    nono.getPosition().y + 32, 
+                    16, 16, 
+                    maskRegion
+                );
+                mapObjects.add(maskItem);
+                
+                // Remove the NonoNPC
                 mapObjects.removeIf(obj -> 
-                    obj instanceof de.tum.cit.fop.maze.GameObj.DialogueTrigger && 
-                    "nono-unlock".equals(((de.tum.cit.fop.maze.GameObj.DialogueTrigger)obj).getDialogueId())
+                    obj instanceof de.tum.cit.fop.maze.GameObj.NonoNPC && 
+                    "nono-unlock".equals(((de.tum.cit.fop.maze.GameObj.NonoNPC)obj).getDialogueId())
                 );
             }
 

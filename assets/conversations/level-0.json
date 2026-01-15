@@ -15,43 +15,43 @@
     "rightPortraitOffsetY": -100.0,
     "lines": [
         {
-            "text": "Where am I?",
-            "speaker": "Player",
-            "isLeft": true,
-            "portrait": "player/lihui/maincharacterlhupscale.png"
-        },
-        {
-            "text": "Hey! Welcome to the Birth Level.",
+            "text": "All vital signs are normal. You are finally awake.",
             "speaker": "Stranger",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
-            "text": "What's this place?",
+            "text": "Who are you? Where am I?",
             "speaker": "Player",
             "isLeft": true,
             "portrait": "player/lihui/maincharacterlhupscale.png"
         },
         {
-            "text": "Is there anything here?",
-            "speaker": "Player",
-            "isLeft": true,
-            "portrait": "player/lihui/maincharacterlhupscale.png"
-        },
-        {
-            "text": "Absolutely nothing.",
+            "text": "You are one of the few survivors left after the Day of Silence.",
             "speaker": "Stranger",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
-            "text": "That's disappointing.",
+            "text": "This is the D-3 Buffer Zone. It is the only passage connecting the Meridian Foundation shelter to the research facility.",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "Now, it is up to you to save the other survivors.",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "What should I do?",
             "speaker": "Player",
             "isLeft": true,
             "portrait": "player/lihui/maincharacterlhupscale.png"
         },
         {
-            "text": "Press 'F' again if you want to chat more.",
+            "text": "I will guide you. There is no time to waste. Put on this gas mask to prevent infection.",
             "speaker": "Stranger",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"

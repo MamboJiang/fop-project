@@ -84,14 +84,14 @@ public class CinematicScreen implements Screen {
         p.dispose();
 
         blueRect = new Image(blueTexture);
-        blueRect.setSize(800, 500); // Set size for origin calculation
+        blueRect.setSize(1500, 900); // Set size for origin calculation
         blueRect.setOrigin(Align.center);
         blueRect.setScale(0); // Start hidden
         blueRect.setVisible(false);
 
         // Story Image
         storyImage = new Image();
-        storyImage.setSize(800, 500);
+        storyImage.setSize(1500, 900);
         storyImage.setScaling(Scaling.fit); // Maintain aspect ratio
         storyImage.setOrigin(Align.center);
         storyImage.setColor(1, 1, 1, 0); // Transparent
@@ -110,7 +110,7 @@ public class CinematicScreen implements Screen {
         stack.add(storyImage);
 
         // Center the stack
-        centerTable.add(stack).size(800, 500).center();
+        centerTable.add(stack).size(1500, 900).center().padBottom(250);
 
 
         // 2. Bottom Bar
@@ -262,14 +262,14 @@ public class CinematicScreen implements Screen {
                     storyImage.setDrawable(new TextureRegionDrawable(storyTexture));
                     
                     // Match blueRect size to the fitted image size
-                    Vector2 fittedSize = Scaling.fit.apply(storyTexture.getWidth(), storyTexture.getHeight(), 800, 500);
+                    Vector2 fittedSize = Scaling.fit.apply(storyTexture.getWidth(), storyTexture.getHeight(), 1500, 900);
                     float w = fittedSize.x;
                     float h = fittedSize.y;
                     
                     blueRect.setSize(w, h);
                     
-                    // Manual centering in the 800x500 group
-                    blueRect.setPosition((800 - w) / 2f, (500 - h) / 2f);
+                    // Manual centering in the 1500x900 group
+                    blueRect.setPosition((1500 - w) / 2f, (900 - h) / 2f);
                     
                     blueRect.setOrigin(Align.center);
                     
