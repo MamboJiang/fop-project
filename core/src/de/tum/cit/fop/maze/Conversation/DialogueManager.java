@@ -20,7 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,7 +75,7 @@ public class DialogueManager {
 
     public DialogueManager(Skin skin) {
         this.skin = skin;
-        this.stage = new Stage(new FitViewport(1920, 1080));
+        this.stage = new Stage(new ExtendViewport(1920, 1080));
         
         setupUI();
         setupInput();

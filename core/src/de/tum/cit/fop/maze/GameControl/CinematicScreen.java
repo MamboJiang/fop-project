@@ -24,7 +24,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 
 public class CinematicScreen implements Screen {
@@ -52,7 +52,7 @@ public class CinematicScreen implements Screen {
 
     public CinematicScreen(MazeRunnerGame game) {
         this.game = game;
-        this.stage = new Stage(new FitViewport(1920, 1080), game.getSpriteBatch());
+        this.stage = new Stage(new ExtendViewport(1920, 1080), game.getSpriteBatch());
 
         loadData();
         setupUI();
