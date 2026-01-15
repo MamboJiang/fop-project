@@ -10,12 +10,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
@@ -200,13 +202,28 @@ public class StoryMenu implements Screen {
         // Arrow
         createArrowTexture();
         arrowImage = new Image(arrowTexture);
+        arrowImage.setOrigin(Align.center);
+        arrowImage.setSize(32, 24);
+        arrowImage.setPosition(0, 0);
+        
+        Group arrowGroup = new Group();
+        arrowGroup.setSize(32, 24);
+        arrowGroup.addActor(arrowImage);
         
         if (!isGameMenu) {
             startBobbing();
-            textTable.add(arrowImage).size(32, 24).bottom();
         }
         
-        dialogueContainer.add(textTable).grow().pad(50);
+        Stack stack = new Stack();
+        stack.add(textTable);
+        
+        if (!isGameMenu) {
+            Table arrowTable = new Table();
+            arrowTable.add(arrowGroup).size(32, 24).expand().bottom().padBottom(10);
+            stack.add(arrowTable);
+        }
+        
+        dialogueContainer.add(stack).grow().pad(50);
         
         // Add dialogue container to Text Layer
         textLayerTable.add(dialogueContainer).growX().height(400).bottom();
@@ -599,6 +616,7 @@ public class StoryMenu implements Screen {
     
     private void startBobbing() {
         arrowImage.clearActions();
+        arrowImage.setY(0);
         arrowImage.addAction(Actions.forever(
             Actions.sequence(
                 Actions.moveBy(0, -5, 0.5f, Interpolation.sine),

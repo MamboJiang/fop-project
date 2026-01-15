@@ -15,6 +15,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.Vector2;
 import de.tum.cit.fop.maze.GameObj.Character;
 import de.tum.cit.fop.maze.GameScreen;
 
@@ -88,17 +91,22 @@ public class HUD {
         heartsTable.left();
 
         keyImage = new Image(keyRegion);
-        timeLabel = new Label("Time: 00:00\nScore: 1000", skin);
+        Label.LabelStyle fontStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.WHITE);
+
+        timeLabel = new Label("Time: 00:00\nScore: 1000", fontStyle);
         timeLabel.setAlignment(Align.center);
 
         table.add(heartsTable).expandX().left().pad(10).height(64);
 
-        // Center Container for Time and Prompt
+        // Center Container for Time only
         Table centerTable = new Table();
         centerTable.add(timeLabel).row();
-        promptLabel = new Label("Press F to interact", skin);
+        
+        Label.LabelStyle blueStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.CYAN);
+        promptLabel = new Label("Press [F] to Interact", blueStyle);
+        promptLabel.setFontScale(1f);
         promptLabel.setVisible(false);
-        centerTable.add(promptLabel).padTop(10);
+        stage.addActor(promptLabel);
 
         table.add(centerTable).expandX().center().padTop(10);
         table.add(keyImage).expandX().right().pad(10).size(64, 64);
@@ -331,6 +339,16 @@ public class HUD {
             float speed = character.getVelocity().len();
             debugInfoLabel.setText(String.format("Speed: %.2f\nHP: %d/%d\nKey: %b", speed, currentLives, maxLives,
                     character.hasKey()));
+        }
+
+        // Update Floating Prompt Position
+        if (promptLabel.isVisible() && character != null) {
+            // World position: Below feet. Character is ~16x16 or 20x20.
+            Vector3 worldPos = new Vector3(character.getPosition().x + character.getWidth() / 2f, character.getPosition().y - 12f, 0);
+            Vector3 screenPos = gameScreen.getCamera().project(worldPos);
+            Vector2 stagePos = stage.screenToStageCoordinates(new Vector2(screenPos.x, screenPos.y));
+            
+            promptLabel.setPosition(stagePos.x, stagePos.y, Align.center | Align.top);
         }
     }
 

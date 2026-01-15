@@ -288,20 +288,29 @@ public class GameScreen implements Screen {
         // Nono Trigger Logic in Level 0
         // Nono Trigger Logic in Level 0
         if ("level-0".equals(currentLevelName)) {
-            // Scan for the existing DialogueTrigger or ensure one exists
-            // We assume map already has one. If not, maybe we should find a specific object type?
+            // Find existing trigger to remove (we spawn Nono at center regardless)
+            GameObject triggerToRemove = null;
             
+            for (GameObject obj : mapObjects) {
+                if (obj instanceof de.tum.cit.fop.maze.GameObj.DialogueTrigger) {
+                    triggerToRemove = obj;
+                    break; 
+                }
+            }
+            
+            if (triggerToRemove != null) {
+                mapObjects.remove(triggerToRemove);
+            }
+
+            // Always spawn Nono at Center (15*16)/2 - 10 = 110
             Texture nonoTex = new Texture(Gdx.files.internal("assets/player/sprite/nono.png"));
             TextureRegion[][] tmp = TextureRegion.split(nonoTex, 32, 32);
             TextureRegion nonoFrame = tmp[0][0];
-
-            for (GameObject obj : mapObjects) {
-                if (obj instanceof de.tum.cit.fop.maze.GameObj.DialogueTrigger) {
-                    ((de.tum.cit.fop.maze.GameObj.DialogueTrigger)obj).setDialogueId("nono-unlock");
-                    ((de.tum.cit.fop.maze.GameObj.DialogueTrigger)obj).setTextureRegion(nonoFrame);
-                }
-            }
+            
+            de.tum.cit.fop.maze.GameObj.NonoNPC npc = new de.tum.cit.fop.maze.GameObj.NonoNPC(110, 110, nonoFrame);
+            mapObjects.add(npc);
         }
+
         
         // Spawn Nono if unlocked
         if (game.getPlayerState().isNonoUnlocked()) {
@@ -647,6 +656,10 @@ public class GameScreen implements Screen {
 
     private de.tum.cit.fop.maze.VFX.ScreenShake screenShake;
 
+    public OrthographicCamera getCamera() {
+        return camera;
+    }
+
     /**
      * Main render loop.
      * 
@@ -682,6 +695,18 @@ public class GameScreen implements Screen {
                                 
                                 // Check if this is the Nono unlock trigger
                                 if ("nono-unlock".equals(trigger.getDialogueId())) {
+                                    pendingNonoUnlock = true;
+                                }
+                            }
+                        }
+                    } else if (obj instanceof de.tum.cit.fop.maze.GameObj.NonoNPC) {
+                        de.tum.cit.fop.maze.GameObj.NonoNPC npc = (de.tum.cit.fop.maze.GameObj.NonoNPC) obj;
+                        if (npc.checkProximity(character.getPosition())) {
+                            nearTrigger = true;
+                            if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+                                dialogueManager.startDialogue();
+                                updateInputProcessor();
+                                if ("nono-unlock".equals(npc.getDialogueId())) {
                                     pendingNonoUnlock = true;
                                 }
                             }
@@ -778,6 +803,8 @@ public class GameScreen implements Screen {
                     ((de.tum.cit.fop.maze.GameObj.Heart) obj).update(delta);
                 } else if (obj instanceof de.tum.cit.fop.maze.GameObj.ShieldItem) {
                     ((de.tum.cit.fop.maze.GameObj.ShieldItem) obj).update(delta);
+                } else if (obj instanceof de.tum.cit.fop.maze.GameObj.NonoNPC) {
+                    ((de.tum.cit.fop.maze.GameObj.NonoNPC) obj).update(delta);
                 }
 
                 if (obj.getTextureRegion() != null) {
