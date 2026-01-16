@@ -87,7 +87,9 @@ public class GameScreen implements Screen {
     private float bossItemSpawnTimer = 0f;
     private static final float BOSS_ITEM_SPAWN_INTERVAL = 15f; // 15 seconds
     private float bossDeathTimer = 0f;
-
+    private boolean backGroundMusicPlayed = true;
+    private boolean warFogMusicPlayed = false;
+    private boolean bossFightMusicPlayed = false;
 
 
     /**
@@ -920,6 +922,32 @@ public class GameScreen implements Screen {
              dialogueManager.loadDialogue("level-2-after");
              dialogueManager.startDialogue();
              updateInputProcessor();
+        }
+
+        if ("level-4".equals(currentLevelName)) {
+            // 第四关：停止其他音乐，播放迷雾音乐
+            if (game.backgroundMusic.isPlaying()) game.backgroundMusic.stop();
+            if (game.bossFightMusic.isPlaying()) game.bossFightMusic.stop();
+
+            if (!game.warFogMusic.isPlaying()) {
+                game.warFogMusic.play();
+            }
+        } else if ("level-5".equals(currentLevelName)) {
+            // 第五关：停止其他音乐，播放Boss音乐
+            if (game.backgroundMusic.isPlaying()) game.backgroundMusic.stop();
+            if (game.warFogMusic.isPlaying()) game.warFogMusic.stop();
+
+            if (!game.bossFightMusic.isPlaying()) {
+                game.bossFightMusic.play();
+            }
+        } else {
+            // 其他关卡：停止迷雾和Boss音乐，播放背景音乐
+            if (game.warFogMusic.isPlaying()) game.warFogMusic.stop();
+            if (game.bossFightMusic.isPlaying()) game.bossFightMusic.stop();
+
+            if (!game.backgroundMusic.isPlaying()) {
+                game.backgroundMusic.play();
+            }
         }
 
         // Level 4 After Dialogue (Key Pickup)

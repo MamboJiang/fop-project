@@ -40,7 +40,10 @@ public class MazeRunnerGame extends Game {
     
     // Configuration Manager
     private ConfigManager configManager;
-    private Music backgroundMusic;
+    public Music backgroundMusic;
+    public Music warFogMusic;
+    public Music bossFightMusic;
+
 
     private PlayerState playerState;
     private Sound hitSound;
@@ -223,6 +226,14 @@ public class MazeRunnerGame extends Game {
         backgroundMusic.setVolume(configManager.getMusicVolume());
         backgroundMusic.play();
 
+        warFogMusic = Gdx.audio.newMusic(Gdx.files.internal("fog of war.mp3"));
+        warFogMusic.setLooping(true);
+        warFogMusic.setVolume(configManager.getMusicVolume());
+
+        bossFightMusic = Gdx.audio.newMusic(Gdx.files.internal("boss fight music.mp3"));
+        bossFightMusic.setLooping(true);
+        bossFightMusic.setVolume(configManager.getMusicVolume());
+
         // Start with StoryMenu instead of MenuScreen
         setScreen(new de.tum.cit.fop.maze.GameControl.StoryMenu(this));
     }
@@ -232,6 +243,16 @@ public class MazeRunnerGame extends Game {
      * Switches to the Main Menu screen (Now redirects to StoryMenu in Game Hub mode).
      */
     public void goToMenu() {
+        if (warFogMusic != null && warFogMusic.isPlaying()) {
+            warFogMusic.stop();
+        }
+        if (bossFightMusic != null && bossFightMusic.isPlaying()) {
+            bossFightMusic.stop();
+        }
+
+        if (backgroundMusic != null && !backgroundMusic.isPlaying()) {
+            backgroundMusic.play();
+        }
         this.setScreen(new de.tum.cit.fop.maze.GameControl.StoryMenu(this, true));
         if (gameScreen != null) {
             gameScreen.dispose();
@@ -526,5 +547,24 @@ public class MazeRunnerGame extends Game {
     public void setScreen(Screen screen) {
         super.setScreen(screen);
 
+    }
+
+    public Music getCurrentMusic(){
+        if(backgroundMusic != null){
+            if(backgroundMusic.isPlaying()){
+                return backgroundMusic;
+            }
+        }
+        if(warFogMusic!=null){
+            if(warFogMusic.isPlaying()) {
+                return warFogMusic;
+            }
+        }
+        if(bossFightMusic != null){
+            if(bossFightMusic.isPlaying()){
+                return bossFightMusic;
+            }
+        }
+        return null;
     }
 }
