@@ -98,7 +98,10 @@ public class TransitionEffect implements Disposable {
                 if (!actionExecuted && onCoveredAction != null) {
                     onCoveredAction.run();
                     actionExecuted = true;
-                    // Start opening immediately after switch
+                }
+                
+                // Wait 0.4s before shattering
+                if (stateTime >= 0.4f) {
                     currentState = State.SHATTER_OUT;
                     stateTime = 0;
                 }
