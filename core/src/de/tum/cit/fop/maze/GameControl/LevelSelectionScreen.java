@@ -82,6 +82,13 @@ public class LevelSelectionScreen implements Screen {
         
         Table levelsTable = new Table();
         List<FileHandle> mapFiles = MapLoader.getMapFiles();
+        // Sort files by name to ensure consistent order (Windows vs Mac)
+        java.util.Collections.sort(mapFiles, new java.util.Comparator<FileHandle>() {
+            @Override
+            public int compare(FileHandle o1, FileHandle o2) {
+                return o1.name().compareTo(o2.name());
+            }
+        });
         
         if (mapFiles.isEmpty()) {
             levelsTable.add(new Label("No maps found!", game.getSkin()));

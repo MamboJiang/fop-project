@@ -208,7 +208,8 @@ public class HUD {
     stage.addActor(attackHintLabel);
 
     // Align centerTable and keyImage to top to avoid shifting when hearts grow
-    table.add(centerTable).expandX().center().top().padTop(10); 
+    // Use consistent padding (pad 10) for all top elements to ensure alignment
+    table.add(centerTable).expandX().center().top().pad(10); 
         table.add(keyImage).expandX().right().top().pad(10).size(64, 64);
 
         stage.addActor(table);
@@ -609,6 +610,7 @@ public class HUD {
         Gdx.app.postRunnable(() -> {
             AchievementPopup popup = new AchievementPopup(achievement, skin, achievementNinePatch);
             stage.addActor(popup);
+            popup.toFront(); // Ensure it renders on top of everything
             popup.animate();
         });
     }

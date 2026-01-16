@@ -18,7 +18,10 @@ public class ShieldItem extends GameObject implements Collectable {
      * @param y Y pos.
      */
     public ShieldItem(float x, float y) {
-        super(x, y, 16, 16, null);
+        // Center the 13x23 item in the 16x16 tile.
+        // x offset: (16 - 13) / 2 = 1.5
+        // y offset: (16 - 23) / 2 = -3.5
+        super(x + 1.5f, y - 3.5f, 13, 23, null);
         loadAnimation();
     }
     

@@ -240,6 +240,10 @@ public class Character extends MovableObject {
      */
     private void collisionAddressing(GameObject hitObject, float oldPosition, boolean isXAxis) {
         if (hitObject != null) {
+            if (hitObject.isMarkedForRemoval()) {
+                return; // Already collected/destroyed
+            }
+
             if (hitObject instanceof Wall || hitObject instanceof EntryPoint) {
                 if (isXAxis) {
                     this.position.x = oldPosition;
@@ -499,15 +503,11 @@ public class Character extends MovableObject {
 
             batch.setColor(1, 1, 1, 0.5f);
 
-            float scaleX = 1.2f;
-            float scaleY = 1.5f;
+            float actualWidth = 26f;
+            float actualHeight = 46f;
 
-            float actualWidth = 16f * scaleX;
-            float actualHeight = 16f * scaleY;
-
-            float drawX = (position.x + 8) - (actualWidth / 2);
-
-            float drawY = position.y + 5;
+            float drawX = (position.x + 8) - (actualWidth / 2); // Center on character center (pos.x+8)
+            float drawY = position.y + (32 - actualHeight) / 2; // Center vertically on character height (32)
 
             batch.draw(shieldFrame, drawX, drawY, actualWidth, actualHeight);
 
