@@ -79,19 +79,10 @@ public class HUD {
         stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), spriteBatch);
 
         // Load Mask Icons for Lives
-        objectsTexture = new Texture(Gdx.files.internal("assets/selfmade/maskicon.png"));
-        // Assuming maskicon is a single icon? Or strip? 
-        // User request implies just "maskicon.png". Let's assume it's a single image for now or use it directly.
-        // Wait, logic uses heartRegions[5] for health states (full to empty). 
-        // If maskicon is just one image, we can't show health states easily unless we tint it or use multiple.
-        // User said: "icon换成maskicon".
-        // I'll check maskicon if I can, but I can't. I'll assume it's the full heart equivalent.
-        // I will make an array of regions all pointing to this one for now, or assume it has states if split? 
-        // Let's assume single image for "Full" life. 
-        // Logic below uses textureIndex = 4 - hpForThisHeart. 
-        // If I only have one icon, I'll repeat it.
+        // We reused objectsTexture variable name, rename it to maskTexture for clarity or just use new var
+        objectsTexture = new Texture(Gdx.files.internal("assets/selfmade/maskicon.png")); // This is now maskicon
         
-        Texture maskTexture = new Texture(Gdx.files.internal("assets/selfmade/maskicon.png"));
+        Texture maskTexture = objectsTexture; // Alias
         heartRegions = new TextureRegion[5];
         for(int i=0; i<5; i++) {
             heartRegions[i] = new TextureRegion(maskTexture);
@@ -100,9 +91,11 @@ public class HUD {
         // Load Key (Card) Icon
         Texture basicTile = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
         TextureRegion[][] tiles = TextureRegion.split(basicTile, 32, 32); 
-        keyRegion = tiles[1][1]; // Row 1, Col 1 as per MapLoader logic for default key
+        keyRegion = tiles[1][1]; 
 
-        TextureRegion bgRegion = new TextureRegion(objectsTexture, 4 * 16, 18 * 16, 4 * 16, 2 * 16);
+        // Load Atlas for Achievement Background (original objects.png)
+        Texture atlasTexture = new Texture(Gdx.files.internal("objects.png"));
+        TextureRegion bgRegion = new TextureRegion(atlasTexture, 4 * 16, 18 * 16, 4 * 16, 2 * 16);
         achievementNinePatch = new com.badlogic.gdx.graphics.g2d.NinePatch(bgRegion, 16, 16, 0, 0);
         achievementNinePatch.scale(4, 4);
 
@@ -165,30 +158,57 @@ public class HUD {
 
 
     private void setupUI() {
-        table = new Table();
-        table.top();
-        table.setFillParent(true);
-
-        heartsTable = new Table();
-        heartsTable.top().left(); // Align content to top-left so it grows downwards
-
-        keyImage = new Image(keyRegion);
+        if (table != null) table.remove();
+        
+        com.badlogic.gdx.scenes.scene2d.ui.Stack stack = new com.badlogic.gdx.scenes.scene2d.ui.Stack();
+        stack.setFillParent(true);
+        
+        // Layer 1: Time/Score (Centered)
+        Table centerLayer = new Table();
+        centerLayer.top(); 
         Label.LabelStyle fontStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.WHITE);
-
         timeLabel = new Label("Time: 00:00\nScore: 1000", fontStyle);
         timeLabel.setAlignment(Align.center);
-
-        // Remove fixed height constraint so it can grow
-        table.add(heartsTable).expandX().left().top().pad(10); 
-
-        // Center Container for Time only
-        Table centerTable = new Table();
-        centerTable.add(timeLabel).row();
         
-        Label.LabelStyle blueStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.CYAN);
+        // Ensure perfect centering by adding to a container that spans width but aligns top
+        centerLayer.add(timeLabel).pad(10); 
+        stack.add(centerLayer);
+        
+        // Layer 2: Hearts (Left) and Key (Right)
+        Table sidesLayer = new Table();
+        sidesLayer.top().left();
+        sidesLayer.setFillParent(true);
+        
+        heartsTable = new Table();
+        heartsTable.top().left();
+        
+        keyImage = new Image(keyRegion);
+        
+        // Left: Hearts
+        sidesLayer.add(heartsTable).top().left().pad(10);
+        
+        // Spacer to push Key to right
+        sidesLayer.add().expandX();
+        
+        // Right: Key
+        sidesLayer.add(keyImage).top().right().pad(10).size(64, 64);
+        
+        stack.add(sidesLayer);
+        
+        // Add Hint Labels (add to stage directly or another layer)
+        // Hints are generally centered bottom or somewhere else. 
+        // Existing code added them to 'stage' but they were not in the main table.
+        // I'll re-add them to stage.
+        
+    Label.LabelStyle blueStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.CYAN);
     promptLabel = new Label("Press [F] to Interact", blueStyle);
     promptLabel.setFontScale(1f);
     promptLabel.setVisible(false);
+    
+    // Position hints manually or add to a layer?
+    // Hints appear dynamically. Code sets position/visibility elsewhere?
+    // Let's keep them added to stage.
+        
     stage.addActor(promptLabel);
 
     // Tutorial hints
@@ -207,12 +227,11 @@ public class HUD {
     attackHintLabel.setVisible(false);
     stage.addActor(attackHintLabel);
 
-    // Align centerTable and keyImage to top to avoid shifting when hearts grow
-    // Use consistent padding (pad 10) for all top elements to ensure alignment
-    table.add(centerTable).expandX().center().top().pad(10); 
-        table.add(keyImage).expandX().right().top().pad(10).size(64, 64);
-
-        stage.addActor(table);
+        stage.addActor(stack);
+        this.table = sidesLayer; // Keep reference to one of them if needed for debug? 
+        // Actually 'table' variable is used? Assuming 'table' field exists.
+        // Yes, 'private Table table'.
+        // I will point 'table' to the stack or sidesLayer? Not critical if no external access.
     }
 
     private void setupDebugMenu() {
