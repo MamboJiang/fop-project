@@ -88,47 +88,79 @@ public class LevelSelectionScreen implements Screen {
         } else {
             for (int i = 0; i < mapFiles.size(); i++) {
                 final FileHandle mapFile = mapFiles.get(i);
-                // Level Number (Roman numerals in image, but standard is fine unless requested)
-                // Use the Roman numeral logic if I can, but simple numbers are safer.
-                String displayName = convertToRoman(i + 1);
+                
+                // Determine if unlocked
+                boolean isUnlocked = false;
+                if (i == 0) {
+                    isUnlocked = true; // Level 0 always unlocked
+                } else {
+                    // Check if previous level (i-1) is completed
+                    FileHandle prevMap = mapFiles.get(i-1);
+                    String prevLevelName = prevMap.nameWithoutExtension();
+                    if (game.getPlayerState().isLevelCompleted(prevLevelName)) {
+                        isUnlocked = true;
+                    }
+                }
+                
+                // Determine Display Name
+                String displayName;
+                if (isUnlocked) {
+                   displayName = convertToRoman(i + 1);
+                } else {
+                   displayName = "???";
+                }
                 
                 TextButton levelButton = new TextButton(displayName, game.getSkin(), "level");
                 
+                if (!isUnlocked) {
+                    levelButton.setDisabled(true);
+                    levelButton.setColor(1, 1, 1, 0.5f); // Dim locked buttons
+                    levelButton.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
+                }
+                
                 // Button Logic
-                levelButton.addListener(new ChangeListener() {
-                    @Override
-                    public void changed(ChangeEvent event, Actor actor) {
-                        if (mapFile.nameWithoutExtension().equalsIgnoreCase("level-1")) {
-                            game.goToStory(mapFile);
-                        } else {
-                            game.goToGame(mapFile);
+                if (isUnlocked) {
+                    levelButton.addListener(new ChangeListener() {
+                        @Override
+                        public void changed(ChangeEvent event, Actor actor) {
+                            if (mapFile.nameWithoutExtension().equalsIgnoreCase("level-1")) {
+                                game.goToStory(mapFile);
+                            } else {
+                                game.goToGame(mapFile);
+                            }
                         }
-                    }
-                });
-                
-                // Hover Logic for Label
-                final int levelIndex = i + 1;
-                final String mapName = mapFile.nameWithoutExtension(); 
-                
-                levelButton.addListener(new ClickListener() {
-                   @Override
-                   public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                       super.enter(event, x, y, pointer, fromActor);
-                       updateLabel(levelIndex, mapName);
-                   }
-                   
-                   @Override
-                   public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                       super.exit(event, x, y, pointer, toActor);
-                       // Optional: Clear label or keep last selected?
-                       // "Keep last" is usually better UX, or clear.
-                       // User says "放在哪一关...显示LevelX...". Implies dynamic show.
-                       // I'll leave it as is or clear if desired. 
-                       // Let's clear it to "Select a Level" or empty?
-                       // User said "without name it shows - blank".
-                       // I will strictly follow "hover updates it".
-                   }
-                });
+                    });
+                    
+                    // Hover Logic for Label
+                    final int levelIndex = i + 1;
+                    final String mapName = mapFile.nameWithoutExtension(); 
+                    
+                    levelButton.addListener(new ClickListener() {
+                       @Override
+                       public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                           super.enter(event, x, y, pointer, fromActor);
+                           updateLabel(levelIndex, mapName);
+                       }
+                       
+                       @Override
+                       public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                           super.exit(event, x, y, pointer, toActor);
+                       }
+                    });
+                } else {
+                     // Listener for locked buttons (optional feedback)
+                     levelButton.addListener(new ClickListener() {
+                       @Override
+                       public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                           super.enter(event, x, y, pointer, fromActor);
+                           levelNameLabel.setText("Locked");
+                       }
+                       @Override
+                       public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                           super.exit(event, x, y, pointer, toActor);
+                       }
+                    });
+                }
                 
                 levelsTable.add(levelButton).pad(15); // Horizontal spacing
             }

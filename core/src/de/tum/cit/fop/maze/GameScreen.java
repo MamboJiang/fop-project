@@ -246,6 +246,14 @@ public class GameScreen implements Screen {
         if (!"level-0".equals(currentLevelName)) {
             character.loadMaskAppearance();
         }
+        
+        // Reset abilities for specific levels
+        if ("level-0".equals(currentLevelName)) {
+            game.getPlayerState().setNonoUnlocked(false);
+        }
+        if ("level-2".equals(currentLevelName)) {
+            character.setAttackUnlocked(false);
+        }
 
         if (isProcedural) {
             de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
@@ -369,20 +377,23 @@ public class GameScreen implements Screen {
             }
         }
 
-        for (java.util.List<GameObject> chunkPaths : chunks.values()) {
-            if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.5f)) {
-                GameObject randomPath = chunkPaths.get(com.badlogic.gdx.math.MathUtils.random(chunkPaths.size() - 1));
-                de.tum.cit.fop.maze.GameObj.Heart heart = new de.tum.cit.fop.maze.GameObj.Heart(
-                        randomPath.getPosition().x, randomPath.getPosition().y);
-                mapObjects.add(heart);
-            }
+        // Only spawn hearts and shields in levels 3+
+        if (!"level-0".equals(currentLevelName) && !"level-1".equals(currentLevelName) && !"level-2".equals(currentLevelName)) {
+            for (java.util.List<GameObject> chunkPaths : chunks.values()) {
+                if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.5f)) {
+                    GameObject randomPath = chunkPaths.get(com.badlogic.gdx.math.MathUtils.random(chunkPaths.size() - 1));
+                    de.tum.cit.fop.maze.GameObj.Heart heart = new de.tum.cit.fop.maze.GameObj.Heart(
+                            randomPath.getPosition().x, randomPath.getPosition().y);
+                    mapObjects.add(heart);
+                }
 
-            if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.2f)) {
-                GameObject randomPath = chunkPaths.get(com.badlogic.gdx.math.MathUtils.random(chunkPaths.size() - 1));
+                if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.2f)) {
+                    GameObject randomPath = chunkPaths.get(com.badlogic.gdx.math.MathUtils.random(chunkPaths.size() - 1));
 
-                de.tum.cit.fop.maze.GameObj.ShieldItem shield = new de.tum.cit.fop.maze.GameObj.ShieldItem(
-                        randomPath.getPosition().x, randomPath.getPosition().y);
-                mapObjects.add(shield);
+                    de.tum.cit.fop.maze.GameObj.ShieldItem shield = new de.tum.cit.fop.maze.GameObj.ShieldItem(
+                            randomPath.getPosition().x, randomPath.getPosition().y);
+                    mapObjects.add(shield);
+                }
             }
         }
 
@@ -544,6 +555,10 @@ public class GameScreen implements Screen {
 
             game.getPlayerState().resetEndlessWave();
             game.getPlayerState().resetRunState();
+            game.saveGame();
+        } else if (!isProcedural && win) {
+            // Mark level as completed and save
+            game.getPlayerState().addCompletedLevel(currentLevelName);
             game.saveGame();
         }
 
