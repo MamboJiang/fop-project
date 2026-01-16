@@ -172,12 +172,10 @@ public class MapLoader {
     }
 
     public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getBossAnimations() {
-        if (robotTexture == null) {
-            robotTexture = new Texture(Gdx.files.internal("assets/player/sprite/robot.png"));
-        }
+        Texture bossTexture = new Texture(Gdx.files.internal("assets/player/sprite/bossnew.png"));
 
-        // Split 32x32
-        TextureRegion[][] tmp = TextureRegion.split(robotTexture, 32, 32);
+        // Split 64x64
+        TextureRegion[][] tmp = TextureRegion.split(bossTexture, 64, 64);
         com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] anims = new com.badlogic.gdx.graphics.g2d.Animation[4];
         float frameDuration = 0.2f;
 

@@ -69,8 +69,10 @@ public class Enemy extends MovableObject {
         this.grid = grid;
         this.target = target;
         this.currentState = State.PATROL;
-
+        
         this.bounds = new Rectangle(x + 4, y + 4, 8, 8);
+        
+        this.health = 60; // Set initial health to 60
 
         this.maxSpeed = speed;
         this.acceleration = 50f;
@@ -274,7 +276,7 @@ public class Enemy extends MovableObject {
                 }
             }
 
-            if (health <= 40) {
+            if (health <= 20) {
                 currentState = State.RETREAT;
                 return;
             }
@@ -320,7 +322,7 @@ public class Enemy extends MovableObject {
 
         float distToPlayer = Vector2.dst(getCenter().x, getCenter().y, getTargetCenter().x, getTargetCenter().y);
 
-        if (health <= 40) {
+        if (health <= 20) {
             currentState = State.RETREAT;
             return;
         }
@@ -397,7 +399,7 @@ public class Enemy extends MovableObject {
 
         float distToPlayer = Vector2.dst(getCenter().x, getCenter().y, getTargetCenter().x, getTargetCenter().y);
         if (distToPlayer < detectionRange) {
-            if (health <= 40) {
+            if (health <= 20) {
                 currentState = State.RETREAT;
             } else {
                 currentState = State.CHASE;

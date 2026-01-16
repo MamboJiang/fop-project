@@ -86,6 +86,7 @@ public class GameScreen implements Screen {
     private Boss activeBoss;
     private float bossItemSpawnTimer = 0f;
     private static final float BOSS_ITEM_SPAWN_INTERVAL = 15f; // 15 seconds
+    private float bossDeathTimer = 0f;
 
 
 
@@ -441,6 +442,31 @@ public class GameScreen implements Screen {
                 entryY + 32
              );
              mapObjects.add(startMask);
+        }
+
+        // Special Logic: In Level 4, replace the Key texture with Serum (no shield effect)
+        if ("level-4".equals(currentLevelName)) {
+             List<GameObject> toAdd = new java.util.ArrayList<>();
+             java.util.Iterator<GameObject> iter = mapObjects.iterator();
+             while (iter.hasNext()) {
+                GameObject obj = iter.next();
+                if (obj instanceof de.tum.cit.fop.maze.GameObj.Key) {
+                    iter.remove();
+                    // Create a Key that looks like Serum
+                    Texture serumTex = new Texture(Gdx.files.internal("assets/selfmade/serum.png"));
+                    TextureRegion serumReg = new TextureRegion(serumTex);
+                    
+                    de.tum.cit.fop.maze.GameObj.Key serumKey = new de.tum.cit.fop.maze.GameObj.Key(
+                        obj.getPosition().x, 
+                        obj.getPosition().y, 
+                        16, 
+                        16, 
+                        serumReg
+                    );
+                    toAdd.add(serumKey);
+                }
+             }
+             mapObjects.addAll(toAdd);
         }
 
         // Nono Trigger Logic in Level 0
@@ -1189,10 +1215,27 @@ public class GameScreen implements Screen {
             java.util.Iterator<de.tum.cit.fop.maze.GameObj.Enemy> enemyIter = enemies.iterator();
             while (enemyIter.hasNext()) {
                 de.tum.cit.fop.maze.GameObj.Enemy enemy = enemyIter.next();
-                enemy.update(delta);
+                
+                // User Request: Boss stops moving when dead (skip update)
+                if (!(enemy instanceof de.tum.cit.fop.maze.GameObj.Boss && enemy.isMarkedForRemoval())) {
+                    enemy.update(delta);
+                }
+                
                 if (enemy.isMarkedForRemoval()) {
+                    
+                    // Trigger Cinematic Screen if Boss dies (with 2s delay)
+                    if (enemy instanceof de.tum.cit.fop.maze.GameObj.Boss) {
+                        bossDeathTimer += delta;
+                        if (bossDeathTimer < 2.0f) {
+                            continue; // Wait until timer reaches 2.0s
+                        }
+                        game.setScreen(new de.tum.cit.fop.maze.GameControl.CinematicScreen(game));
+                        return;
+                    }
+
                     de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
                             .onEvent(de.tum.cit.fop.maze.GameControl.EventType.KILL_ENEMY, 1);
+                    
                     enemyIter.remove();
                 }
             }
