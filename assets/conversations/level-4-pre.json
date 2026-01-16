@@ -1,5 +1,5 @@
 {
-    "leftCharacterImage": "player/lihui/maincharacterlhmaskknife.png",
+    "leftCharacterImage": "player/lihui/maincharacterlhmask.png",
     "leftScale": 2,
     "leftOffsetX": -200.0,
     "leftOffsetY": -500,
@@ -15,34 +15,46 @@
     "rightPortraitOffsetY": -100.0,
     "lines": [
         {
-            "text": "These robots are too tough to deal with.",
+            "text": "What happened here? I can't see anything!",
             "speaker": "Player",
             "isLeft": true,
-            "portrait": "player/lihui/maincharacterlhmaskknife.png"
+            "portrait": "player/lihui/maincharacterlhmask.png"
         },
         {
-            "text": "How did your protective mask get broken?",
+            "text": "According to combat history, it is just a power outage.",
             "speaker": "Stranger",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
-            "text": "You need to pay attention to the mask's condition at all times.",
-            "speaker": "Stranger",
-            "isLeft": false,
-            "portrait": "player/lihui/nonolhright.png"
-        },
-        {
-            "text": "Once it's damaged, the consequences are unimaginable!",
-            "speaker": "Stranger",
-            "isLeft": false,
-            "portrait": "player/lihui/nonolhright.png"
-        },
-        {
-            "text": "Okay, I will keep an eye out for those brand new protective masks",
+            "text": "What combat history?",
             "speaker": "Player",
             "isLeft": true,
-            "portrait": "player/lihui/maincharacterlhmaskknife.png"
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        },
+        {
+            "text": "What nonsense are you talking about again?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        },
+        {
+            "text": "(Stammering) I meant a guess, a guess",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "Now we need to find the serum, and I will light the way for you!",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "I see those cold-blooded machines!",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
         }
     ]
 }

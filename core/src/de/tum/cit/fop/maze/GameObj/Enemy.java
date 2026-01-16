@@ -244,6 +244,12 @@ public class Enemy extends MovableObject {
         return new Vector2(tBounds.x + tBounds.width / 2, tBounds.y + tBounds.height / 2);
     }
 
+    private boolean isSuicide = false;
+
+    public void setSuicide(boolean suicide) {
+        this.isSuicide = suicide;
+    }
+
     /**
      * Checks for collision with player to deal damage.
      * 
@@ -262,6 +268,9 @@ public class Enemy extends MovableObject {
             if (rect.overlaps(target.getBounds())) {
                 if (!target.isShielded()) {
                     target.takeDamage();
+                    if (isSuicide) {
+                        setMarkedForRemoval(true);
+                    }
                 }
             }
 

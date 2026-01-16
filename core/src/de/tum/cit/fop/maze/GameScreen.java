@@ -28,6 +28,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import de.tum.cit.fop.maze.GameObj.Character;
 
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -139,7 +144,30 @@ public class GameScreen implements Screen {
     /**
      * Common initialization for camera, viewport, HUD, and other systems.
      */
+    // Level 3 Dialogue Triggers
+    private int lastHealth = -1;
+    private boolean l3DamageTriggered = false;
+    private boolean l3HealTriggered = false;
+    private float damageDialogueTimer = -1; // Timer for delayed dialogue
+    private boolean wasDialogueActive = false; // Track dialogue state change
+
+
+// ShapeRenderer already imported
+
+// ...
+
+// Fields
+    // Level 4 Logic
+    private float level4StartTimer = 0;
+    private boolean level4PreTriggered = false;
+    private TextureRegion blackTex; // Still need this for initial blackout or use FBO clear color
+    
+    // Flashlight
+    private de.tum.cit.fop.maze.VFX.FlashlightEffect flashlightEffect;
+
     private void initCommon() {
+        flashlightEffect = new de.tum.cit.fop.maze.VFX.FlashlightEffect();
+        
         camera = new OrthographicCamera();
         camera.zoom = 0.7f;
 
@@ -221,6 +249,11 @@ public class GameScreen implements Screen {
         Texture tempRedTexture = new Texture(pixmap);
         bulletTex = new TextureRegion(tempRedTexture);
 
+        pixmap.setColor(com.badlogic.gdx.graphics.Color.BLACK);
+        pixmap.fill();
+        Texture tempBlackTexture = new Texture(pixmap);
+        blackTex = new TextureRegion(tempBlackTexture); // Add field blackTex to class
+
 
         pixmap.dispose();
         grid = new de.tum.cit.fop.maze.AI.Grid(0, 0, mapObjects);
@@ -241,6 +274,23 @@ public class GameScreen implements Screen {
         } else {
             character.setPosition(spawnX + 16, spawnY);
         }
+        
+        // Reset Level 3 Dialogue State
+        lastHealth = (int) character.getCurrentHealth();
+        l3DamageTriggered = false;
+        l3HealTriggered = false;
+        damageDialogueTimer = -1;
+        
+        // Level 4
+        level4StartTimer = 0;
+        level4PreTriggered = false;
+        if (flashlightEffect != null) {
+            flashlightEffect.reset();
+        }
+        
+        // Snap camera to player immediately to avoid "flying in"
+        camera.position.set(character.getPosition().x, character.getPosition().y, 0);
+        camera.update();
 
         // Load mask appearance for all levels except Level 0
         if (!"level-0".equals(currentLevelName)) {
@@ -254,6 +304,21 @@ public class GameScreen implements Screen {
         if ("level-2".equals(currentLevelName)) {
             character.setAttackUnlocked(false);
         }
+        
+        enemies = new java.util.ArrayList<>();
+
+        // Spawn Suicide Monster in Level 3 near spawn
+        if ("level-3".equals(currentLevelName)) {
+            de.tum.cit.fop.maze.GameObj.Enemy suicideEnemy = new de.tum.cit.fop.maze.GameObj.Enemy(
+                spawnX + 32, 
+                spawnY + 16, 
+                de.tum.cit.fop.maze.MapLoader.getRobotAnimations(), 
+                grid, 
+                character
+            );
+            suicideEnemy.setSuicide(true);
+            enemies.add(suicideEnemy);
+        }
 
         if (isProcedural) {
             de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
@@ -264,8 +329,6 @@ public class GameScreen implements Screen {
                 character.setCurrentHealth(state.getCurrentRunHealth());
             }
         }
-
-        enemies = new java.util.ArrayList<>();
 
         List<GameObject> toRemove = new java.util.ArrayList<>();
         for (GameObject obj : mapObjects) {
@@ -326,7 +389,57 @@ public class GameScreen implements Screen {
              mapObjects.addAll(toAdd);
         }
         
-        // Nono Trigger Logic in Level 0
+        // Special Logic: In Level 3, replace the Key with a Shield Item visual and spawn a ShieldItem there too
+        if ("level-3".equals(currentLevelName)) {
+             List<GameObject> toAdd = new java.util.ArrayList<>();
+             java.util.Iterator<GameObject> iter = mapObjects.iterator();
+             while (iter.hasNext()) {
+                GameObject obj = iter.next();
+                if (obj instanceof de.tum.cit.fop.maze.GameObj.Key) {
+                    iter.remove();
+                    // Create a Key that looks like a Shield
+                    // Use shield texture
+                    Texture shieldTex = new Texture(Gdx.files.internal("assets/selfmade/shielditem.png"));
+                    TextureRegion shieldReg = new TextureRegion(shieldTex);
+                    
+                    // Add the "Key" which is visual goal
+                    de.tum.cit.fop.maze.GameObj.Key shieldKey = new de.tum.cit.fop.maze.GameObj.Key(
+                        obj.getPosition().x, 
+                        obj.getPosition().y, 
+                        16, 
+                        16, 
+                        shieldReg
+                    );
+                    toAdd.add(shieldKey);
+                    
+                    // Add actual Shield Item for effect
+                    de.tum.cit.fop.maze.GameObj.ShieldItem realShield = new de.tum.cit.fop.maze.GameObj.ShieldItem(
+                        obj.getPosition().x,
+                        obj.getPosition().y
+                    );
+                    toAdd.add(realShield);
+                }
+             }
+             mapObjects.addAll(toAdd);
+             
+             // Also spawn a Heart (Mask) near spawn point (right and up a bit)
+             // Find entry point again or use previously found spawnX, spawnY
+             float entryX = 0, entryY = 0;
+             for (GameObject obj : mapObjects) {
+                if (obj instanceof EntryPoint) {
+                    entryX = obj.getPosition().x;
+                    entryY = obj.getPosition().y;
+                    break;
+                }
+             }
+             // Spawn Heart at spawnX + 32, spawnY + 48 (example "right up")
+             de.tum.cit.fop.maze.GameObj.Heart startMask = new de.tum.cit.fop.maze.GameObj.Heart(
+                entryX + 128,
+                entryY + 32
+             );
+             mapObjects.add(startMask);
+        }
+
         // Nono Trigger Logic in Level 0
         if ("level-0".equals(currentLevelName)) {
             // Find existing trigger to remove (we spawn Nono at center regardless)
@@ -377,7 +490,7 @@ public class GameScreen implements Screen {
             }
         }
 
-        // Only spawn hearts and shields in levels 3+
+        // Only spawn hearts and shields in levels 3+, but NO random shields in Level 3
         if (!"level-0".equals(currentLevelName) && !"level-1".equals(currentLevelName) && !"level-2".equals(currentLevelName)) {
             for (java.util.List<GameObject> chunkPaths : chunks.values()) {
                 if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.5f)) {
@@ -387,7 +500,8 @@ public class GameScreen implements Screen {
                     mapObjects.add(heart);
                 }
 
-                if (com.badlogic.gdx.math.MathUtils.randomBoolean(0.2f)) {
+                // Random Shields: EXCLUDE Level 3
+                if (!"level-3".equals(currentLevelName) && com.badlogic.gdx.math.MathUtils.randomBoolean(0.2f)) {
                     GameObject randomPath = chunkPaths.get(com.badlogic.gdx.math.MathUtils.random(chunkPaths.size() - 1));
 
                     de.tum.cit.fop.maze.GameObj.ShieldItem shield = new de.tum.cit.fop.maze.GameObj.ShieldItem(
@@ -1004,6 +1118,24 @@ public class GameScreen implements Screen {
                 }
             }
         }
+        
+        // Level 4 Lighting (Draws Multiply layer over map, but UNDER characters)
+        if ("level-4".equals(currentLevelName) && flashlightEffect != null) {
+             game.getSpriteBatch().end(); // End batch from map rendering
+             
+             Vector2 targetPos = null;
+             if (character != null) {
+                targetPos = new Vector2(character.getPosition().x + character.getWidth()/2, character.getPosition().y + character.getHeight()/2);
+             }
+             Vector2 nonoPos = null;
+             if (nono != null) {
+                nonoPos = new Vector2(nono.getPosition().x + nono.getWidth()/2, nono.getPosition().y + nono.getHeight()/2);
+             }
+             
+             flashlightEffect.render(delta, camera, viewport, game.getSpriteBatch(), shapeRenderer, nonoPos, targetPos);
+             
+             game.getSpriteBatch().begin(); // Restart batch for characters
+        }
 
         if (character != null) {
             character.draw(game.getSpriteBatch());
@@ -1056,6 +1188,53 @@ public class GameScreen implements Screen {
         }
 
         if (character != null) {
+            
+            // Level 3 Dynamic Dialogue Logic
+            if ("level-3".equals(currentLevelName)) {
+                int currentHp = (int) character.getCurrentHealth();
+                if (lastHealth != -1) {
+                    // Trigger 1: Damage Taken (Delayed 0.5s)
+                    if (currentHp < lastHealth && !l3DamageTriggered && damageDialogueTimer == -1) {
+                        damageDialogueTimer = 0;
+                    }
+                    
+                    if (damageDialogueTimer >= 0) {
+                        damageDialogueTimer += delta;
+                        if (damageDialogueTimer >= 0.5f) {
+                             dialogueManager.loadDialogue("level-3-pre");
+                             dialogueManager.startDialogue();
+                             l3DamageTriggered = true;
+                             damageDialogueTimer = -1;
+                        }
+                    }
+
+                    // Trigger 2: Healed (picked up blood)
+                    if (currentHp > lastHealth && !l3HealTriggered) {
+                        dialogueManager.loadDialogue("level-3-after");
+                        dialogueManager.startDialogue();
+                        l3HealTriggered = true;
+                    }
+                }
+                lastHealth = currentHp;
+            }
+            
+            // Level 4 Logic: Timer
+            if ("level-4".equals(currentLevelName)) {
+                 if (!level4PreTriggered) {
+                    level4StartTimer += delta;
+                    if (level4StartTimer >= 1.0f) {
+                        dialogueManager.loadDialogue("level-4-pre");
+                        dialogueManager.startDialogue();
+                        level4PreTriggered = true;
+                    }
+                 } else {
+                    // Turn on flashlight after dialogue ends
+                    if (flashlightEffect != null && !flashlightEffect.isEnabled() && !dialogueManager.isActive()) {
+                        flashlightEffect.setEnabled(true);
+                    }
+                 }
+            }
+
             hud.update(character);
             hud.render(delta);
         }
@@ -1128,6 +1307,12 @@ public class GameScreen implements Screen {
         if (dialogueManager.isActive()) {
             dialogueManager.render(delta);
         }
+        
+        // Auto-switch Input Processor when dialogue starts/ends
+        if (dialogueManager.isActive() != wasDialogueActive) {
+            updateInputProcessor();
+            wasDialogueActive = dialogueManager.isActive();
+        }
 
     }
 
@@ -1179,6 +1364,8 @@ public class GameScreen implements Screen {
             hud.dispose();
         if (dialogueManager != null)
             dialogueManager.dispose();
+        if (flashlightEffect != null)
+            flashlightEffect.dispose();
     }
 
     /**
@@ -1223,6 +1410,10 @@ public class GameScreen implements Screen {
     public MazeRunnerGame getGame() {
         return game;
     }
+
+
+
+
 
     public Boss getActiveBoss() {
         return activeBoss;

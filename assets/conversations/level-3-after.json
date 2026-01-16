@@ -15,25 +15,31 @@
     "rightPortraitOffsetY": -100.0,
     "lines": [
         {
-            "text": "(Sighs deeply) That was a close call.",
-            "speaker": "Stranger",
-            "isLeft": false,
-            "portrait": "player/lihui/nonolhright.png"
-        },
-        {
-            "text": "......",
+            "text": "So, what do we do now?",
             "speaker": "Player",
             "isLeft": true,
             "portrait": "player/lihui/maincharacterlhmask.png"
         },
         {
-            "text": "Judging by your moves... I think you need a weapon.",
+            "text": "There are still drones sent by the rogue robots inside the research institute.",
             "speaker": "Stranger",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
-            "text": "Cut the chatter. Just lead the way.",
+            "text": "Find the Quantum Shield; it can help you withstand all damage.",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "Due to massive energy consumption, it can only last for 5 seconds!",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "..Take me to find it first.",
             "speaker": "Player",
             "isLeft": true,
             "portrait": "player/lihui/maincharacterlhmask.png"

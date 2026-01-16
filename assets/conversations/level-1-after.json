@@ -21,7 +21,7 @@
             "portrait": "player/lihui/maincharacterlhmask.png"
         },
         {
-            "text": "Yes. Now, go to the exit—quickly!",
+            "text": "Yes. Now, go to the exit quickly!",
             "speaker": "Stranger",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
