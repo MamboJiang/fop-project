@@ -893,6 +893,14 @@ public class GameScreen implements Screen {
              updateInputProcessor();
         }
 
+        // Level 4 After Dialogue (Key Pickup)
+        if ("level-4".equals(currentLevelName) && !levelAfterDialoguePlayed && character != null && character.hasKey()) {
+            levelAfterDialoguePlayed = true;
+             dialogueManager.loadDialogue("level-4-after");
+             dialogueManager.startDialogue();
+             updateInputProcessor();
+        }
+
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F3)) {
             toggleDebug();
         }
@@ -1358,6 +1366,8 @@ public class GameScreen implements Screen {
     public void dispose() {
         if (pauseStage != null)
             pauseStage.dispose();
+        if (pauseMenu != null)
+            pauseMenu.dispose();
         if (shapeRenderer != null)
             shapeRenderer.dispose();
         if (hud != null)
