@@ -293,8 +293,10 @@ public class CinematicScreen implements Screen {
     }
 
     private void finish() {
-        game.setScreen(new de.tum.cit.fop.maze.GameScreen(game, Gdx.files.internal("maps/level-0.properties")));
-        dispose();
+        game.playTransition(() -> {
+            game.setScreen(new de.tum.cit.fop.maze.GameScreen(game, Gdx.files.internal("maps/level-0.properties")));
+            dispose();
+        });
     }
 
     private float inputDelayTimer = 0.5f;

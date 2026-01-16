@@ -44,6 +44,8 @@ public class MazeRunnerGame extends Game {
     public Music warFogMusic;
     public Music bossFightMusic;
 
+    // Transition Effect
+    private de.tum.cit.fop.maze.VFX.TransitionEffect transitionEffect;
 
     private PlayerState playerState;
     private Sound hitSound;
@@ -79,6 +81,8 @@ public class MazeRunnerGame extends Game {
         spriteBatch = new SpriteBatch();
         skin = new Skin(Gdx.files.internal("craft/craftacular-ui.json"));
         
+        transitionEffect = new de.tum.cit.fop.maze.VFX.TransitionEffect();
+
         // --- Custom UI Setup ---
         try {
             // Load custom font
@@ -243,21 +247,26 @@ public class MazeRunnerGame extends Game {
      * Switches to the Main Menu screen (Now redirects to StoryMenu in Game Hub mode).
      */
     public void goToMenu() {
-        if (warFogMusic != null && warFogMusic.isPlaying()) {
-            warFogMusic.stop();
-        }
-        if (bossFightMusic != null && bossFightMusic.isPlaying()) {
-            bossFightMusic.stop();
-        }
+        playTransition(() -> {
+            // Stop Level/Boss Music
+            if (warFogMusic != null && warFogMusic.isPlaying()) {
+                warFogMusic.stop();
+            }
+            if (bossFightMusic != null && bossFightMusic.isPlaying()) {
+                bossFightMusic.stop();
+            }
 
-        if (backgroundMusic != null && !backgroundMusic.isPlaying()) {
-            backgroundMusic.play();
-        }
-        this.setScreen(new de.tum.cit.fop.maze.GameControl.StoryMenu(this, true));
-        if (gameScreen != null) {
-            gameScreen.dispose();
-            gameScreen = null;
-        }
+            // Resume Background Music
+            if (backgroundMusic != null && !backgroundMusic.isPlaying()) {
+                backgroundMusic.play();
+            }
+
+            this.setScreen(new de.tum.cit.fop.maze.GameControl.StoryMenu(this, true));
+            if (gameScreen != null) {
+                gameScreen.dispose();
+                gameScreen = null;
+            }
+        });
     }
 
 
@@ -266,11 +275,13 @@ public class MazeRunnerGame extends Game {
      * @param mapFile The map file to load.
      */
     public void goToGame(FileHandle mapFile) {
-        this.setScreen(new GameScreen(this, mapFile));
-        if (menuScreen != null) {
-            menuScreen.dispose();
-            menuScreen = null;
-        }
+        playTransition(() -> {
+            this.setScreen(new GameScreen(this, mapFile));
+            if (menuScreen != null) {
+                menuScreen.dispose();
+                menuScreen = null;
+            }
+        });
     }
 
 
@@ -279,11 +290,13 @@ public class MazeRunnerGame extends Game {
      * @param mapFile The map file associated with the story.
      */
     public void goToStory(FileHandle mapFile) {
-        this.setScreen(new StoryScreen(this, mapFile));
-        if (menuScreen != null) {
-            menuScreen.dispose();
-            menuScreen = null;
-        }
+        playTransition(() -> {
+            this.setScreen(new StoryScreen(this, mapFile));
+            if (menuScreen != null) {
+                menuScreen.dispose();
+                menuScreen = null;
+            }
+        });
     }
     
 
@@ -303,11 +316,13 @@ public class MazeRunnerGame extends Game {
      * Switches to the Settings screen.
      */
     public void goToSettings() {
-        this.setScreen(new SettingsScreen(this));
-        if (menuScreen != null) {
-            menuScreen.dispose();
-            menuScreen = null;
-        }
+        playTransition(() -> {
+            this.setScreen(new SettingsScreen(this));
+            if (menuScreen != null) {
+                menuScreen.dispose();
+                menuScreen = null;
+            }
+        });
     }
     
 
@@ -316,20 +331,21 @@ public class MazeRunnerGame extends Game {
      * @param playerName The name of the player starting the run.
      */
     public void goToEndlessMode(String playerName) {
+        playTransition(() -> {
+            int startDifficulty = 1;
+            if (playerState != null) {
+                startDifficulty = playerState.getEndlessWave();
+            }
 
-        int startDifficulty = 1;
-        if (playerState != null) {
-            startDifficulty = playerState.getEndlessWave();
-        }
+            GameScreen gs = new GameScreen(this, true, playerName);
+            gs.setDifficulty(startDifficulty);
+            this.setScreen(gs);
 
-        GameScreen gs = new GameScreen(this, true, playerName);
-        gs.setDifficulty(startDifficulty);
-        this.setScreen(gs);
-
-        if (menuScreen != null) {
-            menuScreen.dispose();
-            menuScreen = null;
-        }
+            if (menuScreen != null) {
+                menuScreen.dispose();
+                menuScreen = null;
+            }
+        });
     }
     
 
@@ -442,11 +458,13 @@ public class MazeRunnerGame extends Game {
      * Switches to the Skill Tree screen.
      */
     public void goToSkillTree() {
-        this.setScreen(new SkillTreeScreen(this));
-        if (menuScreen != null) {
-            menuScreen.dispose();
-            menuScreen = null;
-        }
+        playTransition(() -> {
+            this.setScreen(new SkillTreeScreen(this));
+            if (menuScreen != null) {
+                menuScreen.dispose();
+                menuScreen = null;
+            }
+        });
     }
 
 
@@ -544,11 +562,6 @@ public class MazeRunnerGame extends Game {
         this.currentSlotIndex = -1;
     }
 
-    public void setScreen(Screen screen) {
-        super.setScreen(screen);
-
-    }
-
     public Music getCurrentMusic(){
         if(backgroundMusic != null){
             if(backgroundMusic.isPlaying()){
@@ -566,5 +579,27 @@ public class MazeRunnerGame extends Game {
             }
         }
         return null;
+    }
+    @Override
+    public void render() {
+        super.render();
+        if (transitionEffect != null) {
+            float delta = Gdx.graphics.getDeltaTime();
+            transitionEffect.update(delta);
+            transitionEffect.render(spriteBatch);
+        }
+    }
+
+    /**
+     * Plays the transition effect and executes the given action when screen is covered.
+     * @param onCovered The action to execute (e.g., switching screens).
+     */
+    public void playTransition(Runnable onCovered) {
+        if (transitionEffect != null) {
+            transitionEffect.start(onCovered);
+        } else {
+            // Fallback if transition is null for some reason
+            onCovered.run();
+        }
     }
 }
