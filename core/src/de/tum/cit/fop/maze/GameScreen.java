@@ -485,7 +485,15 @@ public class GameScreen implements Screen {
         }
 
         List<FileHandle> maps = MapLoader.getMapFiles();
-        int currentIndex = -1;
+    // Sort maps to ensure consistent order (Windows vs Mac) and match LevelSelectionScreen
+    java.util.Collections.sort(maps, new java.util.Comparator<FileHandle>() {
+        @Override
+        public int compare(FileHandle o1, FileHandle o2) {
+            return o1.name().compareTo(o2.name());
+        }
+    });
+
+    int currentIndex = -1;
 
         for (int i = 0; i < maps.size(); i++) {
 
