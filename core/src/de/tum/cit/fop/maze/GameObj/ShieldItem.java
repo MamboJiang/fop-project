@@ -23,13 +23,10 @@ public class ShieldItem extends GameObject implements Collectable {
     }
     
     private void loadAnimation() {
-        Texture texture = new Texture(Gdx.files.internal("objects.png"));
-        TextureRegion[][] tmp = TextureRegion.split(texture, 16, 16);
-
-        TextureRegion[] frames = new TextureRegion[7];
-        for (int i = 0; i < 7; i++) {
-            frames[i] = tmp[3][4 + i];
-        }
+        Texture texture = new Texture(Gdx.files.internal("assets/selfmade/shielditem.png"));
+        // Assuming single frame for shield item
+        TextureRegion region = new TextureRegion(texture);
+        TextureRegion[] frames = new TextureRegion[] { region };
         
         animation = new Animation<>(0.1f, frames);
         animation.setPlayMode(Animation.PlayMode.LOOP);

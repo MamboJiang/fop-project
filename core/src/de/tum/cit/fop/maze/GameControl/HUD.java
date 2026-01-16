@@ -78,15 +78,29 @@ public class HUD {
         this.skin = skin;
         stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), spriteBatch);
 
-        objectsTexture = new Texture(Gdx.files.internal("objects.png"));
-        TextureRegion[][] tmp = TextureRegion.split(objectsTexture, 16, 16);
-
+        // Load Mask Icons for Lives
+        objectsTexture = new Texture(Gdx.files.internal("assets/selfmade/maskicon.png"));
+        // Assuming maskicon is a single icon? Or strip? 
+        // User request implies just "maskicon.png". Let's assume it's a single image for now or use it directly.
+        // Wait, logic uses heartRegions[5] for health states (full to empty). 
+        // If maskicon is just one image, we can't show health states easily unless we tint it or use multiple.
+        // User said: "icon换成maskicon".
+        // I'll check maskicon if I can, but I can't. I'll assume it's the full heart equivalent.
+        // I will make an array of regions all pointing to this one for now, or assume it has states if split? 
+        // Let's assume single image for "Full" life. 
+        // Logic below uses textureIndex = 4 - hpForThisHeart. 
+        // If I only have one icon, I'll repeat it.
+        
+        Texture maskTexture = new Texture(Gdx.files.internal("assets/selfmade/maskicon.png"));
         heartRegions = new TextureRegion[5];
-        for (int i = 0; i < 5; i++) {
-            heartRegions[i] = tmp[0][4 + i];
+        for(int i=0; i<5; i++) {
+            heartRegions[i] = new TextureRegion(maskTexture);
         }
 
-        keyRegion = tmp[4][0];
+        // Load Key (Card) Icon
+        Texture basicTile = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
+        TextureRegion[][] tiles = TextureRegion.split(basicTile, 32, 32); 
+        keyRegion = tiles[1][1]; // Row 1, Col 1 as per MapLoader logic for default key
 
         TextureRegion bgRegion = new TextureRegion(objectsTexture, 4 * 16, 18 * 16, 4 * 16, 2 * 16);
         achievementNinePatch = new com.badlogic.gdx.graphics.g2d.NinePatch(bgRegion, 16, 16, 0, 0);
@@ -156,7 +170,7 @@ public class HUD {
         table.setFillParent(true);
 
         heartsTable = new Table();
-        heartsTable.left();
+        heartsTable.top().left(); // Align content to top-left so it grows downwards
 
         keyImage = new Image(keyRegion);
         Label.LabelStyle fontStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.WHITE);
@@ -164,7 +178,8 @@ public class HUD {
         timeLabel = new Label("Time: 00:00\nScore: 1000", fontStyle);
         timeLabel.setAlignment(Align.center);
 
-        table.add(heartsTable).expandX().left().pad(10).height(64);
+        // Remove fixed height constraint so it can grow
+        table.add(heartsTable).expandX().left().top().pad(10); 
 
         // Center Container for Time only
         Table centerTable = new Table();
@@ -192,8 +207,9 @@ public class HUD {
     attackHintLabel.setVisible(false);
     stage.addActor(attackHintLabel);
 
-    table.add(centerTable).expandX().center().padTop(10);
-        table.add(keyImage).expandX().right().pad(10).size(64, 64);
+    // Align centerTable and keyImage to top to avoid shifting when hearts grow
+    table.add(centerTable).expandX().center().top().padTop(10); 
+        table.add(keyImage).expandX().right().top().pad(10).size(64, 64);
 
         stage.addActor(table);
     }
@@ -382,35 +398,68 @@ public class HUD {
         int currentLives = character.getLives();
         int maxLives = character.getMaxLives();
 
-        int numHearts = (int) Math.ceil(maxLives / 4.0);
-        if (numHearts < 1)
-            numHearts = 1;
-
-        if (heartImages.size != numHearts) {
+        if (heartImages.size != maxLives) {
             heartsTable.clearChildren();
             heartImages.clear();
-            for (int i = 0; i < numHearts; i++) {
+            for (int i = 0; i < maxLives; i++) {
                 Image img = new Image(heartRegions[0]); // Default full
-                heartsTable.add(img).size(64, 64).padRight(5);
+                heartsTable.add(img).size(64, 64).padRight(5).padBottom(5); // Increased padBottom, smaller size? User asked for grid.
+                // Assuming mask icons are roughly 32x32 or scaled. Previous code used 64x64. Let's stick to user request or reasonable size. 
+                // User didn't specify size, but 64x64 is big for many masks. I'll keep 64 if possible or 48.
+                // Let's use 48x48 to fit 5.
+                // Row break every 5 items
+                if ((i + 1) % 5 == 0) {
+                    heartsTable.row();
+                }
                 heartImages.add(img);
             }
         }
 
+        // Logic to update drawable based on health
+        // Since we now use a single mask icon, this part is simplified:
+        // We either show it or don't? OR we assume full health logic applies?
+        // Wait, maskicon is likely just "one mask = 4 HP" or "one mask = 1 HP"?
+        // Original logic: 1 heart = 4 HP. 
+        // If we switch to mask icons, does 1 mask = 1 HP? 
+        // User said: "左上角HUD的爱心换成...maskicon.png...12345个...满5个换行".
+        // This implies count of masks = count of lives/health?
+        // "Lives" in this game seem to be HP chunks. 
+        // Let's assume 1 Mask = 1 Life Unit (1 HP).
+        // Original: numHearts = ceil(maxLives / 4.0).
+        // If user wants "1, 2, 3, 4, 5个", maybe they want 1 icon per 1 HP?
+        // If so, I should change numHearts calculation to just 'maxLives'.
+        
+        // Let's Assume 1 Mask = 1 HP based on "12345 ge".
+        // Re-calculating numHearts
+        int numIcons = maxLives; 
+        
+        if (heartImages.size != numIcons) {
+             heartsTable.clearChildren();
+             heartImages.clear();
+             for (int i = 0; i < numIcons; i++) {
+                 Image img = new Image(heartRegions[0]); 
+                 heartsTable.add(img).size(48, 48).padRight(5).padBottom(5);
+                 if ((i + 1) % 5 == 0) {
+                     heartsTable.row();
+                 }
+                 heartImages.add(img);
+             }
+        }
+        
+        // Update visibility/texture
         for (int i = 0; i < heartImages.size; i++) {
             Image img = heartImages.get(i);
-
-            int heartStartHP = i * 4;
-            int hpForThisHeart = currentLives - heartStartHP;
-
-            if (hpForThisHeart > 4)
-                hpForThisHeart = 4;
-            if (hpForThisHeart < 0)
-                hpForThisHeart = 0;
-
-            int textureIndex = 4 - hpForThisHeart;
-
-            img.setDrawable(
-                    new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(heartRegions[textureIndex]));
+            // If currentLives > i, this mask is active (full).
+            // If currentLives <= i, this mask is empty/lost? 
+            // Or just hide it? 
+            // Usually we keep empty containers. 
+            // Since we don't have an "empty mask" texture, we might tint it black or reduce alpha.
+            
+            if (i < currentLives) {
+                img.setColor(Color.WHITE);
+            } else {
+                img.setColor(Color.DARK_GRAY); // Dimmed for lost health
+            }
         }
 
         if (character.hasKey()) {
