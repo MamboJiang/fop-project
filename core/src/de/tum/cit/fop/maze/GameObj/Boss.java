@@ -39,6 +39,9 @@ public class Boss extends Enemy {
         this.projectilesRef = projectiles;
         this.bulletTexture = bulletTex;
 
+        // Adjust collision bounds for larger Boss (proportionally smaller than visual size)
+        this.bounds = new com.badlogic.gdx.math.Rectangle(x + 24, y + 24, 48, 48);
+        
         // 调整物理属性，让Boss移动更顺滑
         this.acceleration = 1000f;
         this.friction = 800f;
@@ -88,8 +91,10 @@ public class Boss extends Enemy {
 
         updateAnimation(delta);
         if (this.getBounds().overlaps(target.getBounds())) {
-            // 让玩家扣血 (takeDamage 自带无敌帧，不用担心瞬间秒杀)
-            target.takeDamage(1);
+            // Check shield before dealing damage (same as regular enemies)
+            if (!target.isShielded()) {
+                target.takeDamage(1);
+            }
         }
 
         if (damageFlashTime > 0) damageFlashTime -= delta;
@@ -116,6 +121,9 @@ public class Boss extends Enemy {
 
     // 根据速度方向选择动画帧
     private void updateAnimation(float delta) {
+        // Increment stateTime for animation playback
+        stateTime += delta;
+        
         if (velocity.len() > 10f) {
             Animation<TextureRegion> currentAnim = walkDown;
             if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
@@ -127,7 +135,7 @@ public class Boss extends Enemy {
             this.textureRegion = currentAnim.getKeyFrame(stateTime, true);
         } else {
             // 站立时
-            this.textureRegion = walkDown.getKeyFrame(0, true);
+            this.textureRegion = walkDown.getKeyFrame(stateTime, true);
         }
     }
 
@@ -182,11 +190,15 @@ public class Boss extends Enemy {
     private void shootProjectile() {
         if (projectilesRef != null) {
             // 从 Boss 中心发射
-            float centerX = position.x + width / 2 - 4; // -8 是为了居中子弹(假设子弹16宽)
-            float centerY = position.y + height / 2 - 4;
+            float centerX = position.x + width / 2 - 8; // Center bullet (assuming 16px bullet)
+            float centerY = position.y + height / 2 - 8;
 
-            // 计算方向（稍微加一点预判或偏移会更有趣，这里先保持直射）
-            Vector2 targetCenter = new Vector2(target.getPosition().x + target.getWidth()/2, target.getPosition().y + target.getHeight()/2);
+            // 使用角色的碰撞箱中心来瞄准，而不是位置中心
+            com.badlogic.gdx.math.Rectangle targetBounds = target.getBounds();
+            Vector2 targetCenter = new Vector2(
+                targetBounds.x + targetBounds.width / 2, 
+                targetBounds.y + targetBounds.height / 2
+            );
             Vector2 origin = new Vector2(centerX, centerY);
             Vector2 dir = targetCenter.sub(origin).nor();
 
@@ -229,6 +241,14 @@ public class Boss extends Enemy {
 
             System.out.println("DASH INIT! Vel: " + velocity);
         }
+    }
+    
+    @Override
+    public void draw(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
+        setupDamageFlash(batch);
+        // Draw Boss at 96x96 size (centered offset by -8 to account for larger sprite)
+        batch.draw(getTextureRegion(), getPosition().x - 8, getPosition().y - 8, 64, 64);
+        endDamageFlash(batch);
     }
 
     public float getHealthPercentage() {

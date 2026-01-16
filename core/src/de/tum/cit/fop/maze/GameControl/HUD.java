@@ -149,9 +149,9 @@ public class HUD {
         barStack.add(innerTable);
 
         // 5. 布局到 bossTable
-        // 位置：在屏幕顶部向下偏移 80 像素 (避开你的心和时间)
-        bossTable.add(bossNameLabel).padBottom(10).row();
-        bossTable.add(barStack).width(bossBarMaxWidth).height(20).padBottom(50);// 血条距离屏幕底部 50 像素
+        // 位置：使用 padTop 将整个血条往下推，避免与时间重叠
+        bossTable.add(bossNameLabel).padTop(70).padBottom(10).row();
+        bossTable.add(barStack).width(bossBarMaxWidth).height(20);
 
         stage.addActor(bossTable);
     }
@@ -200,7 +200,7 @@ public class HUD {
         // Existing code added them to 'stage' but they were not in the main table.
         // I'll re-add them to stage.
         
-    Label.LabelStyle blueStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.CYAN);
+    Label.LabelStyle blueStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.GREEN);
     promptLabel = new Label("Press [F] to Interact", blueStyle);
     promptLabel.setFontScale(1f);
     promptLabel.setVisible(false);

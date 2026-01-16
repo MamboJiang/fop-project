@@ -84,6 +84,8 @@ public class GameScreen implements Screen {
     private List<Projectile> projectiles;
     private TextureRegion bulletTex;
     private Boss activeBoss;
+    private float bossItemSpawnTimer = 0f;
+    private static final float BOSS_ITEM_SPAWN_INTERVAL = 15f; // 15 seconds
 
 
 
@@ -243,17 +245,17 @@ public class GameScreen implements Screen {
      */
     private void initMapObjects() {
         projectiles = new ArrayList<>();
+        
+        // Load custom bullet texture
+        Texture bulletTexture = new Texture(com.badlogic.gdx.Gdx.files.internal("assets/selfmade/bullet.png"));
+        bulletTex = new TextureRegion(bulletTexture);
+        
+        // Create black texture for other purposes
         com.badlogic.gdx.graphics.Pixmap pixmap = new com.badlogic.gdx.graphics.Pixmap(16, 16, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
-        pixmap.setColor(com.badlogic.gdx.graphics.Color.RED);
-        pixmap.fill();
-        Texture tempRedTexture = new Texture(pixmap);
-        bulletTex = new TextureRegion(tempRedTexture);
-
         pixmap.setColor(com.badlogic.gdx.graphics.Color.BLACK);
         pixmap.fill();
         Texture tempBlackTexture = new Texture(pixmap);
         blackTex = new TextureRegion(tempBlackTexture); // Add field blackTex to class
-
 
         pixmap.dispose();
         grid = new de.tum.cit.fop.maze.AI.Grid(0, 0, mapObjects);
@@ -361,6 +363,7 @@ public class GameScreen implements Screen {
                         bulletTex
                 );
                 this.activeBoss = boss;
+                this.bossItemSpawnTimer = 0f; // Reset item spawn timer for Boss fight
                 enemies.add(boss);
                 toRemove.add(obj);
             }
@@ -1193,6 +1196,15 @@ public class GameScreen implements Screen {
                     enemyIter.remove();
                 }
             }
+            
+            // Boss level item spawning
+            if (activeBoss != null && !activeBoss.isMarkedForRemoval()) {
+                bossItemSpawnTimer += delta;
+                if (bossItemSpawnTimer >= BOSS_ITEM_SPAWN_INTERVAL) {
+                    bossItemSpawnTimer = 0f;
+                    spawnBossLevelItem();
+                }
+            }
         }
 
         if (character != null) {
@@ -1368,6 +1380,8 @@ public class GameScreen implements Screen {
             pauseStage.dispose();
         if (pauseMenu != null)
             pauseMenu.dispose();
+        if (GameOverMenu != null)
+            GameOverMenu.dispose();
         if (shapeRenderer != null)
             shapeRenderer.dispose();
         if (hud != null)
@@ -1425,7 +1439,59 @@ public class GameScreen implements Screen {
 
 
 
+
+
     public Boss getActiveBoss() {
         return activeBoss;
+    }
+    
+    /**
+     * Spawns a health or shield item at a random walkable location during Boss fight.
+     */
+    private void spawnBossLevelItem() {
+        if (grid == null || mapObjects == null) return;
+        
+        // Randomly choose between health (70%) and shield (30%)
+        boolean spawnHealth = com.badlogic.gdx.math.MathUtils.randomBoolean(0.7f);
+        
+        // Find a random walkable position
+        int maxAttempts = 50;
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            int randomX = com.badlogic.gdx.math.MathUtils.random(5, grid.getWidth() - 5);
+            int randomY = com.badlogic.gdx.math.MathUtils.random(5, grid.getHeight() - 5);
+            
+            if (grid.isWalkable(randomX, randomY)) {
+                float worldX = randomX * 16;
+                float worldY = randomY * 16;
+                
+                // Check if position is not too close to player or Boss
+                if (character != null) {
+                    float distToPlayer = com.badlogic.gdx.math.Vector2.dst(
+                        worldX, worldY, 
+                        character.getPosition().x, character.getPosition().y
+                    );
+                    if (distToPlayer < 64) continue; // Too close to player
+                }
+                
+                if (activeBoss != null) {
+                    float distToBoss = com.badlogic.gdx.math.Vector2.dst(
+                        worldX, worldY,
+                        activeBoss.getPosition().x, activeBoss.getPosition().y
+                    );
+                    if (distToBoss < 80) continue; // Too close to Boss
+                }
+                
+                // Spawn the item
+                if (spawnHealth) {
+                    de.tum.cit.fop.maze.GameObj.Heart heart = new de.tum.cit.fop.maze.GameObj.Heart(worldX, worldY);
+                    mapObjects.add(heart);
+                } else {
+                    de.tum.cit.fop.maze.GameObj.ShieldItem shield = new de.tum.cit.fop.maze.GameObj.ShieldItem(worldX, worldY);
+                    mapObjects.add(shield);
+                }
+                
+                break; // Successfully spawned, exit loop
+            }
+        }
     }
 }
