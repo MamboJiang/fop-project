@@ -35,6 +35,11 @@ public class DungeonController {
     private List<Wall> trapWalls = new ArrayList<>();
     private List<Wall> bossWalls = new ArrayList<>();
     
+    // Boss room item spawning (Endless Ver2 only)
+    private float bossItemSpawnTimer = 0f;
+    private static final float BOSS_ITEM_SPAWN_INTERVAL = 10f; // 10 seconds
+    private boolean isEndlessVer2 = false;
+    
     private TextureRegion wallRegion;
     private TextureRegion keyRegion;
     
@@ -47,10 +52,10 @@ public class DungeonController {
         Texture texture = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
         TextureRegion[][] regions = TextureRegion.split(texture, 32, 32);
         wallRegion = regions[0][0];
-        keyRegion = regions[1][1]; 
+        keyRegion = regions[1][1];
     }
     
-    public void init(List<Room> rooms, boolean isBossLevel) {
+    public void init(List<Room> rooms, boolean isBossLevel, boolean isEndlessVer2) {
         this.rooms = rooms;
         this.bossTriggered = false;
         this.bossCleared = false;
@@ -58,6 +63,8 @@ public class DungeonController {
         this.trapCleared = false;
         this.trapWalls.clear();
         this.bossWalls.clear();
+        this.bossItemSpawnTimer = 0f;
+        this.isEndlessVer2 = isEndlessVer2;
         
         // Identify Boss Room (Last one)
         if (isBossLevel && !rooms.isEmpty()) {
@@ -106,6 +113,15 @@ public class DungeonController {
         // Trap Room Logic (Check for clear)
         if (trapTriggered && !trapCleared) {
             checkTrapClear();
+        }
+        
+        // Boss Room Item Spawning (Endless Ver2 only)
+        if (isEndlessVer2 && bossTriggered && !bossCleared) {
+            bossItemSpawnTimer += delta;
+            if (bossItemSpawnTimer >= BOSS_ITEM_SPAWN_INTERVAL) {
+                spawnBossRoomItem();
+                bossItemSpawnTimer = 0f;
+            }
         }
     }
     
@@ -198,5 +214,32 @@ public class DungeonController {
         float cx = (trapRoom.x + trapRoom.width / 2f) * 16;
         float cy = (trapRoom.y + trapRoom.height / 2f) * 16;
         gameScreen.addGameObject(new Key(cx - 8, cy - 8, 16, 16, keyRegion));
+    }
+    
+    private void spawnBossRoomItem() {
+        if (bossRoom == null) return;
+        
+        // Find a random position within the boss room
+        int attempts = 0;
+        while (attempts < 10) {
+            int rx = bossRoom.x + MathUtils.random(2, bossRoom.width - 3);
+            int ry = bossRoom.y + MathUtils.random(2, bossRoom.height - 3);
+            float wx = rx * 16;
+            float wy = ry * 16;
+            
+            // Check if position is walkable
+            if (gameScreen.isWalkable(rx, ry)) {
+                // 50% chance for heart, 50% for shield
+                if (MathUtils.randomBoolean()) {
+                    // Spawn Heart
+                    gameScreen.addGameObject(new de.tum.cit.fop.maze.GameObj.Heart(wx, wy));
+                } else {
+                    // Spawn Shield
+                    gameScreen.addGameObject(new de.tum.cit.fop.maze.GameObj.ShieldItem(wx, wy));
+                }
+                break;
+            }
+            attempts++;
+        }
     }
 }

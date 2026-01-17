@@ -331,7 +331,7 @@ public class GameScreen implements Screen {
         
         // Initialize Controller
         dungeonController = new de.tum.cit.fop.maze.Procedure.DungeonController(this);
-        dungeonController.init(gen.getRooms(), isBossLevel);
+        dungeonController.init(gen.getRooms(), isBossLevel, isEndlessVer2);
         
         initMapObjects();
     }
