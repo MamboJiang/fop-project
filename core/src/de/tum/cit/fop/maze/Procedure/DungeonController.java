@@ -39,6 +39,7 @@ public class DungeonController {
     private float bossItemSpawnTimer = 0f;
     private static final float BOSS_ITEM_SPAWN_INTERVAL = 10f; // 10 seconds
     private boolean isEndlessVer2 = false;
+    private int currentFloor = 1; // Track current floor for boss health scaling
     
     private TextureRegion wallRegion;
     private TextureRegion keyRegion;
@@ -55,7 +56,7 @@ public class DungeonController {
         keyRegion = regions[1][1];
     }
     
-    public void init(List<Room> rooms, boolean isBossLevel, boolean isEndlessVer2) {
+    public void init(List<Room> rooms, boolean isBossLevel, boolean isEndlessVer2, int floor) {
         this.rooms = rooms;
         this.bossTriggered = false;
         this.bossCleared = false;
@@ -65,6 +66,7 @@ public class DungeonController {
         this.bossWalls.clear();
         this.bossItemSpawnTimer = 0f;
         this.isEndlessVer2 = isEndlessVer2;
+        this.currentFloor = floor;
         
         // Identify Boss Room (Last one)
         if (isBossLevel && !rooms.isEmpty()) {
@@ -127,7 +129,7 @@ public class DungeonController {
     
     private void triggerBoss() {
         bossTriggered = true;
-        gameScreen.spawnBoss((bossRoom.x + bossRoom.width / 2f) * 16, (bossRoom.y + bossRoom.height / 2f) * 16);
+        gameScreen.spawnBoss((bossRoom.x + bossRoom.width / 2f) * 16, (bossRoom.y + bossRoom.height / 2f) * 16, currentFloor);
         gameScreen.showPopupMessage("The Boss has appeared! Escape is cut off!");
         
         // Seal Boss Room
@@ -210,9 +212,38 @@ public class DungeonController {
         gameScreen.getGameObjects().removeAll(trapWalls);
         trapWalls.clear();
         
-        // Drop Key
+        // Drop Key - find a free position avoiding traps
         float cx = (trapRoom.x + trapRoom.width / 2f) * 16;
         float cy = (trapRoom.y + trapRoom.height / 2f) * 16;
+        
+        // Try to find a position not overlapping with traps
+        boolean foundFreeSpot = false;
+        for (int attempt = 0; attempt < 20; attempt++) {
+            float testX = (trapRoom.x + MathUtils.random(2, trapRoom.width - 3)) * 16;
+            float testY = (trapRoom.y + MathUtils.random(2, trapRoom.height - 3)) * 16;
+            
+            // Check if this position overlaps with any trap
+            boolean overlaps = false;
+            for (GameObject obj : gameScreen.getGameObjects()) {
+                if (obj instanceof de.tum.cit.fop.maze.GameObj.Trap) {
+                    float dx = obj.getPosition().x - testX;
+                    float dy = obj.getPosition().y - testY;
+                    if (Math.abs(dx) < 16 && Math.abs(dy) < 16) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!overlaps && gameScreen.isWalkable((int)(testX / 16), (int)(testY / 16))) {
+                cx = testX;
+                cy = testY;
+                foundFreeSpot = true;
+                break;
+            }
+        }
+        
+        // If no free spot found, use center anyway (better than nothing)
         gameScreen.addGameObject(new Key(cx - 8, cy - 8, 16, 16, keyRegion));
     }
     

@@ -85,6 +85,12 @@ public class DungeonGeneratorV2 {
         
         // 2. Chain Generation
         int targetRooms = 6 + MathUtils.random(2); // 6 to 8 rooms
+        
+        // For boss levels, ensure at least 4 rooms to prevent entry-exit direct connection
+        if (isBossLevel && targetRooms < 4) {
+            targetRooms = 4;
+        }
+        
         int attempts = 0;
         int maxAttempts = 100;
         

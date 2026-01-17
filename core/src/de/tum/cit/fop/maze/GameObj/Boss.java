@@ -251,6 +251,11 @@ public class Boss extends Enemy {
         endDamageFlash(batch);
     }
 
+    
+    public void setMaxHealth(float maxHealth) {
+        this.maxHealth = maxHealth;
+    }
+    
     public float getHealthPercentage() {
         return (float)health / maxHealth;
     }

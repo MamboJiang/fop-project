@@ -154,7 +154,7 @@ public class GameScreen implements Screen {
         // if (hud != null) hud.showNotification(message);
     }
 
-    public void spawnBoss(float x, float y) {
+    public void spawnBoss(float x, float y, int floor) {
         if (bulletTex == null) {
             // Load if not loaded? Or assume loaded common
              // bulletTex is field?
@@ -167,6 +167,14 @@ public class GameScreen implements Screen {
                 projectiles,
                 bulletTex // Assuming this field is accessible
         );
+        
+        // Scale boss health for Endless Ver2: 200 + (floor - 1) * 200
+        if (isEndlessVer2) {
+            int bossHealth = 200 + (floor - 1) * 200;
+            boss.setHealth(bossHealth);
+            boss.setMaxHealth(bossHealth);
+        }
+        
         this.activeBoss = boss;
         this.bossItemSpawnTimer = 0f;
         addGameObject(boss);
@@ -197,6 +205,10 @@ public class GameScreen implements Screen {
         this.currentDifficulty = difficulty;
 
         if (isEndlessVer2) {
+            // Restore health to full when entering new floor (after boss defeat)
+            if (character != null && difficulty > 1) {
+                character.setLives(character.getMaxLives());
+            }
             generateProceduralLevelV2();
         } else {
             generateProceduralLevel();
@@ -331,7 +343,7 @@ public class GameScreen implements Screen {
         
         // Initialize Controller
         dungeonController = new de.tum.cit.fop.maze.Procedure.DungeonController(this);
-        dungeonController.init(gen.getRooms(), isBossLevel, isEndlessVer2);
+        dungeonController.init(gen.getRooms(), isBossLevel, isEndlessVer2, floor);
         
         initMapObjects();
     }
