@@ -100,8 +100,8 @@ public class TransitionEffect implements Disposable {
                     actionExecuted = true;
                 }
                 
-                // Wait 0.4s before shattering
-                if (stateTime >= 0.4f) {
+                // Wait 0.5s before shattering
+                if (stateTime >= 0.5f) {
                     currentState = State.SHATTER_OUT;
                     stateTime = 0;
                 }

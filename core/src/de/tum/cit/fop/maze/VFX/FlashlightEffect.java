@@ -109,7 +109,7 @@ public class FlashlightEffect implements Disposable {
             float distToTarget = src.dst(target);
             float length = distToTarget; 
             
-            float coneHalfWidth = 25f * MathUtils.degreesToRadians; 
+            float coneHalfWidth = 35f * MathUtils.degreesToRadians; 
             
             float x1 = src.x;
             float y1 = src.y;
@@ -138,7 +138,7 @@ public class FlashlightEffect implements Disposable {
                 batch.setProjectionMatrix(camera.combined);
                 batch.begin();
                 
-                float spotSize = 180f;
+                float spotSize = 300f;
                 batch.draw(spotLightTex, 
                     currentLightTarget.x - spotSize/2, 
                     currentLightTarget.y - spotSize/2, 

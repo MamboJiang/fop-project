@@ -134,10 +134,81 @@ public class GameScreen implements Screen {
      * 
      * @param difficulty The difficulty level.
      */
+    private boolean isEndlessVer2 = false;
+    private de.tum.cit.fop.maze.Procedure.DungeonController dungeonController;
+
+    public void addGameObject(GameObject obj) {
+        if (mapObjects != null) {
+            mapObjects.add(obj);
+        }
+    }
+
+    public List<GameObject> getGameObjects() {
+        return mapObjects;
+    }
+
+    public void showPopupMessage(String message) {
+        // Simple log for now, or use HUD if available
+        Gdx.app.log("GameScreen", "Popup: " + message);
+        // If HUD has a notification method, call it here
+        // if (hud != null) hud.showNotification(message);
+    }
+
+    public void spawnBoss(float x, float y) {
+        if (bulletTex == null) {
+            // Load if not loaded? Or assume loaded common
+             // bulletTex is field?
+        }
+        de.tum.cit.fop.maze.GameObj.Boss boss = new de.tum.cit.fop.maze.GameObj.Boss(
+                x, y,
+                de.tum.cit.fop.maze.MapLoader.getBossAnimations(),
+                grid,
+                character,
+                projectiles,
+                bulletTex // Assuming this field is accessible
+        );
+        this.activeBoss = boss;
+        this.bossItemSpawnTimer = 0f;
+        addGameObject(boss);
+        enemies.add(boss); // Keep track as enemy too
+    }
+
+    public de.tum.cit.fop.maze.GameObj.Character getCharacter() {
+        return character;
+    }
+
+    public List<de.tum.cit.fop.maze.GameObj.Enemy> getEnemies() {
+        return enemies;
+    }
+
+    public boolean isWalkable(int x, int y) {
+        if (grid != null) {
+            return grid.isWalkable(x, y);
+        }
+        return false;
+    }
+
+    /**
+     * Sets the difficulty for procedural generation.
+     * 
+     * @param difficulty The difficulty level.
+     */
     public void setDifficulty(int difficulty) {
         this.currentDifficulty = difficulty;
 
-        generateProceduralLevel();
+        if (isEndlessVer2) {
+            generateProceduralLevelV2();
+        } else {
+            generateProceduralLevel();
+        }
+    }
+
+    public void setEndlessVer2(boolean isEndlessVer2) {
+        this.isEndlessVer2 = isEndlessVer2;
+    }
+
+    public String getCurrentLevelName() {
+        return currentLevelName;
     }
 
     /**
@@ -244,6 +315,28 @@ public class GameScreen implements Screen {
     }
 
     /**
+     * Generates a Ver2 procedural level.
+     */
+    private void generateProceduralLevelV2() {
+        int floor = (currentDifficulty - 1) / 3 + 1;
+        int stage = (currentDifficulty - 1) % 3 + 1;
+        
+        // Update Level Name for UI
+        this.currentLevelName = "Floor " + floor + "-" + stage;
+        
+        boolean isBossLevel = (stage == 3);
+        
+        de.tum.cit.fop.maze.Procedure.DungeonGeneratorV2 gen = new de.tum.cit.fop.maze.Procedure.DungeonGeneratorV2(60, 60);
+        mapObjects = gen.generate(floor, isBossLevel);
+        
+        // Initialize Controller
+        dungeonController = new de.tum.cit.fop.maze.Procedure.DungeonController(this);
+        dungeonController.init(gen.getRooms(), isBossLevel);
+        
+        initMapObjects();
+    }
+
+    /**
      * Initializes game objects (Player, Enemies, Items) from the map data.
      */
     private void initMapObjects() {
@@ -315,8 +408,8 @@ public class GameScreen implements Screen {
         // Spawn Suicide Monster in Level 3 near spawn
         if ("level-3".equals(currentLevelName)) {
             de.tum.cit.fop.maze.GameObj.Enemy suicideEnemy = new de.tum.cit.fop.maze.GameObj.Enemy(
-                spawnX + 32, 
-                spawnY + 16, 
+                spawnX + 48,
+                spawnY + 32,
                 de.tum.cit.fop.maze.MapLoader.getRobotAnimations(), 
                 grid, 
                 character
@@ -625,7 +718,11 @@ public class GameScreen implements Screen {
 
             updateInputProcessor();
 
-            generateProceduralLevel();
+            if (isEndlessVer2) {
+                generateProceduralLevelV2();
+            } else {
+                generateProceduralLevel();
+            }
             return;
         }
 
@@ -932,7 +1029,7 @@ public class GameScreen implements Screen {
             if (!game.warFogMusic.isPlaying()) {
                 game.warFogMusic.play();
             }
-        } else if ("level-5".equals(currentLevelName)) {
+        } else if ("level-5".equals(currentLevelName) || (isEndlessVer2 && currentLevelName.endsWith("-3"))) {
             // 第五关：停止其他音乐，播放Boss音乐
             if (game.backgroundMusic.isPlaying()) game.backgroundMusic.stop();
             if (game.warFogMusic.isPlaying()) game.warFogMusic.stop();
@@ -972,6 +1069,12 @@ public class GameScreen implements Screen {
 
         // Interaction Check for Dialogue
         if (!isPaused && !dialogueManager.isActive() && character != null) {
+            
+            // Update Dungeon Controller (Room Logic)
+            if (dungeonController != null) {
+                dungeonController.update(delta);
+            }
+
             if (mapObjects != null) {
                 boolean nearTrigger = false;
                 for (GameObject obj : mapObjects) {
@@ -1169,6 +1272,11 @@ public class GameScreen implements Screen {
 
         if (mapObjects != null) {
             for (GameObject obj : mapObjects) {
+                // Skip rendering Enemies/Boss here as they are rendered separately
+                if (obj instanceof de.tum.cit.fop.maze.GameObj.Enemy) {
+                    continue;
+                }
+
                 if (obj instanceof de.tum.cit.fop.maze.GameObj.Heart) {
                     ((de.tum.cit.fop.maze.GameObj.Heart) obj).update(delta);
                 } else if (obj instanceof de.tum.cit.fop.maze.GameObj.ShieldItem) {
@@ -1184,24 +1292,6 @@ public class GameScreen implements Screen {
             }
         }
         
-        // Level 4 Lighting (Draws Multiply layer over map, but UNDER characters)
-        if ("level-4".equals(currentLevelName) && flashlightEffect != null) {
-             game.getSpriteBatch().end(); // End batch from map rendering
-             
-             Vector2 targetPos = null;
-             if (character != null) {
-                targetPos = new Vector2(character.getPosition().x + character.getWidth()/2, character.getPosition().y + character.getHeight()/2);
-             }
-             Vector2 nonoPos = null;
-             if (nono != null) {
-                nonoPos = new Vector2(nono.getPosition().x + nono.getWidth()/2, nono.getPosition().y + nono.getHeight()/2);
-             }
-             
-             flashlightEffect.render(delta, camera, viewport, game.getSpriteBatch(), shapeRenderer, nonoPos, targetPos);
-             
-             game.getSpriteBatch().begin(); // Restart batch for characters
-        }
-
         if (character != null) {
             character.draw(game.getSpriteBatch());
         }
@@ -1219,6 +1309,24 @@ public class GameScreen implements Screen {
             enemy.draw(game.getSpriteBatch());
 
             enemy.drawStatus(game.getSpriteBatch(), font, debugEnabled);
+        }
+
+        // Level 4 Lighting (Draws Multiply layer over map AND characters/enemies)
+        if ("level-4".equals(currentLevelName) && flashlightEffect != null) {
+             game.getSpriteBatch().end(); // End batch from map/entity rendering
+             
+             Vector2 targetPos = null;
+             if (character != null) {
+                targetPos = new Vector2(character.getPosition().x + character.getWidth()/2, character.getPosition().y + character.getHeight()/2);
+             }
+             Vector2 nonoPos = null;
+             if (nono != null) {
+                nonoPos = new Vector2(nono.getPosition().x + nono.getWidth()/2, nono.getPosition().y + nono.getHeight()/2);
+             }
+             
+             flashlightEffect.render(delta, camera, viewport, game.getSpriteBatch(), shapeRenderer, nonoPos, targetPos);
+             
+             game.getSpriteBatch().begin(); // Restart batch for damage numbers
         }
 
         if (damageNumbers != null) {
@@ -1257,6 +1365,18 @@ public class GameScreen implements Screen {
                         if (bossDeathTimer < 2.0f) {
                             continue; // Wait until timer reaches 2.0s
                         }
+                        if (isEndlessVer2) {
+                            // Spawn Exit
+                            Texture texture = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
+                            TextureRegion[][] regions = TextureRegion.split(texture, 32, 32);
+                            TextureRegion exitRegion = regions[0][1];
+                            
+                            mapObjects.add(new Exit(enemy.getPosition().x, enemy.getPosition().y, 16, 16, exitRegion));
+                            
+                            enemyIter.remove();
+                            continue;
+                        } 
+                        
                         game.setScreen(new de.tum.cit.fop.maze.GameControl.CinematicScreen(game));
                         return;
                     }

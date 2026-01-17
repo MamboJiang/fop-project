@@ -43,6 +43,7 @@ public class HUD {
     private Label debugInfoLabel;
     private Label timeLabel;
     private Label promptLabel;
+    private Label floorLabel;
 
     // Tutorial hints
     private Label moveHintLabel;
@@ -190,8 +191,17 @@ public class HUD {
         // Spacer to push Key to right
         sidesLayer.add().expandX();
         
-        // Right: Key
-        sidesLayer.add(keyImage).top().right().pad(10).size(64, 64);
+        // Right: Key and Level Name
+        Table rightTable = new Table();
+        rightTable.top().right();
+        rightTable.add(keyImage).size(64, 64).row();
+        
+        Label.LabelStyle smallStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.WHITE);
+        floorLabel = new Label("", smallStyle);
+        floorLabel.setFontScale(0.8f);
+        rightTable.add(floorLabel).padTop(5);
+        
+        sidesLayer.add(rightTable).top().right().pad(10);
         
         stack.add(sidesLayer);
         
@@ -414,6 +424,13 @@ public class HUD {
 
         String timeStr = gameScreen.getFormattedTime();
         timeLabel.setText(timeStr);
+        
+        if (floorLabel != null && gameScreen.getCurrentLevelName().startsWith("Floor")) {
+            floorLabel.setVisible(true);
+            floorLabel.setText(gameScreen.getCurrentLevelName());
+        } else if (floorLabel != null) {
+            floorLabel.setVisible(false);
+        }
 
         int currentLives = character.getLives();
         int maxLives = character.getMaxLives();

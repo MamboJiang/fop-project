@@ -359,6 +359,15 @@ public class StoryMenu implements Screen {
             }
         });
 
+        TextButton endlessV2Btn = createHoverButton("Endless Ver2", skin, "middle");
+        endlessV2Btn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                // Just start directly for now, reuse resume logic later if needed
+                game.goToEndlessModeVer2(game.getPlayerState().getUsername());
+            }
+        });
+
         TextButton skillsBtn = createHoverButton("Skills & Upgrades", skin, "middle");
         skillsBtn.addListener(new ChangeListener() {
             @Override
@@ -389,6 +398,7 @@ public class StoryMenu implements Screen {
         // Consistent spacing
         btnContainer.add(selectLevelBtn).padBottom(15).row();
         btnContainer.add(endlessBtn).padBottom(15).row();
+        btnContainer.add(endlessV2Btn).padBottom(15).row();
         btnContainer.add(skillsBtn).padBottom(15).row();
         btnContainer.add(achBtn).padBottom(15).row();
         btnContainer.add(settingsBtn).padBottom(15).row();

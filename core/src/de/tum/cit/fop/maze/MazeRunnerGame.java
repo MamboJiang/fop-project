@@ -326,10 +326,6 @@ public class MazeRunnerGame extends Game {
     }
     
 
-    /**
-     * Starts an Endless Mode game.
-     * @param playerName The name of the player starting the run.
-     */
     public void goToEndlessMode(String playerName) {
         playTransition(() -> {
             int startDifficulty = 1;
@@ -338,6 +334,38 @@ public class MazeRunnerGame extends Game {
             }
 
             GameScreen gs = new GameScreen(this, true, playerName);
+            gs.setDifficulty(startDifficulty);
+            this.setScreen(gs);
+
+            if (menuScreen != null) {
+                menuScreen.dispose();
+                menuScreen = null;
+            }
+        });
+    }
+
+    /**
+     * Starts an Endless Mode Ver2 game.
+     * @param playerName The name of the player starting the run.
+     */
+    public void goToEndlessModeVer2(String playerName) {
+        playTransition(() -> {
+            // Ver2 uses a different tracking or resets wave?
+            // For now, let's reuse playerState.endlessWave but assume it starts at 1
+            // or modify GameScreen to handle "Floor 1-1" from difficulty 1.
+
+            int startDifficulty = 1;
+            if (playerState != null) {
+                startDifficulty = playerState.getEndlessWave();
+            }
+
+            // Pass isEndlessVer2 = true (Need to modify GameScreen constructor first, but I will do it next)
+            // For now, I will use a temporary constructor signature or setter.
+            // Actually, I'll update GameScreen constructor signature in the next step.
+            // I'll call a new setter setEndlessVer2(true).
+            
+            GameScreen gs = new GameScreen(this, true, playerName);
+            gs.setEndlessVer2(true); // Will add this method in GameScreen
             gs.setDifficulty(startDifficulty);
             this.setScreen(gs);
 
