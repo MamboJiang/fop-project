@@ -316,13 +316,11 @@ public class MazeRunnerGame extends Game {
      * Switches to the Settings screen.
      */
     public void goToSettings() {
-        playTransition(() -> {
-            this.setScreen(new SettingsScreen(this));
-            if (menuScreen != null) {
-                menuScreen.dispose();
-                menuScreen = null;
-            }
-        });
+        this.setScreen(new SettingsScreen(this));
+        if (menuScreen != null) {
+            menuScreen.dispose();
+            menuScreen = null;
+        }
     }
     
 
@@ -486,13 +484,11 @@ public class MazeRunnerGame extends Game {
      * Switches to the Skill Tree screen.
      */
     public void goToSkillTree() {
-        playTransition(() -> {
-            this.setScreen(new SkillTreeScreen(this));
-            if (menuScreen != null) {
-                menuScreen.dispose();
-                menuScreen = null;
-            }
-        });
+        this.setScreen(new SkillTreeScreen(this));
+        if (menuScreen != null) {
+            menuScreen.dispose();
+            menuScreen = null;
+        }
     }
 
 

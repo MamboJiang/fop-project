@@ -61,6 +61,9 @@ public class StoryMenu implements Screen {
     private Image backgroundImage1;
     private Image backgroundImage2;
     private float scrollSpeed = 25f;
+    
+    // Persistent background position
+    public static float savedBackgroundX = 0f;
 
     private Image cinematicBarTop;
     private Image cinematicBarBottom;
@@ -107,8 +110,8 @@ public class StoryMenu implements Screen {
         backgroundImage2.setScaling(Scaling.stretch);
         backgroundImage2.setSize(stage.getWidth(), stage.getHeight());
 
-        backgroundImage1.setPosition(0, 0);
-        backgroundImage2.setPosition(stage.getWidth(), 0);
+        backgroundImage1.setPosition(savedBackgroundX, 0);
+        backgroundImage2.setPosition(savedBackgroundX + stage.getWidth(), 0);
 
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -131,7 +134,7 @@ public class StoryMenu implements Screen {
         textLayerTable.setFillParent(false);
         textLayerTable.bottom().left();
         
-        float initialWidth = isGameMenu ? stage.getWidth() * 0.5f : stage.getWidth();
+        float initialWidth = isGameMenu ? stage.getWidth() : stage.getWidth(); // Always start full for animation if GameMenu
         bossTable.setSize(initialWidth, stage.getHeight());
         textLayerTable.setSize(initialWidth, stage.getHeight());
 
@@ -251,6 +254,23 @@ public class StoryMenu implements Screen {
                 handleInput();
             }
         });
+        
+        // Entry Animation for Game Hub (Similar to First Menu Entry)
+        if (isGameMenu) {
+            isTransitioning = true; // Prevent resize from resetting positions immediately
+            
+            // Start with Full Screen Boss (like Intro)
+            bossTable.setSize(stage.getWidth(), stage.getHeight());
+            textLayerTable.setSize(stage.getWidth(), stage.getHeight());
+            
+            // Menu Offscreen Right
+            menuTable.setSize(stage.getWidth() * 0.5f, stage.getHeight());
+            menuTable.setPosition(stage.getWidth(), 0);
+            menuTable.setVisible(false);
+            
+            // Trigger Transition
+            stage.addAction(Actions.delay(0.01f, Actions.run(this::transitionToMenu)));
+        }
     }
     
     private TextButton createHoverButton(String text, Skin skin, String styleName) {
@@ -328,38 +348,38 @@ public class StoryMenu implements Screen {
             }
         });
         
-        TextButton endlessBtn = createHoverButton("Endless Mode", skin, "middle");
-        endlessBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                boolean unlocked = !game.getPlayerState().getCompletedLevels().isEmpty();
-                if (unlocked) {
-                    de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
-                    boolean hasRun = state.getEndlessWave() > 1 || state.getCurrentRunScore() > 0;
-                    if (hasRun) {
-                        Dialog dialog = new Dialog("Resume Run?", skin) {
-                            @Override
-                            protected void result(Object object) {
-                                int choice = (Integer) object;
-                                if (choice == 1) game.goToEndlessMode(state.getUsername());
-                                else if (choice == 2) {
-                                    state.resetEndlessWave();
-                                    state.resetRunState();
-                                    game.goToEndlessMode(state.getUsername());
-                                }
-                            }
-                        };
-                        dialog.text("Continue Wave " + state.getEndlessWave() + "?").button("Yes", 1).button("New", 2).show(stage);
-                    } else {
-                        game.goToEndlessMode(game.getPlayerState().getUsername());
-                    }
-                } else {
-                    new Dialog("Locked", skin).text("Complete a level first!").button("OK").show(stage);
-                }
-            }
-        });
+        // TextButton endlessBtn = createHoverButton("Endless Mode", skin, "middle");
+        // endlessBtn.addListener(new ChangeListener() {
+        //     @Override
+        //     public void changed(ChangeEvent event, Actor actor) {
+        //         boolean unlocked = !game.getPlayerState().getCompletedLevels().isEmpty();
+        //         if (unlocked) {
+        //             de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
+        //             boolean hasRun = state.getEndlessWave() > 1 || state.getCurrentRunScore() > 0;
+        //             if (hasRun) {
+        //                 Dialog dialog = new Dialog("Resume Run?", skin) {
+        //                     @Override
+        //                     protected void result(Object object) {
+        //                         int choice = (Integer) object;
+        //                         if (choice == 1) game.goToEndlessMode(state.getUsername());
+        //                         else if (choice == 2) {
+        //                             state.resetEndlessWave();
+        //                             state.resetRunState();
+        //                             game.goToEndlessMode(state.getUsername());
+        //                         }
+        //                     }
+        //                 };
+        //                 dialog.text("Continue Wave " + state.getEndlessWave() + "?").button("Yes", 1).button("New", 2).show(stage);
+        //             } else {
+        //                 game.goToEndlessMode(game.getPlayerState().getUsername());
+        //             }
+        //         } else {
+        //             new Dialog("Locked", skin).text("Complete a level first!").button("OK").show(stage);
+        //         }
+        //     }
+        // });
 
-        TextButton endlessV2Btn = createHoverButton("Endless Ver2", skin, "middle");
+        TextButton endlessV2Btn = createHoverButton("Endless Mode", skin, "middle");
         endlessV2Btn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -397,7 +417,7 @@ public class StoryMenu implements Screen {
         
         // Consistent spacing
         btnContainer.add(selectLevelBtn).padBottom(15).row();
-        btnContainer.add(endlessBtn).padBottom(15).row();
+        //dbtnContainer.add(endlessBtn).padBottom(15).row();
         btnContainer.add(endlessV2Btn).padBottom(15).row();
         btnContainer.add(skillsBtn).padBottom(15).row();
         btnContainer.add(achBtn).padBottom(15).row();
@@ -440,7 +460,20 @@ public class StoryMenu implements Screen {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     if (game.loadGame(0)) {
-                         game.setScreen(new StoryMenu(game, true));
+                         // Animate: Menu Slides Out Right, Boss Expands to Full
+                         isTransitioning = true;
+                         float duration = 0.3f;
+                         Interpolation interp = Interpolation.pow2Out;
+                         
+                         // Menu slides out to right
+                         menuTable.addAction(Actions.moveTo(stage.getWidth(), 0, duration, interp));
+                         
+                         // Boss/Text expands to fill screen
+                         bossTable.addAction(Actions.sizeTo(stage.getWidth(), stage.getHeight(), duration, interp));
+                         textLayerTable.addAction(Actions.sizeTo(stage.getWidth(), stage.getHeight(), duration, interp));
+                         
+                         // Switch Screen after animation
+                         stage.addAction(Actions.delay(duration, Actions.run(() -> game.setScreen(new StoryMenu(game, true)))));
                     }
                 }
             });
@@ -673,6 +706,13 @@ public class StoryMenu implements Screen {
 
         backgroundImage1.setX(backgroundImage1.getX() - scrollSpeed * delta);
         backgroundImage2.setX(backgroundImage2.getX() - scrollSpeed * delta);
+        
+        // Update persistent state
+        // Normalize saved position to ensure consistency across screens
+        float w = backgroundImage1.getWidth();
+        float currentX = backgroundImage1.getX() % w;
+        if (currentX > 0) currentX -= w;
+        savedBackgroundX = currentX;
 
         float width = backgroundImage1.getWidth();
 
@@ -704,6 +744,10 @@ public class StoryMenu implements Screen {
 
             backgroundImage1.setSize(stageW, stageH);
             backgroundImage2.setSize(stageW, stageH);
+            
+            // Reposition image2 to seamlessly connect with image1
+            // This prevents gaps or overlaps when screen aspect ratio changes
+            backgroundImage2.setX(backgroundImage1.getX() + stageW);
         }
 
         if (cinematicBarTop != null && cinematicBarBottom != null) {

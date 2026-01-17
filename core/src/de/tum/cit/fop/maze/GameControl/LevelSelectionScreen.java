@@ -22,6 +22,8 @@ import de.tum.cit.fop.maze.MapLoader;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.graphics.Pixmap;
 
 import java.util.List;
 
@@ -36,6 +38,18 @@ public class LevelSelectionScreen implements Screen {
     private Label levelNameLabel;
     private Texture frameTexture;
     private Table contentTable;
+    
+    // Background Fields
+    private Texture backgroundTexture;
+    private Image backgroundImage1;
+    private Image backgroundImage2;
+    private Texture overlayTexture;
+    private Image overlayImage;
+    private Image cinematicBarTop;
+    private Image cinematicBarBottom;
+    private Texture blackTexture;
+    private float scrollSpeed = 25f;
+    private static final float CINEMATIC_RATIO = 0.125f;
 
     /**
      * Constructor for LevelSelectionScreen.
@@ -50,13 +64,58 @@ public class LevelSelectionScreen implements Screen {
         frameTexture = new Texture(Gdx.files.internal("selfmade/uielements/levelselect.png"));
         Image frameImage = new Image(frameTexture);
 
+        // Background Setup
+        backgroundTexture = new Texture(Gdx.files.internal("selfmade/background.png"));
+        backgroundImage1 = new Image(backgroundTexture);
+        backgroundImage2 = new Image(backgroundTexture);
+        
+        backgroundImage1.setScaling(Scaling.stretch);
+        backgroundImage2.setScaling(Scaling.stretch);
+        
+        // Use saved position from StoryMenu
+        backgroundImage1.setSize(stage.getWidth(), stage.getHeight()); // Initial size
+        backgroundImage2.setSize(stage.getWidth(), stage.getHeight());
+        backgroundImage1.setPosition(StoryMenu.savedBackgroundX, 0);
+        backgroundImage2.setPosition(StoryMenu.savedBackgroundX + stage.getWidth(), 0);
+        
+        stage.addActor(backgroundImage1);
+        stage.addActor(backgroundImage2);
+        
+        // Overlay Removed as requested
+        
+        Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        p.setColor(0, 0, 0, 0.6f);
+        p.fill();
+        overlayTexture = new Texture(p);
+        p.dispose();
+        overlayImage = new Image(overlayTexture);
+        overlayImage.setSize(stage.getWidth(), stage.getHeight());
+        stage.addActor(overlayImage);
+        
+        
+        // Cinematic Bars (Solid Black)
+        Pixmap p2 = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        p2.setColor(Color.BLACK);
+        p2.fill();
+        blackTexture = new Texture(p2);
+        p2.dispose();
+        
+        cinematicBarTop = new Image(blackTexture);
+        cinematicBarBottom = new Image(blackTexture);
+        
+        stage.addActor(cinematicBarTop);
+        stage.addActor(cinematicBarBottom);
+
         // Root Table
         Table rootTable = new Table();
         rootTable.setFillParent(true);
         stage.addActor(rootTable);
 
         // Title (Static)
-        rootTable.add(new Label("Select Level", game.getSkin(), "title")).padBottom(50).row();
+        Label.LabelStyle titleStyle = new Label.LabelStyle(game.getSkin().getFont("hoefler"), Color.WHITE);
+        Label titleLabel = new Label("Select Level", titleStyle);
+        titleLabel.setFontScale(1.5f); // Make title larger
+        rootTable.add(titleLabel).padBottom(50).row();
         
         // Animated Content Table
         contentTable = new Table();
@@ -72,8 +131,8 @@ public class LevelSelectionScreen implements Screen {
         
         // Layer 1: Frame centered
         Table frameTable = new Table();
-        frameTable.add(frameImage);
-        stack.add(frameTable);
+        frameTable.add(frameImage); // Removed visual frame as requested
+        stack.add(frameTable);      // Removed visual frame as requested
         
         // Layer 2: Buttons
         // We need the buttons to be aligned with the "holes" in the frame if it has any, 
@@ -90,8 +149,10 @@ public class LevelSelectionScreen implements Screen {
             }
         });
         
+        Label.LabelStyle bodyStyle = new Label.LabelStyle(game.getSkin().getFont("hoefler"), Color.WHITE);
+        
         if (mapFiles.isEmpty()) {
-            levelsTable.add(new Label("No maps found!", game.getSkin()));
+            levelsTable.add(new Label("No maps found!", bodyStyle));
         } else {
             for (int i = 0; i < mapFiles.size(); i++) {
                 final FileHandle mapFile = mapFiles.get(i);
@@ -169,8 +230,8 @@ public class LevelSelectionScreen implements Screen {
             }
         }
 
-        ScrollPane scrollPane = new ScrollPane(levelsTable, game.getSkin());
-        scrollPane.setFadeScrollBars(false);
+        ScrollPane scrollPane = new ScrollPane(levelsTable);
+        // scrollPane.setFadeScrollBars(false); // Removed as requested
         scrollPane.setScrollingDisabled(false, true); // Allow horizontal, disable vertical
         
         // Add ScrollPane to Stack (Layer 2)
@@ -183,7 +244,7 @@ public class LevelSelectionScreen implements Screen {
         contentTable.add(stack).padBottom(20).row();
         
         // Level Name Label
-        levelNameLabel = new Label("", game.getSkin());
+        levelNameLabel = new Label("", bodyStyle);
         levelNameLabel.setAlignment(Align.center);
         contentTable.add(levelNameLabel).padBottom(30).minHeight(40).row();
         
@@ -226,13 +287,58 @@ public class LevelSelectionScreen implements Screen {
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        
+        updateBackground(delta);
+        
         stage.act(delta);
         stage.draw();
+    }
+    
+    private void updateBackground(float delta) {
+        if (backgroundImage1 == null || backgroundImage2 == null) return;
+        
+        // Scroll
+        backgroundImage1.setX(backgroundImage1.getX() - scrollSpeed * delta);
+        backgroundImage2.setX(backgroundImage2.getX() - scrollSpeed * delta);
+        
+        // Update persistent state in StoryMenu so when we return, it's synced
+        // Normalize saved position to ensure consistency across screens
+        float w = backgroundImage1.getWidth();
+        float currentX = backgroundImage1.getX() % w;
+        if (currentX > 0) currentX -= w;
+        StoryMenu.savedBackgroundX = currentX;
+        
+        float width = backgroundImage1.getWidth();
+        
+        if (backgroundImage1.getX() + width <= 0) {
+            backgroundImage1.setX(backgroundImage2.getX() + width);
+        }
+        
+        if (backgroundImage2.getX() + width <= 0) {
+            backgroundImage2.setX(backgroundImage1.getX() + width);
+        }
     }
 
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+        
+        float stageW = stage.getWidth();
+        float stageH = stage.getHeight();
+        
+        if (backgroundImage1 != null) backgroundImage1.setSize(stageW, stageH);
+        if (backgroundImage2 != null) backgroundImage2.setSize(stageW, stageH);
+        if (overlayImage != null) overlayImage.setSize(stageW, stageH);
+        
+        if (cinematicBarTop != null && cinematicBarBottom != null) {
+            float barHeight = stageH * CINEMATIC_RATIO;
+            
+            cinematicBarBottom.setSize(stageW, barHeight);
+            cinematicBarBottom.setPosition(0, 0);
+            
+            cinematicBarTop.setSize(stageW, barHeight);
+            cinematicBarTop.setPosition(0, stageH - barHeight);
+        }
     }
 
     @Override
@@ -255,5 +361,9 @@ public class LevelSelectionScreen implements Screen {
     public void dispose() {
         stage.dispose();
         if (frameTexture != null) frameTexture.dispose();
+        if (frameTexture != null) frameTexture.dispose();
+        if (backgroundTexture != null) backgroundTexture.dispose();
+        if (overlayTexture != null) overlayTexture.dispose();
+        if (blackTexture != null) blackTexture.dispose();
     }
 }

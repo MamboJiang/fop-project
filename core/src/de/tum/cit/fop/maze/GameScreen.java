@@ -205,10 +205,6 @@ public class GameScreen implements Screen {
         this.currentDifficulty = difficulty;
 
         if (isEndlessVer2) {
-            // Restore health to full when entering new floor (after boss defeat)
-            if (character != null && difficulty > 1) {
-                character.setLives(character.getMaxLives());
-            }
             generateProceduralLevelV2();
         } else {
             generateProceduralLevel();
@@ -659,6 +655,8 @@ public class GameScreen implements Screen {
         pauseMenu = new PauseMenu(game,
                 () -> togglePause(),
                 () -> {
+                    // Commented out save progress dialog - user request
+                    /*
                     if (isProcedural) {
                         Dialog dialog = new Dialog("Endless Mode", game.getSkin()) {
                             @Override
@@ -695,6 +693,17 @@ public class GameScreen implements Screen {
                         dialog.button(new com.badlogic.gdx.scenes.scene2d.ui.TextButton("End Game (Submit Score)", game.getSkin(), "short"), 2);
                         dialog.button(new com.badlogic.gdx.scenes.scene2d.ui.TextButton("Cancel", game.getSkin(), "short"), 0);
                         dialog.show(pauseStage);
+                    } else {
+                        game.goToMenu();
+                    }
+                    */
+                    // Trigger settlement screen for endless mode, otherwise go to menu
+                    if (isProcedural) {
+                        game.getPlayerState().resetEndlessWave();
+                        game.getPlayerState().resetRunState();
+                        pauseMenu.hide();
+                        isPaused = false;
+                        showGameOverMenu(false);
                     } else {
                         game.goToMenu();
                     }
@@ -1378,6 +1387,11 @@ public class GameScreen implements Screen {
                             continue; // Wait until timer reaches 2.0s
                         }
                         if (isEndlessVer2) {
+                            // Restore health to full when boss is defeated
+                            if (character != null) {
+                                character.setLives(character.getMaxLives());
+                            }
+                            
                             // Spawn Exit
                             Texture texture = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
                             TextureRegion[][] regions = TextureRegion.split(texture, 32, 32);
