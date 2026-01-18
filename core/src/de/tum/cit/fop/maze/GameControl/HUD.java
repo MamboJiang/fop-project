@@ -77,7 +77,7 @@ public class HUD {
     public HUD(SpriteBatch spriteBatch, GameScreen gameScreen, Skin skin) {
         this.gameScreen = gameScreen;
         this.skin = skin;
-        stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), spriteBatch);
+        stage = new Stage(new com.badlogic.gdx.utils.viewport.ExtendViewport(1920, 1080), spriteBatch);
 
         // Load Mask Icons for Lives
         // We reused objectsTexture variable name, rename it to maskTexture for clarity or just use new var

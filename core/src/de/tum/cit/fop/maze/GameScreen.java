@@ -651,7 +651,7 @@ public class GameScreen implements Screen {
      * Sets up the pause menu UI.
      */
     private void setupPauseMenu() {
-        pauseStage = new Stage(new FitViewport(1920, 1080), game.getSpriteBatch());
+        pauseStage = new Stage(new ExtendViewport(1920, 1080), game.getSpriteBatch());
 
         pauseMenu = new PauseMenu(game,
                 () -> togglePause(),
@@ -863,45 +863,14 @@ public class GameScreen implements Screen {
                 () -> {
 
                     if (isProcedural && win) {
-                        com.badlogic.gdx.scenes.scene2d.ui.Dialog dialog = new com.badlogic.gdx.scenes.scene2d.ui.Dialog(
-                                "Endless Mode", game.getSkin()) {
-                            @Override
-                            protected void result(Object object) {
-                                if (object instanceof Integer) {
-                                    int choice = (Integer) object;
-                                    if (choice == 1) {
+                        totalRunScore += calculateScore();
+                        game.getPlayerState().resetEndlessWave();
+                        game.getPlayerState().resetRunState();
 
-                                        game.getPlayerState().setEndlessWave(currentDifficulty + 1);
-
-                                        game.getPlayerState().setCurrentRunScore(totalRunScore + calculateScore());
-                                        if (character != null) {
-                                            game.getPlayerState().setCurrentRunHealth(character.getCurrentHealth());
-                                        }
-
-                                        game.saveGame();
-                                        game.goToMenu();
-                                    } else if (choice == 2) {
-
-                                        totalRunScore += calculateScore();
-                                        game.getPlayerState().resetEndlessWave();
-                                        game.getPlayerState().resetRunState();
-
-                                        if (GameOverMenu != null)
-                                            GameOverMenu.remove();
-                                        isGameOver = false;
+                        if (GameOverMenu != null)
+                            GameOverMenu.remove();
+                        isGameOver = false;
                                         showGameOverMenu(false);
-                                    } else {
-
-                                    }
-                                }
-                            }
-                        };
-                        dialog.text("Save Difficulty or End Run (Submit Score)?\nNew Run will be: Lv "
-                                + (currentDifficulty + 1));
-                        dialog.button("Save & Quit", 1);
-                        dialog.button("End Game (Submit Score)", 2);
-                        dialog.button("Cancel", 0);
-                        dialog.show(pauseStage);
                     } else {
                         game.goToMenu();
                     }
