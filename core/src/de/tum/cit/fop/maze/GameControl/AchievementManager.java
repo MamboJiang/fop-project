@@ -95,7 +95,7 @@ public class AchievementManager {
         achievements.clear();
         addDefault("first_blood", "First Blood", "Kill your first enemy.", EventType.KILL_ENEMY, 1);
         addDefault("serial_killer", "Serial Killer", "Kill 10 enemies.", EventType.KILL_ENEMY, 10);
-        addDefault("survivor_novice", "Survivor", "Reach Difficulty 3 in Infinite Mode.", EventType.REACH_DIFFICULTY, 3);
+        addDefault("survivor_novice", "Undying Warrior", "Kill 3 Bosses in Endless Mode.", EventType.KILL_BOSS_ENDLESS, 3);
         addDefault("rich", "Treasure Hunter", "Collect 5 items.", EventType.COLLECT_ITEM, 5);
         addDefault("escape_artist", "Escape Artist", "Complete your first level.", EventType.LEVEL_COMPLETE, 1);
 

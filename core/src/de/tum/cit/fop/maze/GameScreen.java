@@ -51,6 +51,7 @@ public class GameScreen implements Screen {
     private HUD hud;
 
     private boolean debugEnabled = false;
+    private boolean debugMapMode = false;
 
     private boolean isPaused = false;
     private boolean isGameOver = false;
@@ -334,7 +335,7 @@ public class GameScreen implements Screen {
         
         boolean isBossLevel = (stage == 3);
         
-        de.tum.cit.fop.maze.Procedure.DungeonGeneratorV2 gen = new de.tum.cit.fop.maze.Procedure.DungeonGeneratorV2(60, 60);
+        de.tum.cit.fop.maze.Procedure.DungeonGeneratorV2 gen = new de.tum.cit.fop.maze.Procedure.DungeonGeneratorV2(130, 130);
         mapObjects = gen.generate(floor, isBossLevel);
         
         // Initialize Controller
@@ -720,6 +721,11 @@ public class GameScreen implements Screen {
             totalRunScore += calculateScore();
 
             currentDifficulty++;
+            game.getPlayerState().setEndlessWave(currentDifficulty);
+            // Update Max Floor
+             int floor = (currentDifficulty - 1) / 3 + 1;
+             game.getPlayerState().setMaxEndlessFloor(floor);
+             
             de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
                     .onStatusUpdate(de.tum.cit.fop.maze.GameControl.EventType.REACH_DIFFICULTY, currentDifficulty);
 
@@ -845,7 +851,11 @@ public class GameScreen implements Screen {
                 () -> {
 
                     if (isProcedural) {
-                        game.goToEndlessMode(playerName);
+                        if (isEndlessVer2  && activeBoss == null) {
+                            game.goToEndlessModeVer2(playerName);
+                        } else {
+                            game.goToEndlessMode(playerName);
+                        }
                     } else {
                         game.goToGame(this.mapFile);
                     }
@@ -955,6 +965,19 @@ public class GameScreen implements Screen {
      */
     public void toggleDebug() {
         debugEnabled = !debugEnabled;
+    }
+
+    public void toggleMapDebug() {
+        debugMapMode = !debugMapMode;
+        if (debugMapMode) {
+             camera.zoom = 6.0f;
+             // Center on 100x100 map (100 * 16 / 2 = 800)
+             camera.position.set(800, 800, 0);
+             camera.update();
+        } else {
+             camera.zoom = 1.0f;
+             // Position update happens in render
+        }
     }
 
     /**
@@ -1226,12 +1249,14 @@ public class GameScreen implements Screen {
                     }
                 }
 
-                float targetX = character.getPosition().x + 8;
-                float targetY = character.getPosition().y + 16;
-
-                float lerpSpeed = 5f;
-                camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
-                camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
+                if (!debugMapMode) {
+                    float targetX = character.getPosition().x + 8;
+                    float targetY = character.getPosition().y + 16;
+                    
+                    float lerpSpeed = 5f;
+                    camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
+                    camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
+                }
 
                 if (screenShake != null) {
                     screenShake.update(delta, camera);
@@ -1387,6 +1412,9 @@ public class GameScreen implements Screen {
                             continue; // Wait until timer reaches 2.0s
                         }
                         if (isEndlessVer2) {
+                            // Achievement Trigger
+                            de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.KILL_BOSS_ENDLESS, 1);
+                            
                             // Restore health to full when boss is defeated
                             if (character != null) {
                                 character.setLives(character.getMaxLives());

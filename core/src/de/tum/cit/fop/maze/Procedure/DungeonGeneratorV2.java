@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.GridPoint2;
 import de.tum.cit.fop.maze.GameObj.*;
 import de.tum.cit.fop.maze.MapLoader;
 
@@ -61,6 +62,12 @@ public class DungeonGeneratorV2 {
      * @param isBossLevel If true, the last room will be a Boss room.
      * @return List of GameObjects.
      */
+    /**
+     * Generates a Ver2 dungeon using Grid-Slot System.
+     * @param difficulty Floor/Difficulty index.
+     * @param isBossLevel If true, the last room will be a Boss room.
+     * @return List of GameObjects.
+     */
     public List<GameObject> generate(int difficulty, boolean isBossLevel) {
         // Reset Map
         for (int x = 0; x < width; x++) {
@@ -70,171 +77,273 @@ public class DungeonGeneratorV2 {
         }
         rooms.clear();
 
-        // 1. Place Entry Room (Center of Map roughly)
-        int cx = width / 2;
-        int cy = height / 2;
-        // Odd size rooms: 9 to 15
-        int startW = MathUtils.random(4, 7) * 2 + 1; 
-        int startH = MathUtils.random(4, 7) * 2 + 1;
+        // V5: 3x3 Grid with PADDING for external rooms
+        // Grid uses 72x72 area (3 * 24).
+        // 100x100 map. Offset 14.
+        // V9: Increased for longer corridors (User Req)
+        int slotSize = 24;
+        int gridW = 3;
+        int gridH = 3;
+        int offsetX = (width - gridW * slotSize) / 2;
+        int offsetY = (height - gridH * slotSize) / 2;
         
-        Room startRoom = new Room(cx - startW/2, cy - startH/2, startW, startH);
+        // Track grid usage
+        boolean[][] occupiedSlots = new boolean[gridW][gridH];
+        
+        // 1. Pick ENTRY and EXIT Nodes on the Grid (Opposite Edges of 3x3)
+        // Flow Direction: Randomly Horizontal or Vertical
+        boolean horizontal = MathUtils.randomBoolean();
+        boolean reverse = MathUtils.randomBoolean(); // V6: Randomize direction (Up/Down or Left/Right)
+        
+        int entryGridX, entryGridY, exitGridX, exitGridY;
+        
+        if (horizontal) {
+            if (!reverse) {
+                // Left -> Right
+                entryGridX = 0; 
+                entryGridY = MathUtils.random(gridH - 1);
+                
+                exitGridX = gridW - 1; 
+                exitGridY = MathUtils.random(gridH - 1);
+            } else {
+                // Right -> Left
+                entryGridX = gridW - 1; 
+                entryGridY = MathUtils.random(gridH - 1);
+                
+                exitGridX = 0; 
+                exitGridY = MathUtils.random(gridH - 1);
+            }
+        } else {
+            if (!reverse) {
+                // Bottom -> Top
+                entryGridX = MathUtils.random(gridW - 1); 
+                entryGridY = 0;
+                
+                exitGridX = MathUtils.random(gridW - 1); 
+                exitGridY = gridH - 1;
+            } else {
+                // Top -> Bottom
+                entryGridX = MathUtils.random(gridW - 1); 
+                entryGridY = gridH - 1;
+                
+                exitGridX = MathUtils.random(gridW - 1); 
+                exitGridY = 0;
+            }
+        }
+        
+        // 2. Connect Grid Entry to Exit (Main Path)
+        List<GridPoint2> mainPath = new ArrayList<>();
+        int cx = entryGridX;
+        int cy = entryGridY;
+        occupiedSlots[cx][cy] = true;
+        mainPath.add(new GridPoint2(cx, cy));
+        
+        int lastDx = 0, lastDy = 0;
+        int streak = 0;
+
+        while (cx != exitGridX || cy != exitGridY) {
+            // Pathfinding Logic (Bias towards exit)
+            int dx = Integer.compare(exitGridX, cx);
+            int dy = Integer.compare(exitGridY, cy);
+            
+            // Randomly pick axis if both available
+            boolean moveX = (dx != 0 && (dy == 0 || MathUtils.randomBoolean()));
+            
+            // V4/V5 Constraint: Straight path limit
+            if (moveX) {
+                 // If moving X extends a 2+ streak, force turn Y if possible
+                 if (dx == lastDx && streak >= 2 && dy != 0) { moveX = false; } 
+            } else {
+                 // If moving Y extends a 2+ streak, force turn X if possible
+                 if (dy == lastDy && streak >= 2 && dx != 0) { moveX = true; }
+            }
+            
+            int nextX = cx + (moveX ? dx : 0);
+            int nextY = cy + (!moveX ? dy : 0);
+            
+            // Streak update
+            int actualDx = nextX - cx;
+            int actualDy = nextY - cy;
+            
+            if (actualDx != 0) { 
+                if (actualDx == lastDx) streak++; else streak = 1; 
+                lastDx = actualDx; lastDy = 0; 
+            } else { 
+                if (actualDy == lastDy) streak++; else streak = 1; 
+                lastDy = actualDy; lastDx = 0; 
+            }
+            
+            cx = nextX;
+            cy = nextY;
+            
+            if (!occupiedSlots[cx][cy]) {
+                occupiedSlots[cx][cy] = true;
+                mainPath.add(new GridPoint2(cx, cy));
+            } else if (cx == exitGridX && cy == exitGridY) {
+                 // Reached exit (even if occupied somehow, though shouldn't be)
+                 occupiedSlots[cx][cy] = true;
+                 mainPath.add(new GridPoint2(cx, cy));
+            }
+        }
+        
+        // 3. Branching
+        int desiredExtraRooms = 2 + MathUtils.random(2);
+        List<GridPoint2> branches = new ArrayList<>();
+        List<GridPoint2> candidates = new ArrayList<>(mainPath);
+        
+        int attempts = 0;
+        while (branches.size() < desiredExtraRooms && attempts < 50 && !candidates.isEmpty()) {
+            attempts++;
+            GridPoint2 base = candidates.get(MathUtils.random(candidates.size() - 1));
+             
+            int[][] neighbors = {{0,1}, {0,-1}, {1,0}, {-1,0}};
+            int[] dir = neighbors[MathUtils.random(0, 3)];
+            int nx = base.x + dir[0];
+            int ny = base.y + dir[1];
+            
+            if (nx >= 0 && nx < gridW && ny >= 0 && ny < gridH && !occupiedSlots[nx][ny]) {
+                occupiedSlots[nx][ny] = true;
+                branches.add(new GridPoint2(nx, ny));
+                attempts = 0;
+            }
+        }
+        
+        // 4. Create Rooms
+        // A. External Start Room (Outside Grid)
+        // V10: Consistent Distance. Place exactly 1 slotSize away from Entry Grid Center.
+        int startDirX = 0, startDirY = 0;
+        
+        if (horizontal) {
+            if (!reverse) { startDirX = -1; startDirY = 0; } // Left
+            else { startDirX = 1; startDirY = 0; } // Right
+        } else {
+            if (!reverse) { startDirX = 0; startDirY = -1; } // Bottom
+            else { startDirX = 0; startDirY = 1; } // Top
+        }
+        
+        // Calculate Center of Entry Grid Slot
+        int entrySlotCx = offsetX + entryGridX * slotSize + slotSize / 2;
+        int entrySlotCy = offsetY + entryGridY * slotSize + slotSize / 2;
+        
+        // Calculate Target Center for Start Room (1 slot away)
+        int startTargetCx = entrySlotCx + (startDirX * slotSize);
+        int startTargetCy = entrySlotCy + (startDirY * slotSize);
+        
+        // Calculate Top-Left for Start Room
+        // V10: Force Even Width/Height (10) for Center Alignment with Slot (24)
+        int startRw = 10, startRh = 10;
+        int startRx = startTargetCx - startRw / 2;
+        int startRy = startTargetCy - startRh / 2;
+        Room startRoom = new Room(startRx, startRy, startRw, startRh);
+        startRoom.isMainPath = true;
         rooms.add(startRoom);
         carveRoom(startRoom);
         
-        Room currentRoom = startRoom;
+        // B. Grid Rooms (Main Path + Branches)
+        Room[][] gridRooms = new Room[gridW][gridH];
+        List<GridPoint2> allSlots = new ArrayList<>(mainPath);
+        allSlots.addAll(branches);
         
-        // 2. Chain Generation
-        int targetRooms = 6 + MathUtils.random(2); // 6 to 8 rooms
-        
-        // For boss levels, ensure at least 4 rooms to prevent entry-exit direct connection
-        if (isBossLevel && targetRooms < 4) {
-            targetRooms = 4;
+        for (GridPoint2 p : allSlots) {
+             int slotX = offsetX + p.x * slotSize;
+             int slotY = offsetY + p.y * slotSize;
+             
+             // V10: Force Even Sizes (10-14) for Center Alignment
+             // Random 5-7 * 2 = 10, 12, 14
+             int rw = MathUtils.random(5, 7) * 2;
+             int rh = MathUtils.random(5, 7) * 2; 
+             
+             // Center in slot
+             int rx = slotX + (slotSize - rw) / 2;
+             int ry = slotY + (slotSize - rh) / 2;
+             
+             Room r = new Room(rx, ry, rw, rh);
+             
+             // Main Path Logic
+             boolean isMain = false;
+             for (GridPoint2 mp : mainPath) { if (mp.x == p.x && mp.y == p.y) isMain = true; }
+             r.isMainPath = isMain;
+             
+             gridRooms[p.x][p.y] = r;
+             rooms.add(r);
+             carveRoom(r);
         }
         
-        int attempts = 0;
-        int maxAttempts = 100;
+        // C. External Exit Room (Outside Grid)
+        // V10: Consistent Distance. Place exactly 1 slotSize away from Exit Grid Center.
+        int exitDirX = 0, exitDirY = 0;
         
-        while (rooms.size() < targetRooms && attempts < maxAttempts) {
-            attempts++;
-            
-            // Pick a direction: 0=Up, 1=Right, 2=Down, 3=Left
-            int dir = MathUtils.random(0, 3);
-            
-            // Corridor Length: 10 to 15 (Similar to room sizes 9-15)
-            int corridorLen = MathUtils.random(10, 15);
-            
-            // New Room Size
-            int newW = MathUtils.random(4, 7) * 2 + 1;
-            int newH = MathUtils.random(4, 7) * 2 + 1;
-            
-            // Calculate Position
-            int nx = 0, ny = 0;
-            // Center alignment
-            int prevCenterX = currentRoom.x + currentRoom.width / 2;
-            int prevCenterY = currentRoom.y + currentRoom.height / 2;
-            
-            if (dir == 0) { // UP
-                // New room bottom edge aligns with prev top edge + len
-                // X center aligned
-                nx = prevCenterX - newW / 2;
-                ny = currentRoom.y + currentRoom.height + corridorLen;
-                
-            } else if (dir == 1) { // RIGHT
-                nx = currentRoom.x + currentRoom.width + corridorLen;
-                ny = prevCenterY - newH / 2;
-                
-            } else if (dir == 2) { // DOWN
-                nx = prevCenterX - newW / 2;
-                ny = currentRoom.y - corridorLen - newH;
-                
-            } else if (dir == 3) { // LEFT
-                nx = currentRoom.x - corridorLen - newW;
-                ny = prevCenterY - newH / 2;
-            }
-            
-            // Validation
-            if (nx < 2 || ny < 2 || nx + newW > width - 2 || ny + newH > height - 2) {
-                continue; // Out of bounds
-            }
-            
-            Room newRoom = new Room(nx, ny, newW, newH);
-            
-            // Overlap Check (with padding)
-            boolean overlaps = false;
-            for (Room r : rooms) {
-                // Determine collision with 2-tile padding to ensure walls
-                if (rectsIntersect(newRoom.x - 2, newRoom.y - 2, newRoom.width + 4, newRoom.height + 4,
-                                   r.x, r.y, r.width, r.height)) {
-                    overlaps = true;
-                    break;
-                }
-            }
-            
-            if (!overlaps) {
-                rooms.add(newRoom);
-                carveRoom(newRoom);
-                connectRooms(currentRoom, newRoom, dir, corridorLen);
-                currentRoom = newRoom;
-                attempts = 0; // Reset attempts after success
-            }
+        if (horizontal) {
+            if (!reverse) { exitDirX = 1; exitDirY = 0; } // Right
+            else { exitDirX = -1; exitDirY = 0; } // Left
+        } else {
+            if (!reverse) { exitDirX = 0; exitDirY = 1; } // Top
+            else { exitDirX = 0; exitDirY = -1; } // Bottom
         }
         
-        // 2.5 Branching Generation
-        // Try to branch out from existing rooms to add complexity
-        int branchTarget = 10; // Increased target
-        int branchCount = 0;
+        // Calculate Center of Exit Grid Slot
+        int exitSlotCx = offsetX + exitGridX * slotSize + slotSize / 2;
+        int exitSlotCy = offsetY + exitGridY * slotSize + slotSize / 2;
         
-        // Create a copy of rooms to iterate safely while adding new rooms
-        List<Room> mainPathRooms = new ArrayList<>(rooms);
+        // Calculate Target Center for Exit Room (1 slot away)
+        int exitTargetCx = exitSlotCx + (exitDirX * slotSize);
+        int exitTargetCy = exitSlotCy + (exitDirY * slotSize);
         
-        // Skip Start (0) and End (last)
-        for (int i = 1; i < mainPathRooms.size() - 1 && branchCount < branchTarget; i++) {
-             if (MathUtils.randomBoolean(0.9f)) { // 90% chance to TRY branching
-                 Room baseRoom = mainPathRooms.get(i);
-                 // Try multiple times to find a valid branch
-                 boolean success = false;
-                 for(int k=0; k<4; k++) {
-                     if(attemptBranch(baseRoom)) {
-                         success = true;
-                         // 50% chance to add ANOTHER branch to the same room (Hub room)
-                         if (!MathUtils.randomBoolean(0.5f)) break; 
+        // Calculate Top-Left for Exit Room
+        // V10: Fix Alignment. Boss Room 16x16 (Even).
+        int exitRw = 16, exitRh = 16;
+        int exitRx = exitTargetCx - exitRw / 2;
+        int exitRy = exitTargetCy - exitRh / 2;
+        Room exitRoom = new Room(exitRx, exitRy, exitRw, exitRh);
+        exitRoom.isMainPath = true;
+        rooms.add(exitRoom);
+        carveRoom(exitRoom);
+        
+        // 5. Connections
+        // A. Start -> Grid Entry
+        connectGridRooms(startRoom, gridRooms[entryGridX][entryGridY]);
+        
+        // B. Main Path
+        for (int i = 0; i < mainPath.size() - 1; i++) {
+            GridPoint2 p1 = mainPath.get(i);
+            GridPoint2 p2 = mainPath.get(i+1);
+            connectGridRooms(gridRooms[p1.x][p1.y], gridRooms[p2.x][p2.y]);
+        }
+        
+        // C. Grid Exit -> Exit Room
+        connectGridRooms(gridRooms[exitGridX][exitGridY], exitRoom);
+        
+        // D. Branches
+        for (GridPoint2 p : branches) {
+             List<Room> neighbors = new ArrayList<>();
+             int[][] offs = {{0,1}, {0,-1}, {1,0}, {-1,0}};
+             for (int[] off : offs) {
+                 int nx = p.x + off[0];
+                 int ny = p.y + off[1];
+                 if (nx >= 0 && nx < gridW && ny >= 0 && ny < gridH && gridRooms[nx][ny] != null) {
+                     neighbors.add(gridRooms[nx][ny]);
+                 }
+             }
+             if (!neighbors.isEmpty()) {
+                 connectGridRooms(gridRooms[p.x][p.y], neighbors.get(MathUtils.random(neighbors.size() - 1)));
+             }
+        }
+        
+        // E. Loops (70% prob)
+        for (GridPoint2 p : allSlots) {
+             int[][] offs = {{0,1}, {1,0}};
+             for (int[] off : offs) {
+                 int nx = p.x + off[0];
+                 int ny = p.y + off[1];
+                 if (nx >= 0 && nx < gridW && ny >= 0 && ny < gridH && gridRooms[nx][ny] != null) {
+                     if (MathUtils.randomBoolean(0.7f)) {
+                         connectGridRooms(gridRooms[p.x][p.y], gridRooms[nx][ny]);
                      }
                  }
-                 if (success) branchCount++;
              }
         }
-
-        // 3. Object Placement
+        
         return placeObjects(difficulty, isBossLevel);
-    }
-    
-    private boolean attemptBranch(Room r) {
-        int dir = MathUtils.random(0, 3);
-        int corridorLen = MathUtils.random(5, 10);
-        int newW = MathUtils.random(4, 6) * 2 + 1;
-        int newH = MathUtils.random(4, 6) * 2 + 1;
-        
-        int nx = 0, ny = 0;
-        int cX = r.x + r.width / 2;
-        int cY = r.y + r.height / 2;
-        
-        if (dir == 0) { // UP
-            nx = cX - newW / 2;
-            ny = r.y + r.height + corridorLen;
-        } else if (dir == 1) { // RIGHT
-            nx = r.x + r.width + corridorLen;
-            ny = cY - newH / 2;
-        } else if (dir == 2) { // DOWN
-            nx = cX - newW / 2;
-            ny = r.y - corridorLen - newH;
-        } else if (dir == 3) { // LEFT
-            nx = r.x - corridorLen - newW;
-            ny = cY - newH / 2;
-        }
-        
-        if (nx < 2 || ny < 2 || nx + newW > width - 2 || ny + newH > height - 2) return false;
-        
-        Room branch = new Room(nx, ny, newW, newH);
-        boolean overlaps = false;
-        for (Room existing : rooms) {
-             if (rectsIntersect(branch.x - 2, branch.y - 2, branch.width + 4, branch.height + 4,
-                                existing.x, existing.y, existing.width, existing.height)) {
-                 overlaps = true;
-                 break;
-             }
-        }
-        
-        if (!overlaps) {
-            rooms.add(branch);
-            carveRoom(branch);
-            connectRooms(r, branch, dir, corridorLen);
-            return true;
-        }
-        return false;
-    }
-    
-    private boolean rectsIntersect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
-        return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
     }
     
     private void carveRoom(Room r) {
@@ -244,37 +353,39 @@ public class DungeonGeneratorV2 {
             }
         }
     }
-    
-    private void connectRooms(Room r1, Room r2, int dir, int len) {
-        int c1x = r1.x + r1.width/2;
-        int c1y = r1.y + r1.height/2;
-        
-        // Carve straight line from edge to edge with Width 3
-        if (dir == 0) { // UP from R1 to R2
-             for (int y = r1.y + r1.height; y < r2.y; y++) {
-                 map[c1x][y] = FLOOR;
-                 map[c1x-1][y] = FLOOR;
-                 map[c1x+1][y] = FLOOR;
+
+    private void connectGridRooms(Room r1, Room r2) {
+         // Determine direction
+         int cx1 = r1.x + r1.width/2;
+         int cy1 = r1.y + r1.height/2;
+         int cx2 = r2.x + r2.width/2;
+         int cy2 = r2.y + r2.height/2;
+         
+         if (cx1 == cx2) { // Vertical
+             int minY = Math.min(r1.y + r1.height, r2.y + r2.height);
+             int maxY = Math.max(r1.y, r2.y); 
+             // Logic: Carve from Bottom of TopRoom to Top of BottomRoom
+             // r1 Y is bottom? No, Y increases UP.
+             Room bottom = (r1.y < r2.y) ? r1 : r2;
+             Room top = (r1.y < r2.y) ? r2 : r1;
+             
+             for (int y = bottom.y + bottom.height; y < top.y; y++) {
+                  map[cx1][y] = FLOOR;
+                  map[cx1-1][y] = FLOOR;
+                  map[cx1+1][y] = FLOOR;
              }
-        } else if (dir == 1) { // RIGHT
-             for (int x = r1.x + r1.width; x < r2.x; x++) {
-                 map[x][c1y] = FLOOR;
-                 map[x][c1y-1] = FLOOR;
-                 map[x][c1y+1] = FLOOR;
+             // Also ensure connection into the room (in case padding was huge) -> Actually carveRoom handles inside.
+             // But my logic for y above assumes spacing.
+         } else { // Horizontal
+             Room left = (r1.x < r2.x) ? r1 : r2;
+             Room right = (r1.x < r2.x) ? r2 : r1;
+             
+             for (int x = left.x + left.width; x < right.x; x++) {
+                  map[x][cy1] = FLOOR;
+                  map[x][cy1-1] = FLOOR;
+                  map[x][cy1+1] = FLOOR;
              }
-        } else if (dir == 2) { // DOWN (R2 is below R1)
-             for (int y = r2.y + r2.height; y < r1.y; y++) {
-                 map[c1x][y] = FLOOR;
-                 map[c1x-1][y] = FLOOR;
-                 map[c1x+1][y] = FLOOR;
-             }
-        } else if (dir == 3) { // LEFT
-             for (int x = r2.x + r2.width; x < r1.x; x++) {
-                 map[x][c1y] = FLOOR;
-                 map[x][c1y-1] = FLOOR;
-                 map[x][c1y+1] = FLOOR;
-             }
-        }
+         }
     }
     
     private List<GameObject> placeObjects(int difficulty, boolean isBossLevel) {

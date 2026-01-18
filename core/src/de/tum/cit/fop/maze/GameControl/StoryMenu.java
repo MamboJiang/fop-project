@@ -213,18 +213,15 @@ public class StoryMenu implements Screen {
         arrowGroup.setSize(32, 24);
         arrowGroup.addActor(arrowImage);
         
-        if (!isGameMenu) {
-            startBobbing();
-        }
+        startBobbing();
         
         Stack stack = new Stack();
         stack.add(textTable);
         
-        if (!isGameMenu) {
-            Table arrowTable = new Table();
-            arrowTable.add(arrowGroup).size(32, 24).expand().bottom().padBottom(10);
-            stack.add(arrowTable);
-        }
+        
+        Table arrowTable = new Table();
+        arrowTable.add(arrowGroup).size(32, 24).expand().bottom().padBottom(10);
+        stack.add(arrowTable);
         
         dialogueContainer.add(stack).grow().pad(50);
         
@@ -251,10 +248,29 @@ public class StoryMenu implements Screen {
         stage.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                handleInput();
+                 // Check if clicked ON Boss Image
+                 // Project coordinates? Or simply add listener to bossImage
+                 handleInput();
+                 // Note: handleInput checks key 'SPACE'.
+                 // If we want click to trigger handleInput only on specific state, fine.
+                 // But wait, user wants BOSS CLICK to trigger DIALOGUE.
             }
         });
         
+        // Add Listener to Boss Image explicitly
+        if (bossImage != null) {
+            bossImage.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                     if (state == 3 || isGameMenu) {
+                         handleBossClick();
+                     } else {
+                         handleInput();
+                     }
+                }
+            });
+        }
+
         // Entry Animation for Game Hub (Similar to First Menu Entry)
         if (isGameMenu) {
             isTransitioning = true; // Prevent resize from resetting positions immediately
@@ -271,6 +287,90 @@ public class StoryMenu implements Screen {
             // Trigger Transition
             stage.addAction(Actions.delay(0.01f, Actions.run(this::transitionToMenu)));
         }
+    }
+    
+    // --- Boss Interaction Logic ---
+    private int bossClickCount = 0;
+    private com.badlogic.gdx.utils.JsonValue bossDialogueData;
+    
+    private void loadBossDialogue() {
+        if (bossDialogueData == null) {
+             com.badlogic.gdx.files.FileHandle file = Gdx.files.internal("data/boss_dialogue.json");
+             if (file.exists()) {
+                 bossDialogueData = new com.badlogic.gdx.utils.JsonReader().parse(file);
+             }
+        }
+    }
+    
+    private void handleBossClick() {
+        if (bossDialogueData == null) loadBossDialogue();
+        if (bossDialogueData == null) return; // Failed to load
+        
+        playArrowFeedback();
+        
+        bossClickCount++;
+        
+        String textToSay = "";
+        
+        // 1. Milestones
+        com.badlogic.gdx.utils.JsonValue milestones = bossDialogueData.get("milestones");
+        if (milestones != null && milestones.has(String.valueOf(bossClickCount))) {
+            textToSay = milestones.getString(String.valueOf(bossClickCount));
+        } 
+        // 2. Count > 100
+        else if (bossClickCount > 100) {
+            textToSay = String.valueOf(bossClickCount);
+        }
+        // 3. Random Pool
+        else {
+             java.util.List<String> pool = new java.util.ArrayList<>();
+             
+             // Common
+             com.badlogic.gdx.utils.JsonValue common = bossDialogueData.get("common");
+             if (common != null) {
+                 for (com.badlogic.gdx.utils.JsonValue val : common) pool.add(val.asString());
+             }
+             
+             // Conditional: Story Complete
+             // Conditional: Story Complete
+             de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
+             if (state != null) {
+                 // Assuming Level 5 is end or check achievements? 
+                 // Let's assume if completedLevels size >= 5? Or contains "maps/level-5.tmx"?
+                 // User said "Defeated Story Mode Final Boss". 
+                 // I'll check if achievement "escape_artist" is unlocked? No that's Level 1.
+                 // I'll check "completedLevels.size() >= 6".
+                 if (state.getCompletedLevels().size() >= 6) {
+                     com.badlogic.gdx.utils.JsonValue story = bossDialogueData.get("story_complete");
+                     if (story != null) for (com.badlogic.gdx.utils.JsonValue val : story) pool.add(val.asString());
+                 }
+                 
+                 // Conditional: Endless > 5 Floors
+                 if (state.getMaxEndlessFloor() >= 5) { 
+                     com.badlogic.gdx.utils.JsonValue endless = bossDialogueData.get("endless_5");
+                     if (endless != null) for (com.badlogic.gdx.utils.JsonValue val : endless) pool.add(val.asString());
+                 }
+             }
+             
+             if (!pool.isEmpty()) {
+                 textToSay = pool.get(com.badlogic.gdx.math.MathUtils.random(pool.size() - 1));
+             } else {
+                 textToSay = "...";
+             }
+        }
+        
+        animateText(textToSay);
+        
+        // Visual feedback
+        bossImage.clearActions();
+        bossImage.addAction(Actions.sequence(
+            Actions.scaleTo(1.2f, 1.2f, 0.1f),
+            Actions.scaleTo(1.3f, 1.3f, 0.1f) // Return to original scale (1.3 set in init)
+        ));
+    
+        
+        // Entry Animation for Game Hub (Similar to First Menu Entry)
+
     }
     
     private TextButton createHoverButton(String text, Skin skin, String styleName) {
@@ -317,7 +417,11 @@ public class StoryMenu implements Screen {
     
     private void handleInput() {
         if (isTransitioning) return;
-        if (state == 3) return;
+        
+        if (state == 3) {
+            handleBossClick();
+            return;
+        }
         
         if (state == 0) {
              playArrowFeedback();
@@ -383,8 +487,12 @@ public class StoryMenu implements Screen {
         endlessV2Btn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Just start directly for now, reuse resume logic later if needed
-                game.goToEndlessModeVer2(game.getPlayerState().getUsername());
+                de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
+                if (state.isAttackUnlocked() || state.isNonoUnlocked()) {
+                    game.goToEndlessModeVer2(state.getUsername());
+                } else {
+                    animateText("You need to be able to attack first or you are not qualified yet! Play your story first!");
+                }
             }
         });
 
@@ -630,7 +738,14 @@ public class StoryMenu implements Screen {
     private void transitionToMenu() {
         isTransitioning = true;
         arrowImage.clearActions();
-        arrowImage.addAction(Actions.fadeOut(0.2f));
+        
+        if (state == 2) { // Main Menu
+            arrowImage.setVisible(false);
+        } else {
+            arrowImage.setVisible(true);
+            arrowImage.setColor(1, 1, 1, 1);
+            startBobbing();
+        }
         
         // Animate BOTH layers
         float targetWidth = stage.getWidth() * 0.5f;

@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.MathUtils;
  */
 public class Room {
     public int x, y, width, height;
+    public boolean isMainPath = false;
     
     /**
      * Constructor for Room.

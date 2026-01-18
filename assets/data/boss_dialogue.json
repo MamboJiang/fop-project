@@ -1,0 +1,28 @@
+{
+    "common": [
+        "...",
+        "Why are you poking me?",
+        "Do you have business here?",
+        "The maze is waiting.",
+        "I am watching you.",
+        "Go away.",
+        "Don't touch me.",
+        "Are you prepared?"
+    ],
+    "milestones": {
+        "5": "Hey, cut it out!",
+        "10": "I warned you...",
+        "50": "50 times? Do you seriously have nothing else to do?",
+        "100": "Fine. You want to count? Let's count."
+    },
+    "story_complete": [
+        "You defeated the darkness... impressive.",
+        "So you are the one who cleared the maze.",
+        "Maybe you are worthy after all."
+    ],
+    "endless_5": [
+        "Level 5 in the abyss? Not bad.",
+        "You are lasting longer than I expected.",
+        "Keep pushing the limits."
+    ]
+}

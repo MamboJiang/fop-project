@@ -75,10 +75,30 @@ public class DungeonController {
             this.bossRoom = null;
         }
         
-        // Pick Trap Room (Random non-start, non-end)
-        if (rooms.size() > 2) {
-            int trapIndex = MathUtils.random(1, rooms.size() - 2);
-            this.trapRoom = rooms.get(trapIndex);
+        // Pick Trap Room: Must be a Branch (not on Main Path) if possible
+        List<Room> candidates = new ArrayList<>();
+        for (Room r : rooms) {
+             // Exclude Start/Exit (Start is index 0, Exit is known as bossRoom or last)
+             // But we just check r != bossRoom and r != rooms.get(0)
+             if (r == rooms.get(0)) continue;
+             if (r == bossRoom) continue;
+             
+             if (!r.isMainPath) {
+                 candidates.add(r);
+             }
+        }
+        
+        // Fallback: If no branches, use any non-start/end room
+        if (candidates.isEmpty() && rooms.size() > 2) {
+             for (Room r : rooms) {
+                 if (r != rooms.get(0) && r != bossRoom) {
+                     candidates.add(r);
+                 }
+             }
+        }
+
+        if (!candidates.isEmpty()) {
+            this.trapRoom = candidates.get(MathUtils.random(candidates.size() - 1));
         } else {
             this.trapRoom = null;
         }

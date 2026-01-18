@@ -314,7 +314,7 @@ public class HUD {
         try {
             switch (command) {
                 case "help":
-                    return "Commands: hp <add/set>, key <true/false>, god, shield, zoom <in/out>, debug, leaderboard <clear/add>";
+                    return "Commands: hp <add/set>, key <true/false>, god, shield, zoom <in/out>, debug, map, leaderboard <clear/add>";
 
                 case "hp":
                     if (parts.length < 3)
@@ -379,6 +379,10 @@ public class HUD {
                 case "debug":
                     gameScreen.toggleDebug();
                     return "Debug Mode Toggled";
+
+                case "map":
+                    gameScreen.toggleMapDebug();
+                    return "Map View Toggled";
 
                 case "achievement":
                     if (parts.length < 2)

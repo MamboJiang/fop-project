@@ -33,9 +33,23 @@ public class PlayerState {
         this.endlessWave = 1;
     }
     
+    private int maxEndlessWave = 1;
+
     public int getEndlessWave() { return endlessWave; }
-    public void setEndlessWave(int wave) { this.endlessWave = wave; }
+    public void setEndlessWave(int wave) { 
+        this.endlessWave = wave; 
+        if (wave > maxEndlessWave) maxEndlessWave = wave;
+    }
     public void resetEndlessWave() { this.endlessWave = 1; }
+    
+    public int getMaxEndlessWave() { return maxEndlessWave; }
+    public void setMaxEndlessWave(int max) { this.maxEndlessWave = max; }
+    
+    private int maxEndlessFloor = 1;
+    public int getMaxEndlessFloor() { return maxEndlessFloor; }
+    public void setMaxEndlessFloor(int floor) { 
+        if (floor > maxEndlessFloor) maxEndlessFloor = floor; 
+    }
     
 
     private int currentRunScore = 0;

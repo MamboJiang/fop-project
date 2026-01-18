@@ -9,5 +9,6 @@ public enum EventType {
     LEVEL_COMPLETE,
     GAME_OVER,
     REACH_DIFFICULTY,
-    TAKE_DAMAGE
+    TAKE_DAMAGE,
+    KILL_BOSS_ENDLESS
 }
