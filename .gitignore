@@ -6,6 +6,7 @@ target/
 saves/
 
 game_config.json
+leaderboard.json
 
 # Taken from https://github.com/github/gitignore
 
