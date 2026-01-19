@@ -131,7 +131,7 @@ public class AchievementsScreen implements Screen {
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.goToMenu();
+                game.goToMenu(false);
             }
         });
         rootTable.add(backButton);

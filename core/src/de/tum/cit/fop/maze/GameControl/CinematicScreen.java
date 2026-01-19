@@ -37,6 +37,7 @@ public class CinematicScreen implements Screen {
     private int frameIndex = -1;
     private String storyPath;
     private Runnable onFinish;
+    private boolean finished = false;
 
     // UI
     private Container<Label> textContainer;
@@ -302,6 +303,8 @@ public class CinematicScreen implements Screen {
     }
 
     private void finish() {
+        if (finished) return;
+        finished = true;
         game.playTransition(() -> {
             if (onFinish != null) {
                 onFinish.run();

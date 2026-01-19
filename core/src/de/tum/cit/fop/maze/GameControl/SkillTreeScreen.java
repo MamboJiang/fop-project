@@ -117,7 +117,7 @@ public class SkillTreeScreen implements Screen {
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.goToMenu();
+                game.goToMenu(false);
             }
         });
         table.add(backButton).colspan(2).padTop(50);

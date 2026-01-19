@@ -247,7 +247,11 @@ public class MazeRunnerGame extends Game {
      * Switches to the Main Menu screen (Now redirects to StoryMenu in Game Hub mode).
      */
     public void goToMenu() {
-        playTransition(() -> {
+        goToMenu(true);
+    }
+
+    public void goToMenu(boolean transition) {
+        Runnable action = () -> {
             // Stop Level/Boss Music
             if (warFogMusic != null && warFogMusic.isPlaying()) {
                 warFogMusic.stop();
@@ -266,7 +270,13 @@ public class MazeRunnerGame extends Game {
                 gameScreen.dispose();
                 gameScreen = null;
             }
-        });
+        };
+
+        if (transition) {
+            playTransition(action);
+        } else {
+            action.run();
+        }
     }
 
 
