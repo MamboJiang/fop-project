@@ -70,8 +70,6 @@ public class CinematicScreen implements Screen {
     
     private void loadData() {
         Json json = new Json();
-    private void loadData() {
-        Json json = new Json();
         FileHandle file = Gdx.files.internal(storyPath);
         if (file.exists()) {
             cinematicData = json.fromJson(CinematicData.class, file);
