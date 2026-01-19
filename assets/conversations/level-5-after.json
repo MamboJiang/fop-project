@@ -1,0 +1,48 @@
+{
+    "leftCharacterImage": "player/lihui/maincharacterlhmask.png",
+    "leftScale": 2,
+    "leftOffsetX": -200.0,
+    "leftOffsetY": -500,
+    "rightCharacterImage": "player/lihui/nonolh.png",
+    "rightScale": 1.0,
+    "rightOffsetX": 0.0,
+    "rightOffsetY": 0.0,
+    "leftPortraitScale": 5,
+    "leftPortraitOffsetX": -450.0,
+    "leftPortraitOffsetY": -1300.0,
+    "rightPortraitScale": 1.5,
+    "rightPortraitOffsetX": -100.0,
+    "rightPortraitOffsetY": -100.0,
+    "lines": [
+        {
+            "text": "What a troublesome opponent",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        },
+        {
+            "text": "Victory is right before our eyes",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "Quickly put the serum into the launch device!",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "Don't rush",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        },
+        {
+            "text": "Nothing can stop our steps anymore",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        }
+    ]
+}

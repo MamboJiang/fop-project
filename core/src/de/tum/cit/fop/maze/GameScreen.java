@@ -247,6 +247,13 @@ public class GameScreen implements Screen {
 // ...
 
 // Fields
+    // Level 5 Logic
+    private boolean level5StartDialoguePlayed = false;
+    private boolean level5BossDialoguePlayed = false;
+    private boolean level5AfterDialoguePlayed = false;
+    private int level5CameraState = 0; // 0: None, 1: Pan to Exit, 2: Wait, 3: Pan Back, 4: Done
+    private float level5CameraTimer = 0f;
+
     // Level 4 Logic
     // Level 4 Logic
     private float level4StartTimer = 0;
@@ -407,6 +414,18 @@ public class GameScreen implements Screen {
             flashlightEffect.reset();
             flashlightEffect.setEnabled(false); // Ensure initially disabled
         }
+        
+        if (flashlightEffect != null) {
+            flashlightEffect.reset();
+            flashlightEffect.setEnabled(false); // Ensure initially disabled
+        }
+        
+        // Reset Level 5 Dialogue State
+        level5StartDialoguePlayed = false;
+        level5BossDialoguePlayed = false;
+        level5AfterDialoguePlayed = false;
+        level5CameraState = 0;
+        level5CameraTimer = 0f;
         
         // Snap camera to player immediately to avoid "flying in"
         camera.position.set(character.getPosition().x, character.getPosition().y, 0);
@@ -1201,7 +1220,6 @@ public class GameScreen implements Screen {
                     character.clearDamageNumberRequest();
                 }
 
-                // Level 5 Boss Room Locking Logic
                 if ("level-5".equals(currentLevelName) && !isBossRoomLocked) {
                     // Check if player enters Boss Room (Threshold X > 20 tiles [Corridor ends at 20])
                     if (character.getPosition().x > 22 * 16) {
@@ -1232,8 +1250,42 @@ public class GameScreen implements Screen {
                         // Activate Boss
                         if (activeBoss != null) {
                             activeBoss.setActive(true);
+                            // Trigger Level 5 Boss Dialogue
+                            if (!level5BossDialoguePlayed) {
+                                 dialogueManager.loadDialogue("level-5");
+                                 dialogueManager.startDialogue();
+                                 level5BossDialoguePlayed = true;
+                            }
                         }
                     }
+                }
+                
+                // Level 5 Logic: Start Dialogue
+                if ("level-5".equals(currentLevelName) && !level5StartDialoguePlayed) {
+                     levelStartTimer += delta;
+                     if (levelStartTimer >= 1.0f) {
+                         dialogueManager.loadDialogue("level-5-pre");
+                         dialogueManager.startDialogue();
+                         level5StartDialoguePlayed = true;
+                     }
+                }
+                
+                // Trigger Camera Flyby after Dialogue finishes
+                if ("level-5".equals(currentLevelName) && level5StartDialoguePlayed && !dialogueManager.isActive()) {
+                    if (level5CameraState == 0) {
+                        level5CameraState = 1; // Start Sequence
+                    }
+                }
+                
+                // Level 5 Logic: Near Exit Logic (Trigger Ending when X > 51)
+                // Exit is at X=53.
+                if ("level-5".equals(currentLevelName) && character.getPosition().x > 51 * 16 && character.hasKey()) {
+                     // Check if not already transitioning?
+                     // Just trigger ending directly
+                     game.setScreen(new de.tum.cit.fop.maze.GameControl.CinematicScreen(game, "story/data/ending.json", () -> {
+                            game.goToMenu(false);
+                     }));
+                     return;
                 }
 
                 character.update(delta, mapObjects, enemies, game.getConfigManager());
@@ -1267,12 +1319,49 @@ public class GameScreen implements Screen {
                 }
 
                 if (!debugMapMode) {
-                    float targetX = character.getPosition().x + 8;
-                    float targetY = character.getPosition().y + 16;
-                    
-                    float lerpSpeed = 5f;
-                    camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
-                    camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
+                    if (level5CameraState == 1) {
+                         // Pan to Exit (X=53 * 16 = 848)
+                         float targetX = 53 * 16 + 8;
+                         float targetY = 15 * 16 + 8;
+                         float dist = com.badlogic.gdx.math.Vector2.dst(camera.position.x, camera.position.y, targetX, targetY);
+                         
+                         float speed = 300f * delta; // Constant speed pan? Or Lerp? Lerp is smoother.
+                         float lerpSpeed = 2f;
+                         camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
+                         camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
+                         
+                         if (dist < 10) {
+                             level5CameraState = 2; // Arrived
+                             level5CameraTimer = 0f;
+                         }
+                    } else if (level5CameraState == 2) {
+                         // Wait 1s
+                         level5CameraTimer += delta;
+                         if (level5CameraTimer >= 1.0f) {
+                             level5CameraState = 3;
+                         }
+                    } else if (level5CameraState == 3) {
+                         // Pan back to Player
+                         float targetX = character.getPosition().x + 8;
+                         float targetY = character.getPosition().y + 16;
+                         
+                         float lerpSpeed = 3f;
+                         camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
+                         camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
+                         
+                         float dist = com.badlogic.gdx.math.Vector2.dst(camera.position.x, camera.position.y, targetX, targetY);
+                         if (dist < 10) {
+                             level5CameraState = 4; // Finished
+                         }
+                    } else {
+                        // Normal Following
+                        float targetX = character.getPosition().x + 8;
+                        float targetY = character.getPosition().y + 16;
+                        
+                        float lerpSpeed = 5f;
+                        camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
+                        camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
+                    }
                 }
 
                 if (screenShake != null) {
@@ -1467,6 +1556,13 @@ public class GameScreen implements Screen {
                                  }
                                  lockedWalls.clear();
                                  showPopupMessage("The barriers disappear!");
+                             }
+                             
+                             // Trigger "After Boss" Dialogue
+                             if (!level5AfterDialoguePlayed) {
+                                  dialogueManager.loadDialogue("level-5-after");
+                                  dialogueManager.startDialogue();
+                                  level5AfterDialoguePlayed = true;
                              }
                              
                              enemyIter.remove();

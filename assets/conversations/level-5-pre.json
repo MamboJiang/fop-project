@@ -1,0 +1,48 @@
+{
+    "leftCharacterImage": "player/lihui/maincharacterlhmask.png",
+    "leftScale": 2,
+    "leftOffsetX": -200.0,
+    "leftOffsetY": -500,
+    "rightCharacterImage": "player/lihui/nonolh.png",
+    "rightScale": 1.0,
+    "rightOffsetX": 0.0,
+    "rightOffsetY": 0.0,
+    "leftPortraitScale": 5,
+    "leftPortraitOffsetX": -450.0,
+    "leftPortraitOffsetY": -1300.0,
+    "rightPortraitScale": 1.5,
+    "rightPortraitOffsetX": -100.0,
+    "rightPortraitOffsetY": -100.0,
+    "lines": [
+        {
+            "text": "Finally arrived!",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "(Excited) Just one last step away from my success!",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "Yours?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        },
+        {
+            "text": "I... I mean... our success...",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        },
+        {
+            "text": "Just keep walking forward and you'll find the launch device",
+            "speaker": "Stranger",
+            "isLeft": false,
+            "portrait": "player/lihui/nonolhright.png"
+        }
+    ]
+}
