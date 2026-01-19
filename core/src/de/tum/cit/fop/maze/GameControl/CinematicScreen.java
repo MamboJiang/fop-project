@@ -35,6 +35,8 @@ public class CinematicScreen implements Screen {
     // Data
     private CinematicData cinematicData;
     private int frameIndex = -1;
+    private String storyPath;
+    private Runnable onFinish;
 
     // UI
     private Container<Label> textContainer;
@@ -51,21 +53,30 @@ public class CinematicScreen implements Screen {
     private Table bottomContainer;
 
     public CinematicScreen(MazeRunnerGame game) {
+        this(game, "story/data/opening.json", () -> {
+            game.setScreen(new de.tum.cit.fop.maze.GameScreen(game, Gdx.files.internal("maps/level-0.properties")));
+        });
+    }
+
+    public CinematicScreen(MazeRunnerGame game, String storyPath, Runnable onFinish) {
         this.game = game;
+        this.storyPath = storyPath;
+        this.onFinish = onFinish;
         this.stage = new Stage(new ExtendViewport(1920, 1080), game.getSpriteBatch());
 
-        loadData();
         loadData();
         setupUI();
     }
     
     private void loadData() {
         Json json = new Json();
-        FileHandle file = Gdx.files.internal("story/data/opening.json");
+    private void loadData() {
+        Json json = new Json();
+        FileHandle file = Gdx.files.internal(storyPath);
         if (file.exists()) {
             cinematicData = json.fromJson(CinematicData.class, file);
         } else {
-            Gdx.app.error("CinematicScreen", "opening.json not found!");
+            Gdx.app.error("CinematicScreen", storyPath + " not found!");
             cinematicData = new CinematicData(); // Empty
         }
     }
@@ -294,7 +305,9 @@ public class CinematicScreen implements Screen {
 
     private void finish() {
         game.playTransition(() -> {
-            game.setScreen(new de.tum.cit.fop.maze.GameScreen(game, Gdx.files.internal("maps/level-0.properties")));
+            if (onFinish != null) {
+                onFinish.run();
+            }
             dispose();
         });
     }

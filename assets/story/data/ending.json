@@ -1,0 +1,28 @@
+{
+    "frames": [
+        {
+            "text": "Year 2099: \"The Silent Day\"",
+            "showImage": false
+        },
+        {
+            "text": "A batch of the Meridian Foundation's new-model robots has gone rogue and released a biological weapon.",
+            "showImage": true,
+            "image": "story/pictures/openingstory1.png"
+        },
+        {
+            "text": "The victims collapse into piles of static organic matter, scattering across the streets and corroding everything they touch.",
+            "showImage": true,
+            "image": "story/pictures/openingstory2.png"
+        },
+        {
+            "text": "Even more terrifying, the rogue robots still roam the darkness, attacking any target that shows signs of life.",
+            "showImage": true,
+            "image": "story/pictures/openingstory3.png"
+        },
+        {
+            "text": "The last survivors of human civilization have retreated to the underground \"Meridian Facility.\"",
+            "showImage": true,
+            "image": "story/pictures/openingstory4.png"
+        }
+    ]
+}

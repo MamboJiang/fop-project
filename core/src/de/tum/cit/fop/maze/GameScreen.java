@@ -1400,7 +1400,9 @@ public class GameScreen implements Screen {
                             continue;
                         } 
                         
-                        game.setScreen(new de.tum.cit.fop.maze.GameControl.CinematicScreen(game));
+                        game.setScreen(new de.tum.cit.fop.maze.GameControl.CinematicScreen(game, "story/data/ending.json", () -> {
+                            game.goToMenu();
+                        }));
                         return;
                     }
 
