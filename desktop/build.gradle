@@ -2,7 +2,7 @@ sourceCompatibility = 17
 sourceSets.main.java.srcDirs = [ "src/" ]
 sourceSets.main.resources.srcDirs = ["../assets"]
 
-project.ext.mainClassName = "de.tum.cit.ase.maze.DesktopLauncher"
+project.ext.mainClassName = "de.tum.cit.fop.maze.DesktopLauncher"
 project.ext.assetsDir = new File("../assets")
 
 import org.gradle.internal.os.OperatingSystem
@@ -45,5 +45,59 @@ tasks.register('dist', Jar) {
 
 
 dist.dependsOn classes
+
+// Task to package for Windows (Run on Windows)
+tasks.register('packageWin', Exec) {
+    dependsOn dist
+    
+    // Output directory
+    def outputDir = "build/distribution/windows"
+    
+    // Clean output
+    doFirst {
+        delete outputDir
+    }
+
+    // Command
+    workingDir project.projectDir
+    commandLine 'jpackage',
+            '--type', 'app-image',
+            '--dest', outputDir,
+            '--input', 'build/libs',
+            '--name', 'Undermask',
+            '--main-class', project.mainClassName,
+            '--main-jar', "desktop-0.1.jar", 
+            '--java-options', '-Xmx1024m',
+            '--win-console' // Keep console for debugging if needed, remove for release
+            
+    // Note: If you have an icon, add: '--icon', 'path/to/icon.ico'
+}
+
+// Task to package for Mac (Run on MacOS)
+tasks.register('packageMac', Exec) {
+    dependsOn dist
+    
+    // Output directory
+    def outputDir = "build/distribution/mac"
+    
+    // Clean output
+    doFirst {
+        delete outputDir
+    }
+
+    // Command
+    workingDir project.projectDir
+    commandLine 'jpackage',
+            '--type', 'app-image',
+            '--dest', outputDir,
+            '--input', 'build/libs',
+            '--name', 'Undermask',
+            '--main-class', project.mainClassName,
+            '--main-jar', "desktop-0.1.jar", 
+            '--java-options', '-XstartOnFirstThread', // Vital for Mac LibGDX
+            '--java-options', '-Xmx1024m'
+            
+    // Note: If you have an icon, add: '--icon', 'path/to/icon.icns'
+}
 
 eclipse.project.name = appName + "-desktop"

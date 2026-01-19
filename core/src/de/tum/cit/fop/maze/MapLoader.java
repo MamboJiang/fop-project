@@ -280,9 +280,12 @@ public class MapLoader {
 
         FileHandle dir = Gdx.files.internal("maps");
         if (!dir.exists() || !dir.isDirectory()) {
-            dir = Gdx.files.local("maps");
+            dir = Gdx.files.internal("assets/maps"); // Try assets/maps
             if (!dir.exists() || !dir.isDirectory()) {
-                dir = Gdx.files.local("../maps");
+                 dir = Gdx.files.local("assets/maps"); // Try local assets/maps
+                 if (!dir.exists() || !dir.isDirectory()) {
+                      dir = Gdx.files.local("maps");
+                 }
             }
         }
 
