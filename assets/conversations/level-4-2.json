@@ -1,0 +1,30 @@
+{
+    "leftCharacterImage": "player/lihui/maincharacterlhmask.png",
+    "leftScale": 2,
+    "leftOffsetX": -200.0,
+    "leftOffsetY": -500,
+    "rightCharacterImage": "player/lihui/boss_figure.png",
+    "rightScale": 1.5,
+    "rightOffsetX": 0.0,
+    "rightOffsetY": -200.0,
+    "leftPortraitScale": 5,
+    "leftPortraitOffsetX": -450.0,
+    "leftPortraitOffsetY": -1300.0,
+    "rightPortraitScale": 3,
+    "rightPortraitOffsetX": -190.0,
+    "rightPortraitOffsetY": -650.0,
+    "lines": [
+        {
+            "text": "Why should I believe you?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        },
+        {
+            "text": "Then I have no choice but to keep you here!",
+            "speaker": "???",
+            "isLeft": false,
+            "portrait": "player/lihui/boss_figure.png"
+        }
+    ]
+}

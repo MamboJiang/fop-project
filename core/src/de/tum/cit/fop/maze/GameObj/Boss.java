@@ -16,6 +16,7 @@ public class Boss extends Enemy {
     private BossState bossState = BossState.IDLE;
     private float stateTimer = 0f;
     private float maxHealth = 500f;
+    private boolean active = false; // Default inactive
 
     // 基础属性
     private float normalSpeed = 60f;
@@ -49,6 +50,13 @@ public class Boss extends Enemy {
 
     @Override
     public void update(float delta) {
+        if (!active) {
+            // Can still update animation (idle) or do nothing
+            // Let's allow animation update so it doesn't freeze but stay in IDLE
+            updateAnimation(delta);
+            return;
+        }
+
         stateTimer += delta;
         dashCooldown -= delta;
 
@@ -258,5 +266,13 @@ public class Boss extends Enemy {
     
     public float getHealthPercentage() {
         return (float)health / maxHealth;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+    
+    public boolean isActive() {
+        return active;
     }
 }

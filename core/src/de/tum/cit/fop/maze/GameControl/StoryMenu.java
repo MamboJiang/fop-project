@@ -248,12 +248,10 @@ public class StoryMenu implements Screen {
         stage.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                 // Check if clicked ON Boss Image
-                 // Project coordinates? Or simply add listener to bossImage
+                 if (event.getTarget().isDescendantOf(menuTable)) {
+                     return;
+                 }
                  handleInput();
-                 // Note: handleInput checks key 'SPACE'.
-                 // If we want click to trigger handleInput only on specific state, fine.
-                 // But wait, user wants BOSS CLICK to trigger DIALOGUE.
             }
         });
         

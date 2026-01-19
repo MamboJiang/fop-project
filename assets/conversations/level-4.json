@@ -1,0 +1,52 @@
+{
+    "leftCharacterImage": "player/lihui/maincharacterlhmask.png",
+    "leftScale": 2,
+    "leftOffsetX": -200.0,
+    "leftOffsetY": -500,
+    "rightCharacterImage": "player/lihui/boss_figure.png",
+    "rightScale": 1.5,
+    "rightOffsetX": 0.0,
+    "rightOffsetY": -200.0,
+    "leftPortraitScale": 5,
+    "leftPortraitOffsetX": -450.0,
+    "leftPortraitOffsetY": -1300.0,
+    "rightPortraitScale": 3,
+    "rightPortraitOffsetX": -190.0,
+    "rightPortraitOffsetY": -650.0,
+    "lines": [
+        {
+            "text": "(Mocking) So, you finally came.",
+            "speaker": "???",
+            "isLeft": false,
+            "portrait": "player/lihui/nothing.png",
+            "hideRight": true
+        },
+        {
+            "text": "Who are you?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png",
+            "hideRight": true
+        },
+        {
+            "text": "(Confused) How did you know I was coming?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png",
+            "hideRight": true
+        },
+        {
+            "text": "(Gravely)If you really want to know...",
+            "speaker": "???",
+            "isLeft": false,
+            "portrait": "player/lihui/nothing.png",
+            "hideRight": true
+        },
+        {
+            "text": "Then take off that hypocritical mask of yours!!!",
+            "speaker": "???",
+            "isLeft": false,
+            "portrait": "player/lihui/boss_figure.png"
+        }
+    ]
+}
