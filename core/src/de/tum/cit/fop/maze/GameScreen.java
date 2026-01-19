@@ -1940,8 +1940,21 @@ public class GameScreen implements Screen {
         // Find a random walkable position
         int maxAttempts = 50;
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
-            int randomX = com.badlogic.gdx.math.MathUtils.random(5, grid.getWidth() - 5);
-            int randomY = com.badlogic.gdx.math.MathUtils.random(5, grid.getHeight() - 5);
+            int minX = 5;
+            int maxX = grid.getWidth() - 5;
+            int minY = 5;
+            int maxY = grid.getHeight() - 5;
+            
+            // Level 5 Boss Room Constraint (X: 22-36, Y: 8-22)
+            if ("level-5".equals(currentLevelName)) {
+                minX = 22;
+                maxX = 36;
+                minY = 8;
+                maxY = 22;
+            }
+            
+            int randomX = com.badlogic.gdx.math.MathUtils.random(minX, maxX);
+            int randomY = com.badlogic.gdx.math.MathUtils.random(minY, maxY);
             
             if (grid.isWalkable(randomX, randomY)) {
                 float worldX = randomX * 16;
