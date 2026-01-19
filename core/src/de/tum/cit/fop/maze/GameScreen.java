@@ -1258,6 +1258,13 @@ public class GameScreen implements Screen {
                             }
                         }
                     }
+                } else if (activeBoss != null && !activeBoss.isActive()) {
+                    // Generic Boss Activation (Endless Mode / Other Levels)
+                    // Trigger when Player is close (simulating "Entering Boss Room")
+                    // Distance < 12 tiles (192 pixels)
+                    if (character.getPosition().dst(activeBoss.getPosition()) < 192) {
+                        activeBoss.setActive(true);
+                    }
                 }
                 
                 // Level 5 Logic: Start Dialogue
