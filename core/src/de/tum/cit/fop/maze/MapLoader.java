@@ -33,7 +33,7 @@ public class MapLoader {
         TextureRegion[][] regions = TextureRegion.split(texture, 16, 16);
         
         // Custom 32x32 tiles
-        Texture customTexture = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
+        Texture customTexture = new Texture(Gdx.files.internal("selfmade/basictile.png"));
         TextureRegion[][] customRegs = TextureRegion.split(customTexture, 32, 32);
 
         try {
@@ -118,7 +118,7 @@ public class MapLoader {
                             // Use knife texture for Level 2, chest for others
                             TextureRegion keyTexture = customRegs[1][1]; // Default chest
                             if (mapFile.nameWithoutExtension().equals("level-2")) {
-                                Texture knifeTexture = new Texture(Gdx.files.internal("assets/selfmade/knifeitem.png"));
+                                Texture knifeTexture = new Texture(Gdx.files.internal("selfmade/knifeitem.png"));
                                 keyTexture = new TextureRegion(knifeTexture);
                             }
                             obj = new Key(worldX, worldY, 16, 16, keyTexture);
@@ -156,7 +156,7 @@ public class MapLoader {
 
     public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getRobotAnimations() {
         if (robotTexture == null) {
-            robotTexture = new Texture(Gdx.files.internal("assets/player/sprite/robotsmall.png"));
+            robotTexture = new Texture(Gdx.files.internal("player/sprite/robotsmall.png"));
         }
         
         // Split 32x32
@@ -177,7 +177,7 @@ public class MapLoader {
     }
 
     public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getBossAnimations() {
-        Texture bossTexture = new Texture(Gdx.files.internal("assets/player/sprite/bossnew.png"));
+        Texture bossTexture = new Texture(Gdx.files.internal("player/sprite/bossnew.png"));
 
         // Split 64x64
         TextureRegion[][] tmp = TextureRegion.split(bossTexture, 64, 64);
@@ -200,7 +200,7 @@ public class MapLoader {
 
     public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getDroneAnimations() {
         if (droneTexture == null) {
-            droneTexture = new Texture(Gdx.files.internal("assets/player/sprite/drone.png"));
+            droneTexture = new Texture(Gdx.files.internal("player/sprite/drone.png"));
         }
         
         // Split 32x32
@@ -275,14 +275,49 @@ public class MapLoader {
      * 
      * @return A list of FileHandles for found map files.
      */
+    /**
+     * Scans the "maps" directory for .properties files.
+     * Uses "levels.txt" if available to support JAR packaging.
+     * 
+     * @return A list of FileHandles for found map files.
+     */
     public static List<FileHandle> getMapFiles() {
         List<FileHandle> files = new ArrayList<>();
+        
+        // Method 1: Try reading levels.txt (Best for JAR)
+        // Check "maps/levels.txt" (Internal - inside JAR)
+        FileHandle indexFile = Gdx.files.internal("maps/levels.txt");
+        if (!indexFile.exists()) {
+             // Try assets/maps/levels.txt (Dev env)
+             indexFile = Gdx.files.internal("assets/maps/levels.txt");
+        }
+        
+        if (indexFile.exists()) {
+            String content = indexFile.readString();
+            String[] lines = content.split("\\r?\\n");
+            for (String line : lines) {
+                if (line.trim().isEmpty()) continue;
+                String filename = line.trim();
+                
+                // Try to find the file
+                FileHandle mapFile = Gdx.files.internal("maps/" + filename);
+                if (!mapFile.exists()) {
+                    mapFile = Gdx.files.internal("assets/maps/" + filename);
+                }
+                
+                if (mapFile.exists()) {
+                    files.add(mapFile);
+                }
+            }
+            if (!files.isEmpty()) return files;
+        }
 
+        // Method 2: Fallback to directory listing (Works in IDE/Desktop)
         FileHandle dir = Gdx.files.internal("maps");
         if (!dir.exists() || !dir.isDirectory()) {
-            dir = Gdx.files.internal("assets/maps"); // Try assets/maps
+            dir = Gdx.files.internal("assets/maps"); 
             if (!dir.exists() || !dir.isDirectory()) {
-                 dir = Gdx.files.local("assets/maps"); // Try local assets/maps
+                 dir = Gdx.files.local("assets/maps");
                  if (!dir.exists() || !dir.isDirectory()) {
                       dir = Gdx.files.local("maps");
                  }
@@ -291,8 +326,10 @@ public class MapLoader {
 
         if (dir.exists() && dir.isDirectory()) {
             FileHandle[] propertiesFiles = dir.list(".properties");
-            for (FileHandle file : propertiesFiles) {
-                files.add(file);
+            if (propertiesFiles != null) {
+                for (FileHandle file : propertiesFiles) {
+                    files.add(file);
+                }
             }
         }
         return files;

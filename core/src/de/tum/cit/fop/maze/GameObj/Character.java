@@ -135,11 +135,11 @@ public class Character extends MovableObject {
      * Loads the character sprites and animations.
      */
     private void loadAnimations() {
-        characterTexture = new Texture(Gdx.files.internal("assets/player/sprite/aligned_character.png"));
+        characterTexture = new Texture(Gdx.files.internal("player/sprite/aligned_character.png"));
         // TextureRegion[][] tmp = TextureRegion.split(texture, 16, 32); // Removed as
         // we manually split
 
-        Texture thingsTexture = new Texture(Gdx.files.internal("assets/things.png"));
+        Texture thingsTexture = new Texture(Gdx.files.internal("things.png"));
         TextureRegion[][] thingsTmp = TextureRegion.split(thingsTexture, 16, 16);
         arrowRegion = thingsTmp[4][0];
 
@@ -159,7 +159,7 @@ public class Character extends MovableObject {
         int frameH = 46;
         
         // Load Attack Texture
-        Texture attSheet = new Texture(Gdx.files.internal("assets/player/sprite/aligned_character_mask_knife.png"));
+        Texture attSheet = new Texture(Gdx.files.internal("player/sprite/aligned_character_mask_knife.png"));
         int attFrameW = 32;
         int attFrameH = 48;
 
@@ -193,7 +193,7 @@ public class Character extends MovableObject {
 
     public void loadMaskAppearance() {
        if (characterTexture != null) characterTexture.dispose();
-       characterTexture = new Texture(Gdx.files.internal("assets/player/sprite/aligned_character_mask.png"));
+        characterTexture = new Texture(Gdx.files.internal("player/sprite/aligned_character_mask.png"));
        
        int frameW = 26;
        int frameH = 46;
@@ -465,7 +465,7 @@ public class Character extends MovableObject {
     }
 
     private void loadShieldAnimation() {
-        Texture texture = new Texture(Gdx.files.internal("assets/selfmade/shielditem.png"));
+        Texture texture = new Texture(Gdx.files.internal("selfmade/shielditem.png"));
         TextureRegion region = new TextureRegion(texture);
         TextureRegion[] frames = new TextureRegion[] { region };
         shieldAnimation = new Animation<>(0.1f, frames);

@@ -45,7 +45,7 @@ public class DungeonGeneratorV2 {
     }
     
     private void loadResources() {
-        Texture texture = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
+        Texture texture = new Texture(Gdx.files.internal("selfmade/basictile.png"));
         TextureRegion[][] regions = TextureRegion.split(texture, 32, 32);
         
         wallRegion = regions[0][0];

@@ -61,19 +61,19 @@ public class PauseMenu extends Table implements com.badlogic.gdx.utils.Disposabl
         Skin skin = game.getSkin();
         
         // Load Custom Assets
-        menuBgTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("assets/selfmade/uielements/menuscreenxxxx.png"));
-        titleBgTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("assets/selfmade/uielements/buttontype2.png"));
+        menuBgTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/menuscreenxxxx.png"));
+        titleBgTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttontype2.png"));
         
         // Switched to 'middle' button style
-        btnUpTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("assets/selfmade/uielements/buttonbasemiddle.png"));
-        btnDownTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("assets/selfmade/uielements/buttonpressedmiddle.png"));
-        btnOverTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("assets/selfmade/uielements/buttononmiddle.png"));
+        btnUpTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttonbasemiddle.png"));
+        btnDownTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttonpressedmiddle.png"));
+        btnOverTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttononmiddle.png"));
         
         // Lighter Blue color
         com.badlogic.gdx.graphics.Color textColor = com.badlogic.gdx.graphics.Color.valueOf("6699CC");
 
         // Load Font (Hoefler)
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(com.badlogic.gdx.Gdx.files.internal("assets/other/Hoefler Text Regular.ttf"));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(com.badlogic.gdx.Gdx.files.internal("other/Hoefler Text Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         
         // Title Font
