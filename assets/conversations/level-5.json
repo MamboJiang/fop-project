@@ -1,0 +1,60 @@
+{
+    "leftCharacterImage": "player/lihui/maincharacterlhmask.png",
+    "leftScale": 2,
+    "leftOffsetX": -200.0,
+    "leftOffsetY": -500,
+    "rightCharacterImage": "player/lihui/boss.png",
+    "rightScale": 1.5,
+    "rightOffsetX": 0.0,
+    "rightOffsetY": -200.0,
+    "leftPortraitScale": 5,
+    "leftPortraitOffsetX": -450.0,
+    "leftPortraitOffsetY": -1300.0,
+    "rightPortraitScale": 3,
+    "rightPortraitOffsetX": -190.0,
+    "rightPortraitOffsetY": -650.0,
+    "lines": [
+        {
+            "text": "As expected, you haven't taken off that mask.",
+            "speaker": "???",
+            "isLeft": false,
+            "portrait": "player/lihui/boss.png"
+        },
+        {
+            "text": "I won't be fooled by you so easily!",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        },
+        {
+            "text": "Hahahahaha, the current you is just as determined as I once was.",
+            "speaker": "???",
+            "isLeft": false,
+            "portrait": "player/lihui/boss.png"
+        },
+        {
+            "text": "Don't compare me to you!",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        },
+        {
+            "text": "I definitely won't let you pass",
+            "speaker": "???",
+            "isLeft": false,
+            "portrait": "player/lihui/boss.png"
+        },
+        {
+            "text": "Consider it as an atonement for the previous us.",
+            "speaker": "???",
+            "isLeft": false,
+            "portrait": "player/lihui/boss.png"
+        },
+        {
+            "text": "Us?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlhmask.png"
+        }
+    ]
+}

@@ -88,6 +88,11 @@ public class GameScreen implements Screen {
 
 
 
+    // Boss Room Locking
+    private boolean isBossRoomLocked = false;
+    private Texture wallTextureForLock;
+    private List<de.tum.cit.fop.maze.GameObj.Wall> lockedWalls = new ArrayList<>();
+
 
     /**
      * Constructor for loading a specific map file.
@@ -238,9 +243,20 @@ public class GameScreen implements Screen {
 // ...
 
 // Fields
+    // Level 5 Logic
+    private boolean level5StartDialoguePlayed = false;
+    private boolean level5BossDialoguePlayed = false;
+    private boolean level5AfterDialoguePlayed = false;
+    private int level5CameraState = 0; // 0: None, 1: Pan to Exit, 2: Wait, 3: Pan Back, 4: Done
+    private float level5CameraTimer = 0f;
+
+    // Level 4 Logic
     // Level 4 Logic
     private float level4StartTimer = 0;
     private boolean level4PreTriggered = false;
+    private int level4IntroState = 0;
+    private float level4IntroTimer = 0f;
+    private int level4FlashCount = 0;
     private TextureRegion blackTex; // Still need this for initial blackout or use FBO clear color
     
     // Flashlight
@@ -387,9 +403,25 @@ public class GameScreen implements Screen {
         // Level 4
         level4StartTimer = 0;
         level4PreTriggered = false;
+        level4IntroState = 0;
+        level4IntroTimer = 0f;
+        level4FlashCount = 0;
         if (flashlightEffect != null) {
             flashlightEffect.reset();
+            flashlightEffect.setEnabled(false); // Ensure initially disabled
         }
+        
+        if (flashlightEffect != null) {
+            flashlightEffect.reset();
+            flashlightEffect.setEnabled(false); // Ensure initially disabled
+        }
+        
+        // Reset Level 5 Dialogue State
+        level5StartDialoguePlayed = false;
+        level5BossDialoguePlayed = false;
+        level5AfterDialoguePlayed = false;
+        level5CameraState = 0;
+        level5CameraTimer = 0f;
         
         // Snap camera to player immediately to avoid "flying in"
         camera.position.set(character.getPosition().x, character.getPosition().y, 0);
@@ -1190,6 +1222,81 @@ public class GameScreen implements Screen {
                     character.clearDamageNumberRequest();
                 }
 
+                if ("level-5".equals(currentLevelName) && !isBossRoomLocked) {
+                    // Check if player enters Boss Room (Threshold X > 20 tiles [Corridor ends at 20])
+                    if (character.getPosition().x > 22 * 16) {
+                        isBossRoomLocked = true;
+                        
+                        if (wallTextureForLock == null) {
+                            wallTextureForLock = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
+                        }
+                        TextureRegion[][] tmp = TextureRegion.split(wallTextureForLock, 32, 32);
+                        TextureRegion wallRegion = tmp[0][0];
+                        
+                        // Spawn Walls at ENTRANCE X=21, Y=14, 15, 16
+                        for (int y = 14; y <= 16; y++) {
+                            de.tum.cit.fop.maze.GameObj.Wall w = new de.tum.cit.fop.maze.GameObj.Wall(21 * 16, y * 16, 16, 16, wallRegion);
+                            mapObjects.add(w);
+                            lockedWalls.add(w);
+                        }
+
+                        // Spawn Walls at EXIT X=37, Y=14, 15, 16
+                         for (int y = 14; y <= 16; y++) {
+                            de.tum.cit.fop.maze.GameObj.Wall w = new de.tum.cit.fop.maze.GameObj.Wall(37 * 16, y * 16, 16, 16, wallRegion);
+                            mapObjects.add(w);
+                            lockedWalls.add(w);
+                        }
+                        
+                        showPopupMessage("TRAPPED! DEFEAT THE BOSS!");
+                        
+                        // Activate Boss
+                        if (activeBoss != null) {
+                            activeBoss.setActive(true);
+                            // Trigger Level 5 Boss Dialogue
+                            if (!level5BossDialoguePlayed) {
+                                 dialogueManager.loadDialogue("level-5");
+                                 dialogueManager.startDialogue();
+                                 level5BossDialoguePlayed = true;
+                            }
+                        }
+                    }
+                } else if (activeBoss != null && !activeBoss.isActive()) {
+                    // Generic Boss Activation (Endless Mode / Other Levels)
+                    // Trigger when Player is close (simulating "Entering Boss Room")
+                    // Distance < 12 tiles (192 pixels)
+                    if (character.getPosition().dst(activeBoss.getPosition()) < 192) {
+                        activeBoss.setActive(true);
+                    }
+                }
+                
+                // Level 5 Logic: Start Dialogue
+                if ("level-5".equals(currentLevelName) && !level5StartDialoguePlayed) {
+                     levelStartTimer += delta;
+                     if (levelStartTimer >= 1.0f) {
+                         dialogueManager.loadDialogue("level-5-pre");
+                         dialogueManager.startDialogue();
+                         level5StartDialoguePlayed = true;
+                     }
+                }
+                
+                // Trigger Camera Flyby after Dialogue finishes
+                if ("level-5".equals(currentLevelName) && level5StartDialoguePlayed && !dialogueManager.isActive()) {
+                    if (level5CameraState == 0) {
+                        level5CameraState = 1; // Start Sequence
+                    }
+                }
+                
+                // Level 5 Logic: Near Exit Logic (Trigger Ending when X > 51)
+                // Exit is at X=53.
+                if ("level-5".equals(currentLevelName) && character.getPosition().x > 51 * 16 && character.hasKey()) {
+                     // Check if not already transitioning?
+                     // Just trigger ending directly
+                     game.setScreen(new de.tum.cit.fop.maze.GameControl.CinematicScreen(game, "story/data/ending.json", () -> {
+                            game.goToMenu(false);
+                     }));
+                     return;
+                }
+
                 character.update(delta, mapObjects, enemies, game.getConfigManager());
 
                 // Tutorial Hints Logic
@@ -1221,12 +1328,49 @@ public class GameScreen implements Screen {
                 }
 
                 if (!debugMapMode) {
-                    float targetX = character.getPosition().x + 8;
-                    float targetY = character.getPosition().y + 16;
-                    
-                    float lerpSpeed = 5f;
-                    camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
-                    camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
+                    if (level5CameraState == 1) {
+                         // Pan to Exit (X=53 * 16 = 848)
+                         float targetX = 53 * 16 + 8;
+                         float targetY = 15 * 16 + 8;
+                         float dist = com.badlogic.gdx.math.Vector2.dst(camera.position.x, camera.position.y, targetX, targetY);
+                         
+                         float speed = 300f * delta; // Constant speed pan? Or Lerp? Lerp is smoother.
+                         float lerpSpeed = 2f;
+                         camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
+                         camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
+                         
+                         if (dist < 10) {
+                             level5CameraState = 2; // Arrived
+                             level5CameraTimer = 0f;
+                         }
+                    } else if (level5CameraState == 2) {
+                         // Wait 1s
+                         level5CameraTimer += delta;
+                         if (level5CameraTimer >= 1.0f) {
+                             level5CameraState = 3;
+                         }
+                    } else if (level5CameraState == 3) {
+                         // Pan back to Player
+                         float targetX = character.getPosition().x + 8;
+                         float targetY = character.getPosition().y + 16;
+                         
+                         float lerpSpeed = 3f;
+                         camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
+                         camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
+                         
+                         float dist = com.badlogic.gdx.math.Vector2.dst(camera.position.x, camera.position.y, targetX, targetY);
+                         if (dist < 10) {
+                             level5CameraState = 4; // Finished
+                         }
+                    } else {
+                        // Normal Following
+                        float targetX = character.getPosition().x + 8;
+                        float targetY = character.getPosition().y + 16;
+                        
+                        float lerpSpeed = 5f;
+                        camera.position.x += (targetX - camera.position.x) * lerpSpeed * delta;
+                        camera.position.y += (targetY - camera.position.y) * lerpSpeed * delta;
+                    }
                 }
 
                 if (screenShake != null) {
@@ -1329,7 +1473,7 @@ public class GameScreen implements Screen {
         }
 
         // Level 4 Lighting (Draws Multiply layer over map AND characters/enemies)
-        if ("level-4".equals(currentLevelName) && flashlightEffect != null) {
+        if ("level-4".equals(currentLevelName) && flashlightEffect != null && level4IntroState >= 8) {
              game.getSpriteBatch().end(); // End batch from map/entity rendering
              
              Vector2 targetPos = null;
@@ -1402,6 +1546,38 @@ public class GameScreen implements Screen {
                             continue;
                         } 
                         
+                        // Level 5 Boss Defeat Logic:
+                        // 1. Drop Key
+                        // 2. Remove Lock Walls
+                        // 3. No Cinematic (User Request)
+                        if ("level-5".equals(currentLevelName)) {
+                             // Spawn Key at Boss location
+                             Texture keyTex = new Texture(Gdx.files.internal("assets/selfmade/basictile.png")); // Or chest texture
+                             TextureRegion[][] regs = TextureRegion.split(keyTex, 32, 32);
+                             TextureRegion keyRegion = regs[1][1];
+                             
+                             mapObjects.add(new de.tum.cit.fop.maze.GameObj.Key(enemy.getPosition().x, enemy.getPosition().y, 16, 16, keyRegion));
+                             
+                             // Unlock Walls
+                             if (lockedWalls != null && !lockedWalls.isEmpty()) {
+                                 for (de.tum.cit.fop.maze.GameObj.Wall w : lockedWalls) {
+                                     w.setMarkedForRemoval(true);
+                                 }
+                                 lockedWalls.clear();
+                                 showPopupMessage("The barriers disappear!");
+                             }
+                             
+                             // Trigger "After Boss" Dialogue
+                             if (!level5AfterDialoguePlayed) {
+                                  dialogueManager.loadDialogue("level-5-after");
+                                  dialogueManager.startDialogue();
+                                  level5AfterDialoguePlayed = true;
+                             }
+                             
+                             enemyIter.remove();
+                             return;
+                        }
+
                         game.setScreen(new de.tum.cit.fop.maze.GameControl.CinematicScreen(game, "story/data/ending.json", () -> {
                             game.goToMenu(false);
                         }));
@@ -1456,20 +1632,116 @@ public class GameScreen implements Screen {
                 lastHealth = currentHp;
             }
             
-            // Level 4 Logic: Timer
+            // Level 4 Logic: Intro Sequence
             if ("level-4".equals(currentLevelName)) {
-                 if (!level4PreTriggered) {
-                    level4StartTimer += delta;
-                    if (level4StartTimer >= 1.0f) {
-                        dialogueManager.loadDialogue("level-4-pre");
-                        dialogueManager.startDialogue();
-                        level4PreTriggered = true;
-                    }
-                 } else {
-                    // Turn on flashlight after dialogue ends
-                    if (flashlightEffect != null && !flashlightEffect.isEnabled() && !dialogueManager.isActive()) {
-                        flashlightEffect.setEnabled(true);
-                    }
+                 switch (level4IntroState) {
+                     case 0:
+                         // Start Dialogue 1
+                         dialogueManager.loadDialogue("level-4"); 
+                         dialogueManager.startDialogue();
+                         level4IntroState = 1;
+                         break;
+                     case 1:
+                         // Wait for Dialog 1
+                         if (!dialogueManager.isActive()) {
+                             dialogueManager.loadDialogue("level-4-1");
+                             dialogueManager.startDialogue();
+                             level4IntroState = 2;
+                         }
+                         break;
+                     case 2:
+                         // Wait for Dialog 2
+                         if (!dialogueManager.isActive()) {
+                             dialogueManager.loadDialogue("level-4-2");
+                             dialogueManager.startDialogue();
+                             level4IntroState = 3;
+                         }
+                         break;
+                     case 3:
+                         // Wait for Dialog 3
+                         if (!dialogueManager.isActive()) {
+                             level4IntroTimer = 0;
+                             level4IntroState = 4;
+                         }
+                         break;
+                     case 4:
+                         // 2s Delay
+                         level4IntroTimer += delta;
+                         if (level4IntroTimer >= 2.0f) {
+                             level4IntroTimer = 0;
+                             level4IntroState = 5;
+                             level4FlashCount = 0;
+                         }
+                         break;
+                     case 5:
+                         // Flashes: 2 flashes. (White -> Normal -> White -> Normal -> Black)
+                         // Flash duration 0.1s
+                         level4IntroTimer += delta;
+                         if (level4IntroTimer >= 0.1f) {
+                             level4IntroTimer = 0;
+                             level4FlashCount++;
+                             if (level4FlashCount >= 4) { // 2 full cycles (0,1,2,3) -> 4
+                                 level4IntroState = 6;
+                                 level4IntroTimer = 0f; // Reset for black screen wait
+                             }
+                         }
+                         // Draw White Overlay if FlashCount is EVEN (0, 2)
+                         if (level4FlashCount % 2 == 0) {
+                              Gdx.gl.glEnable(GL20.GL_BLEND);
+                              Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+                              shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
+                              shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                              shapeRenderer.setColor(1, 1, 1, 1); // White
+                              // Use huge rect to be safe
+                              shapeRenderer.rect(camera.position.x - 1000, camera.position.y - 1000, 2000, 2000);
+                              shapeRenderer.end();
+                              Gdx.gl.glDisable(GL20.GL_BLEND);
+                         }
+                         break;
+                     case 6:
+                         // Black Screen Wait (1s)
+                         
+                         // Draw Black Overlay
+                         Gdx.gl.glEnable(GL20.GL_BLEND);
+                         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+                         shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
+                         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                         shapeRenderer.setColor(0, 0, 0, 1); // Black
+                         shapeRenderer.rect(camera.position.x - 1000, camera.position.y - 1000, 2000, 2000);
+                         shapeRenderer.end();
+                         Gdx.gl.glDisable(GL20.GL_BLEND);
+                         
+                         level4IntroTimer += delta;
+                         if (level4IntroTimer >= 1.0f) {
+                             // Start Pre-Dialogue
+                             dialogueManager.loadDialogue("level-4-pre");
+                             dialogueManager.startDialogue();
+                             level4IntroState = 7;
+                         }
+                         break;
+                     case 7:
+                         // Waiting for Pre-Dialogue
+                         // Draw Black Overlay
+                         Gdx.gl.glEnable(GL20.GL_BLEND);
+                         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+                         shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
+                         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                         shapeRenderer.setColor(0, 0, 0, 1); // Black
+                         // Use huge rect to be safe
+                         shapeRenderer.rect(camera.position.x - 1000, camera.position.y - 1000, 2000, 2000);
+                         shapeRenderer.end();
+                         Gdx.gl.glDisable(GL20.GL_BLEND);
+                         
+                         if (!dialogueManager.isActive()) {
+                             level4IntroState = 8;
+                         }
+                         break;
+                     case 8:
+                         // Game Start: Enable Flashlight
+                         if (flashlightEffect != null && !flashlightEffect.isEnabled()) {
+                             flashlightEffect.setEnabled(true);
+                         }
+                         break;
                  }
             }
 
@@ -1608,6 +1880,8 @@ public class GameScreen implements Screen {
             dialogueManager.dispose();
         if (flashlightEffect != null)
             flashlightEffect.dispose();
+        if (wallTextureForLock != null)
+            wallTextureForLock.dispose();
     }
 
     /**
@@ -1675,8 +1949,21 @@ public class GameScreen implements Screen {
         // Find a random walkable position
         int maxAttempts = 50;
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
-            int randomX = com.badlogic.gdx.math.MathUtils.random(5, grid.getWidth() - 5);
-            int randomY = com.badlogic.gdx.math.MathUtils.random(5, grid.getHeight() - 5);
+            int minX = 5;
+            int maxX = grid.getWidth() - 5;
+            int minY = 5;
+            int maxY = grid.getHeight() - 5;
+            
+            // Level 5 Boss Room Constraint (X: 22-36, Y: 8-22)
+            if ("level-5".equals(currentLevelName)) {
+                minX = 22;
+                maxX = 36;
+                minY = 8;
+                maxY = 22;
+            }
+            
+            int randomX = com.badlogic.gdx.math.MathUtils.random(minX, maxX);
+            int randomY = com.badlogic.gdx.math.MathUtils.random(minY, maxY);
             
             if (grid.isWalkable(randomX, randomY)) {
                 float worldX = randomX * 16;

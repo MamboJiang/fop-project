@@ -87,8 +87,13 @@ public class MapLoader {
                     }
 
                     if (type != 0) {
-                        // PATH used to be regions[1][1], now customRegs[0][1] (1,0)
-                        objects.add(new Path(worldX, worldY, 16, 16, customRegs[1][0]));
+                        // For Level 5, do NOT generate floor for undefined areas (Void)
+                        if (mapFile.nameWithoutExtension().equals("level-5") && type == -1) {
+                            // Do nothing (Void)
+                        } else {
+                            // PATH used to be regions[1][1], now customRegs[0][1] (1,0)
+                            objects.add(new Path(worldX, worldY, 16, 16, customRegs[1][0]));
+                        }
                     }
 
                     GameObject obj = null;
@@ -275,9 +280,12 @@ public class MapLoader {
 
         FileHandle dir = Gdx.files.internal("maps");
         if (!dir.exists() || !dir.isDirectory()) {
-            dir = Gdx.files.local("maps");
+            dir = Gdx.files.internal("assets/maps"); // Try assets/maps
             if (!dir.exists() || !dir.isDirectory()) {
-                dir = Gdx.files.local("../maps");
+                 dir = Gdx.files.local("assets/maps"); // Try local assets/maps
+                 if (!dir.exists() || !dir.isDirectory()) {
+                      dir = Gdx.files.local("maps");
+                 }
             }
         }
 
