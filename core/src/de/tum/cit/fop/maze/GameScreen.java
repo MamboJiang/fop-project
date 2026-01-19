@@ -1034,7 +1034,7 @@ public class GameScreen implements Screen {
              updateInputProcessor();
         }
 
-        if ("level-4".equals(currentLevelName)) {
+        if ("level-4".equals(currentLevelName) || (isEndlessVer2 && !currentLevelName.endsWith("-3"))) {
             // 第四关：停止其他音乐，播放迷雾音乐
             if (game.backgroundMusic.isPlaying()) game.backgroundMusic.stop();
             if (game.bossFightMusic.isPlaying()) game.bossFightMusic.stop();
