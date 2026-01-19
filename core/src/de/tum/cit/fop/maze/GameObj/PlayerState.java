@@ -18,6 +18,8 @@ public class PlayerState {
     private java.util.HashMap<String, Integer> achievementProgress;
     private int endlessWave = 1;
 
+    private java.util.HashSet<String> discoveredEncyclopediaIds;
+
     /**
      * Constructor for PlayerState with default values.
      */
@@ -31,6 +33,7 @@ public class PlayerState {
         this.unlockedAchievements = new java.util.HashMap<>();
         this.achievementProgress = new java.util.HashMap<>();
         this.endlessWave = 1;
+        this.discoveredEncyclopediaIds = new java.util.HashSet<>();
     }
     
     private int maxEndlessWave = 1;
@@ -109,7 +112,6 @@ public class PlayerState {
     
     public void setUsername(String name) { this.username = name; }
     public String getUsername() { return username; }
-    
     /**
      * Marks a level as completed.
      * @param levelName The name of the level.
@@ -199,4 +201,18 @@ public class PlayerState {
     public int getHealthLevel() { return healthLevel; }
     public int getSpeedLevel() { return speedLevel; }
     public int getDefenseLevel() { return defenseLevel; }
+
+    public java.util.HashSet<String> getDiscoveredEncyclopediaIds() {
+        return discoveredEncyclopediaIds;
+    }
+    public void setDiscoveredEncyclopediaIds(java.util.HashSet<String> ids) {
+        this.discoveredEncyclopediaIds = ids;
+    }
+
+    public void addDiscoveredId(String id) {
+        if (this.discoveredEncyclopediaIds == null) {
+            this.discoveredEncyclopediaIds = new java.util.HashSet<>();
+        }
+        this.discoveredEncyclopediaIds.add(id);
+    }
 }

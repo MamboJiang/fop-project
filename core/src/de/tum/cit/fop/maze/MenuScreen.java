@@ -201,6 +201,17 @@ public class MenuScreen implements Screen {
                     game.setScreen(new de.tum.cit.fop.maze.GameControl.AchievementsScreen(game));
                 }
             });
+
+            TextButton encyclopediaButton = createHoverButton("Encyclopedia", game.getSkin());
+            animatedTable.add(encyclopediaButton).padBottom(15).row();
+
+            encyclopediaButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    // 切换到刚才创建的屏幕
+                    game.setScreen(new de.tum.cit.fop.maze.GameControl.EncyclopediaScreen(game));
+                }
+            });
             
 
             TextButton settingsButton = createHoverButton("Settings", game.getSkin());

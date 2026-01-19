@@ -508,6 +508,15 @@ public class StoryMenu implements Screen {
             public void changed(ChangeEvent event, Actor actor) { game.setScreen(new de.tum.cit.fop.maze.GameControl.AchievementsScreen(game)); }
         });
 
+        TextButton encyclopediaBtn = createHoverButton("Encyclopedia", skin, "middle");
+        encyclopediaBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                // 跳转到图鉴屏幕
+                game.setScreen(new de.tum.cit.fop.maze.GameControl.EncyclopediaScreen(game));
+            }
+        });
+
         TextButton settingsBtn = createHoverButton("Settings", skin, "middle");
         settingsBtn.addListener(new ChangeListener() {
             @Override
@@ -529,6 +538,7 @@ public class StoryMenu implements Screen {
         btnContainer.add(endlessV2Btn).padBottom(15).row();
         btnContainer.add(skillsBtn).padBottom(15).row();
         btnContainer.add(achBtn).padBottom(15).row();
+        btnContainer.add(encyclopediaBtn).padBottom(15).row();
         btnContainer.add(settingsBtn).padBottom(15).row();
         btnContainer.add(backBtn).padTop(20);
         

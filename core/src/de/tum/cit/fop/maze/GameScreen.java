@@ -15,11 +15,8 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import de.tum.cit.fop.maze.GameControl.LeaderboardManager;
+import de.tum.cit.fop.maze.GameControl.*;
 import de.tum.cit.fop.maze.GameObj.*;
-import de.tum.cit.fop.maze.GameControl.HUD;
-import de.tum.cit.fop.maze.GameControl.PauseMenu;
-import de.tum.cit.fop.maze.GameControl.GameOverMenu;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.graphics.Texture;
@@ -88,9 +85,8 @@ public class GameScreen implements Screen {
     private float bossItemSpawnTimer = 0f;
     private static final float BOSS_ITEM_SPAWN_INTERVAL = 15f; // 15 seconds
     private float bossDeathTimer = 0f;
-    private boolean backGroundMusicPlayed = true;
-    private boolean warFogMusicPlayed = false;
-    private boolean bossFightMusicPlayed = false;
+
+
 
 
     /**
@@ -982,6 +978,7 @@ public class GameScreen implements Screen {
             levelStartTimer += delta;
             if (levelStartTimer >= 0.3f) {
                 levelStartDialoguePlayed = true;
+                EncyclopediaManager.getInstance().unlock(game, "main_character");
                 dialogueManager.loadDialogue("level-0-pre");
                 dialogueManager.startDialogue();
                 updateInputProcessor();
@@ -991,6 +988,7 @@ public class GameScreen implements Screen {
         // Level 0 After Dialogue (Mask Pickup)
         if ("level-0".equals(currentLevelName) && !levelAfterDialoguePlayed && character != null && character.hasKey()) {
             levelAfterDialoguePlayed = true;
+            EncyclopediaManager.getInstance().unlock(game, "npc_nono");
              dialogueManager.loadDialogue("level-0-after");
              dialogueManager.startDialogue();
              updateInputProcessor();
@@ -1010,9 +1008,11 @@ public class GameScreen implements Screen {
         // Level 1 After Dialogue (Key Pickup)
         if ("level-1".equals(currentLevelName) && !levelAfterDialoguePlayed && character != null && character.hasKey()) {
             levelAfterDialoguePlayed = true;
-             dialogueManager.loadDialogue("level-1-after");
-             dialogueManager.startDialogue();
-             updateInputProcessor();
+            EncyclopediaManager.getInstance().unlock(game, "enemy_trap");
+            EncyclopediaManager.getInstance().unlock(game, "enemy_robot");
+            dialogueManager.loadDialogue("level-1-after");
+            dialogueManager.startDialogue();
+            updateInputProcessor();
         }
 
         // Level 2 Start Dialogue
@@ -1029,6 +1029,7 @@ public class GameScreen implements Screen {
         // Level 2 After Dialogue (Key Pickup)
         if ("level-2".equals(currentLevelName) && !levelAfterDialoguePlayed && character != null && character.hasKey()) {
             levelAfterDialoguePlayed = true;
+            EncyclopediaManager.getInstance().unlock(game, "enemy_drone");
              dialogueManager.loadDialogue("level-2-after");
              dialogueManager.startDialogue();
              updateInputProcessor();
@@ -1043,6 +1044,7 @@ public class GameScreen implements Screen {
                 game.warFogMusic.play();
             }
         } else if ("level-5".equals(currentLevelName) || (isEndlessVer2 && currentLevelName.endsWith("-3"))) {
+            EncyclopediaManager.getInstance().unlock(game, "boss_guardian");
             // 第五关：停止其他音乐，播放Boss音乐
             if (game.backgroundMusic.isPlaying()) game.backgroundMusic.stop();
             if (game.warFogMusic.isPlaying()) game.warFogMusic.stop();
