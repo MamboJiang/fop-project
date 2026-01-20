@@ -245,7 +245,6 @@ public class EncyclopediaScreen implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 if (isUnlocked) {
                     showDetailDialog(entry);
-                    game.playPickupSound();
                 }
             }
             @Override
