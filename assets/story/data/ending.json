@@ -1,28 +1,40 @@
 {
     "frames": [
         {
-            "text": "Year 2099: \"The Silent Day\"",
+            "text": "",
+            "showImage": true,
+            "image": "story/pictures/endstory.png"
+        },
+        {
+            "text": "",
+            "showImage": true,
+            "image": "story/pictures/endstory1.png"
+        },
+        {
+            "text": "",
+            "showImage": true,
+            "image": "story/pictures/endstory2.png"
+        },
+        {
+            "text": "",
+            "showImage": true,
+            "image": "story/pictures/endstory3.png"
+        },
+        {
+            "text": "We wear masks so well.",
             "showImage": false
         },
         {
-            "text": "A batch of the Meridian Foundation's new-model robots has gone rogue and released a biological weapon.",
-            "showImage": true,
-            "image": "story/pictures/openingstory1.png"
+            "text": "Only truth stays when the mask falls.",
+            "showImage": false
         },
         {
-            "text": "The victims collapse into piles of static organic matter, scattering across the streets and corroding everything they touch.",
-            "showImage": true,
-            "image": "story/pictures/openingstory2.png"
+            "text": "We fool even ourselves.",
+            "showImage": false
         },
         {
-            "text": "Even more terrifying, the rogue robots still roam the darkness, attacking any target that shows signs of life.",
-            "showImage": true,
-            "image": "story/pictures/openingstory3.png"
-        },
-        {
-            "text": "The last survivors of human civilization have retreated to the underground \"Meridian Facility.\"",
-            "showImage": true,
-            "image": "story/pictures/openingstory4.png"
+            "text": "THE END",
+            "showImage": false
         }
     ]
 }
