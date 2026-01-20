@@ -81,7 +81,7 @@ public class HUD {
 
         // Load Mask Icons for Lives
         // We reused objectsTexture variable name, rename it to maskTexture for clarity or just use new var
-        objectsTexture = new Texture(Gdx.files.internal("assets/selfmade/maskicon.png")); // This is now maskicon
+        objectsTexture = new Texture(Gdx.files.internal("selfmade/maskicon.png")); // This is now maskicon
         
         Texture maskTexture = objectsTexture; // Alias
         heartRegions = new TextureRegion[5];
@@ -90,7 +90,7 @@ public class HUD {
         }
 
         // Load Key (Card) Icon
-        Texture basicTile = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
+        Texture basicTile = new Texture(Gdx.files.internal("selfmade/basictile.png"));
         TextureRegion[][] tiles = TextureRegion.split(basicTile, 32, 32); 
         keyRegion = tiles[1][1]; 
 

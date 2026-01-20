@@ -41,7 +41,7 @@ public class Nono extends GameObject {
     }
     
     private void loadAnimation() {
-        Texture texture = new Texture(Gdx.files.internal("assets/player/sprite/nono.png"));
+        Texture texture = new Texture(Gdx.files.internal("player/sprite/nono.png"));
         TextureRegion[][] tmp = TextureRegion.split(texture, 32, 32);
         
         float blinkDuration = 0.1f;

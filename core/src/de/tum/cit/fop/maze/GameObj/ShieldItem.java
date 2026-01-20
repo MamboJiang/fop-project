@@ -26,7 +26,7 @@ public class ShieldItem extends GameObject implements Collectable {
     }
     
     private void loadAnimation() {
-        Texture texture = new Texture(Gdx.files.internal("assets/selfmade/shielditem.png"));
+        Texture texture = new Texture(Gdx.files.internal("selfmade/shielditem.png"));
         // Assuming single frame for shield item
         TextureRegion region = new TextureRegion(texture);
         TextureRegion[] frames = new TextureRegion[] { region };

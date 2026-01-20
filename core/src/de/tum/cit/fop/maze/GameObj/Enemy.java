@@ -261,7 +261,7 @@ public class Enemy extends MovableObject {
 
         if (bounds.overlaps(target.getBounds())) {
 
-            FileHandle damageSoundFile = Gdx.files.internal("assets/damage.mp3");
+            FileHandle damageSoundFile = Gdx.files.internal("damage.mp3");
             if (damageSoundFile.exists()) {
                 Gdx.audio.newSound(damageSoundFile).play();
             }

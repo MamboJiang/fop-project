@@ -24,7 +24,7 @@ public class Heart extends GameObject implements Collectable {
     }
     
     private void loadAnimation() {
-        Texture texture = new Texture(Gdx.files.internal("assets/selfmade/maskitem.png"));
+        Texture texture = new Texture(Gdx.files.internal("selfmade/maskitem.png"));
         // Assuming it's a single image, create a 1-frame animation or just use the region
         TextureRegion[][] tmp = TextureRegion.split(texture, 32, 32); // Assuming 32x32 size for item?
         // Or if it's not a grid, just use full texture?

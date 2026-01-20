@@ -364,7 +364,7 @@ public class GameScreen implements Screen {
         projectiles = new ArrayList<>();
         
         // Load custom bullet texture
-        Texture bulletTexture = new Texture(com.badlogic.gdx.Gdx.files.internal("assets/selfmade/bullet.png"));
+        Texture bulletTexture = new Texture(com.badlogic.gdx.Gdx.files.internal("selfmade/bullet.png"));
         bulletTex = new TextureRegion(bulletTexture);
         
         // Create black texture for other purposes
@@ -535,7 +535,7 @@ public class GameScreen implements Screen {
                     iter.remove();
                     // Create a Key that looks like a Shield
                     // Use shield texture
-                    Texture shieldTex = new Texture(Gdx.files.internal("assets/selfmade/shielditem.png"));
+                    Texture shieldTex = new Texture(Gdx.files.internal("selfmade/shielditem.png"));
                     TextureRegion shieldReg = new TextureRegion(shieldTex);
                     
                     // Add the "Key" which is visual goal
@@ -585,7 +585,7 @@ public class GameScreen implements Screen {
                 if (obj instanceof de.tum.cit.fop.maze.GameObj.Key) {
                     iter.remove();
                     // Create a Key that looks like Serum
-                    Texture serumTex = new Texture(Gdx.files.internal("assets/selfmade/serum.png"));
+                    Texture serumTex = new Texture(Gdx.files.internal("selfmade/serum.png"));
                     TextureRegion serumReg = new TextureRegion(serumTex);
                     
                     de.tum.cit.fop.maze.GameObj.Key serumKey = new de.tum.cit.fop.maze.GameObj.Key(
@@ -618,7 +618,7 @@ public class GameScreen implements Screen {
             }
 
             // Always spawn Nono at Center (15*16)/2 - 10 = 110
-            Texture nonoTex = new Texture(Gdx.files.internal("assets/player/sprite/nono.png"));
+            Texture nonoTex = new Texture(Gdx.files.internal("player/sprite/nono.png"));
             TextureRegion[][] tmp = TextureRegion.split(nonoTex, 32, 32);
             TextureRegion nonoFrame = tmp[0][0];
             
@@ -1170,7 +1170,7 @@ public class GameScreen implements Screen {
                 nono = new de.tum.cit.fop.maze.GameObj.Nono(character.getPosition().x, character.getPosition().y, character);
                 
                 // Spawn MaskItem above Nono
-                Texture maskTex = new Texture(Gdx.files.internal("assets/selfmade/maskitem.png"));
+                Texture maskTex = new Texture(Gdx.files.internal("selfmade/maskitem.png"));
                 TextureRegion maskRegion = new TextureRegion(maskTex);
                 de.tum.cit.fop.maze.GameObj.MaskItem maskItem = new de.tum.cit.fop.maze.GameObj.MaskItem(
                     nono.getPosition().x,
@@ -1228,7 +1228,7 @@ public class GameScreen implements Screen {
                         isBossRoomLocked = true;
                         
                         if (wallTextureForLock == null) {
-                            wallTextureForLock = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
+                            wallTextureForLock = new Texture(Gdx.files.internal("selfmade/basictile.png"));
                         }
                         TextureRegion[][] tmp = TextureRegion.split(wallTextureForLock, 32, 32);
                         TextureRegion wallRegion = tmp[0][0];
@@ -1536,7 +1536,7 @@ public class GameScreen implements Screen {
                             }
                             
                             // Spawn Exit
-                            Texture texture = new Texture(Gdx.files.internal("assets/selfmade/basictile.png"));
+                            Texture texture = new Texture(Gdx.files.internal("selfmade/basictile.png"));
                             TextureRegion[][] regions = TextureRegion.split(texture, 32, 32);
                             TextureRegion exitRegion = regions[0][1];
                             
@@ -1552,7 +1552,7 @@ public class GameScreen implements Screen {
                         // 3. No Cinematic (User Request)
                         if ("level-5".equals(currentLevelName)) {
                              // Spawn Key at Boss location
-                             Texture keyTex = new Texture(Gdx.files.internal("assets/selfmade/basictile.png")); // Or chest texture
+                             Texture keyTex = new Texture(Gdx.files.internal("selfmade/basictile.png")); // Or chest texture
                              TextureRegion[][] regs = TextureRegion.split(keyTex, 32, 32);
                              TextureRegion keyRegion = regs[1][1];
                              
