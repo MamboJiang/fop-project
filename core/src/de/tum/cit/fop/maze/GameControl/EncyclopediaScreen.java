@@ -69,12 +69,12 @@ public class EncyclopediaScreen implements Screen {
 
     private void loadAssets() {
         // 1. 背景 (复用 StoryMenu 的逻辑)
-        backgroundTexture = new Texture(Gdx.files.internal("assets/selfmade/background.png"));
+        backgroundTexture = new Texture(Gdx.files.internal("selfmade/background.png"));
         backgroundImage1 = new Image(backgroundTexture);
         backgroundImage2 = new Image(backgroundTexture);
         backgroundImage1.setScaling(Scaling.stretch);
         backgroundImage2.setScaling(Scaling.stretch);
-        detailPanelTexture = new Texture(Gdx.files.internal("assets/selfmade/uielements/levelbuttonbase.png"));
+        detailPanelTexture = new Texture(Gdx.files.internal("selfmade/uielements/levelbuttonbase.png"));
 
         // 保持背景位置同步
         backgroundImage1.setPosition(StoryMenu.savedBackgroundX, 0);
@@ -95,7 +95,7 @@ public class EncyclopediaScreen implements Screen {
         stage.addActor(cinematicBarBottom);
 
         // 3. UI 元素纹理
-        titleBgTexture = new Texture(Gdx.files.internal("assets/selfmade/uielements/buttontype2.png"));
+        titleBgTexture = new Texture(Gdx.files.internal("selfmade/uielements/buttontype2.png"));
 
         // 创建一个半透明的黑色背景用于卡片
         Pixmap p2 = new Pixmap(1, 1, Pixmap.Format.RGBA8888);

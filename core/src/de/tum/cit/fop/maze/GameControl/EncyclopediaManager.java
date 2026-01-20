@@ -24,12 +24,12 @@ public class EncyclopediaManager {
 
     // 初始化所有图鉴数据 (你可以硬编码在这里，或者从 JSON 文件读取)
     private void loadEntries() {
-        addEntry("main_character", "The Player", "The player", "assets/player/lihui/maincharacterlhupscale.png");
-        addEntry("npc_nono", "Unit N0N0", "A hovering bot of unknown origin. It seems to know the maze's layout perfectly and possesses high-level clearance. Is it an assistant built for you, or a monitor from the maze itself?", "assets/player/lihui/nonolh.png");
-        addEntry("enemy_trap", "The Melted", "Once human, genetic collapse melted their flesh into a corrosive semi-liquid state. They lie dormant as floor stains, waiting for the next victim.", "assets/player/lihui/nonolh.png");
-        addEntry("enemy_robot", "Corrupted Enforcer", "Originally designed to maintain order. After their core directives were overwritten by unknown code, they redefined all living things as 'intruders'. Beware their patrol routes.", "assets/player/lihui/nonolh.png");
-        addEntry("enemy_drone", "The Watcher", "An airborne unit originally used to monitor blind spots. Its optical sensors are now locked in 'Exterminate Mode'. If you hear its high-frequency hum, take cover immediately.", "assets/player/lihui/nonolh.png");
-        addEntry("boss_guardian", "The Guardian", "Keep your distance!", "assets/player/lihui/boss.png");
+        addEntry("main_character", "The Player", "The player", "player/lihui/maincharacterlhupscale.png");
+        addEntry("npc_nono", "Unit N0N0", "A hovering bot of unknown origin. It seems to know the maze's layout perfectly and possesses high-level clearance. Is it an assistant built for you, or a monitor from the maze itself?", "player/lihui/nonolh.png");
+        addEntry("enemy_trap", "The Melted", "Once human, genetic collapse melted their flesh into a corrosive semi-liquid state. They lie dormant as floor stains, waiting for the next victim.", "player/lihui/nonolh.png");
+        addEntry("enemy_robot", "Corrupted Enforcer", "Originally designed to maintain order. After their core directives were overwritten by unknown code, they redefined all living things as 'intruders'. Beware their patrol routes.", "player/lihui/nonolh.png");
+        addEntry("enemy_drone", "The Watcher", "An airborne unit originally used to monitor blind spots. Its optical sensors are now locked in 'Exterminate Mode'. If you hear its high-frequency hum, take cover immediately.", "player/lihui/nonolh.png");
+        addEntry("boss_guardian", "The Guardian", "Keep your distance!", "player/lihui/boss.png");
 
         // ... 添加更多
     }
