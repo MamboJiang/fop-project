@@ -21,7 +21,7 @@
             "portrait": "player/lihui/maincharacterlhmask.png"
         },
         {
-            "text": "Yes, you just need to place it into the launch pad",
+            "text": "Yes, you just need to place it into the launch pad.",
             "speaker": "Stranger",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"

@@ -39,7 +39,7 @@
             "portrait": "player/lihui/maincharacterlhmask.png"
         },
         {
-            "text": "(Stammering) I meant a guess, a guess",
+            "text": "(Stammering) I meant a guess, a guess...",
             "speaker": "Stranger",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"

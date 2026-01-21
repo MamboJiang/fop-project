@@ -15,13 +15,13 @@
     "rightPortraitOffsetY": -100.0,
     "lines": [
         {
-            "text": "What a troublesome opponent",
+            "text": "What a troublesome opponent！",
             "speaker": "Player",
             "isLeft": true,
             "portrait": "player/lihui/maincharacterlhmask.png"
         },
         {
-            "text": "Victory is right before our eyes",
+            "text": "Victory is right before our eyes.",
             "speaker": "Stranger",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
@@ -33,13 +33,13 @@
             "portrait": "player/lihui/nonolhright.png"
         },
         {
-            "text": "Don't rush",
+            "text": "Don't rush.",
             "speaker": "Player",
             "isLeft": true,
             "portrait": "player/lihui/maincharacterlhmask.png"
         },
         {
-            "text": "Nothing can stop our steps anymore",
+            "text": "Nothing can stop our steps anymore.",
             "speaker": "Player",
             "isLeft": true,
             "portrait": "player/lihui/maincharacterlhmask.png"

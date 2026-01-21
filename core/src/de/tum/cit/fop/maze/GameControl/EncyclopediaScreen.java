@@ -65,6 +65,7 @@ public class EncyclopediaScreen implements Screen {
         if (this.encyclopediaManager.getAllEntries().containsKey("main_character")) {
             this.encyclopediaManager.getAllEntries().get("main_character").setName(game.getPlayerState().getUsername());
         }
+        this.encyclopediaManager.updateEntriesContent(game.getPlayerState());
     }
 
     private void loadAssets() {

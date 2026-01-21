@@ -39,7 +39,7 @@
             "portrait": "player/lihui/maincharacterlhmask.png"
         },
         {
-            "text": "I definitely won't let you pass",
+            "text": "I definitely won't let you pass.",
             "speaker": "???",
             "isLeft": false,
             "portrait": "player/lihui/boss.png"

@@ -832,7 +832,7 @@ public class GameScreen implements Screen {
                 game.getPlayerState().addCompletedLevel(currentLevelName);
             }
 
-            int xpEarned = 50;
+            int xpEarned = 100;
 
             if (isProcedural) {
                 game.getPlayerState().addCurrentRunXP(xpEarned);
@@ -1321,6 +1321,8 @@ public class GameScreen implements Screen {
                 if ("level-5".equals(currentLevelName) && character.getPosition().x > 51 * 16 && character.hasKey()) {
                     // Check if not already transitioning?
                     // Just trigger ending directly
+
+                    awardXP(true);
                     game.setScreen(
                             new de.tum.cit.fop.maze.GameControl.CinematicScreen(game, "story/data/ending.json", () -> {
                                 game.goToMenu(false);

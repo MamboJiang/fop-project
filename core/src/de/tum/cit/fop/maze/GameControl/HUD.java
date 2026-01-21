@@ -65,7 +65,7 @@ public class HUD {
     private Image bossHealthBar;
     private Label bossNameLabel;
     private Texture blankTexture; // 用代码生成的纯白图片
-    private float bossBarMaxWidth = 400f; // 血条最大宽度
+    private float bossBarMaxWidth = 1000f; // 血条最大宽度
 
     /**
      * Constructor for HUD.
@@ -125,8 +125,8 @@ public class HUD {
 
         // 3. 创建 Boss 名字标签
         Label.LabelStyle nameStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.RED);
-        bossNameLabel = new Label("BIG BOSS", nameStyle);
-        bossNameLabel.setFontScale(0.8f);
+        bossNameLabel = new Label("The Guardian", nameStyle);
+        bossNameLabel.setFontScale(1.5f);
 
         // 4. 创建血条组合 (背景黑条 + 前景红条)
         // 使用 Stack 让红条覆盖在黑条上面
@@ -146,13 +146,13 @@ public class HUD {
         // 为了让红条能缩短，我们需要把它放在一个左对齐的容器里，否则 Stack 会强制拉伸它
         Table innerTable = new Table();
         innerTable.left(); // 关键：左对齐
-        innerTable.add(bossHealthBar).width(bossBarMaxWidth).height(20);
+        innerTable.add(bossHealthBar).width(bossBarMaxWidth).height(30);
         barStack.add(innerTable);
 
         // 5. 布局到 bossTable
         // 位置：使用 padTop 将整个血条往下推，避免与时间重叠
         bossTable.add(bossNameLabel).padTop(70).padBottom(10).row();
-        bossTable.add(barStack).width(bossBarMaxWidth).height(20);
+        bossTable.add(barStack).width(bossBarMaxWidth).height(30);
 
         stage.addActor(bossTable);
     }

@@ -5,7 +5,7 @@ public class EncyclopediaEntry {
     private String name;
     private String description;
     private String texturePath; // 图片资源路径
-    private boolean isSecret;   // 是否是隐藏条目
+    private boolean isSecret;
 
     public EncyclopediaEntry(String id, String name, String description, String texturePath) {
         this.id = id;
