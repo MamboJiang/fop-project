@@ -21,6 +21,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import de.tum.cit.fop.maze.GameObj.PlayerState;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,10 +75,12 @@ public class DialogueManager {
     private float charsPerSecond = 30;
     private boolean typingFinished = true;
 
-    public DialogueManager(Skin skin) {
+    private PlayerState playerState;
+
+    public DialogueManager(Skin skin, PlayerState playerState) {
         this.skin = skin;
         this.stage = new Stage(new ExtendViewport(1920, 1080));
-        
+        this.playerState = playerState;
         setupUI();
         setupInput();
     }
@@ -511,7 +515,11 @@ public class DialogueManager {
         typingFinished = false;
         charTimer = 0;
         
-        speakerName.setText(line.getSpeaker());
+        if(line.getSpeaker().equals("Player")){
+            speakerName.setText(playerState.getUsername());
+        }else{
+            speakerName.setText(line.getSpeaker());
+        }
         
         // 2. Portrait
         if (line.getPortrait() != null) {

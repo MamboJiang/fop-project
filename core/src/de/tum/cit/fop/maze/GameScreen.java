@@ -276,7 +276,7 @@ public class GameScreen implements Screen {
         setupPauseMenu();
 
         // Initialize Dialogue Manager
-        dialogueManager = new de.tum.cit.fop.maze.Conversation.DialogueManager(game.getSkin());
+        dialogueManager = new de.tum.cit.fop.maze.Conversation.DialogueManager(game.getSkin(), game.getPlayerState());
         // Load dialogue for the current level (e.g. "level-0")
         if (currentLevelName != null) {
             dialogueManager.loadDialogue(currentLevelName);
