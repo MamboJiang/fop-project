@@ -8,12 +8,12 @@
         {
             "text": "",
             "showImage": true,
-            "image": "story/pictures/endstory1.png"
+            "image": "story/pictures/endstorynono.png"
         },
         {
             "text": "",
             "showImage": true,
-            "image": "story/pictures/endstory2.png"
+            "image": "story/pictures/endstory1.png"
         },
         {
             "text": "",
@@ -21,20 +21,39 @@
             "image": "story/pictures/endstory3.png"
         },
         {
-            "text": "We wear masks so well.",
-            "showImage": false
+            "text": "(So that's it.)",
+            "showImage": true,
+            "image": "story/pictures/endstory3.png"
         },
         {
-            "text": "Only truth stays when the mask falls.",
-            "showImage": false
+            "text": "(The \"Strong Acid\" were the persecuted, innocent humans.)",
+            "showImage": true,
+            "image": "story/pictures/endstory3.png"
         },
         {
-            "text": "We fool even ourselves.",
-            "showImage": false
+            "text": "(The cold-blooded machines were the survivors who would stop at nothing.)",
+            "showImage": true,
+            "image": "story/pictures/endstory3.png"
         },
         {
-            "text": "THE END",
-            "showImage": false
+            "text": "(Beneath the mask lies a hypocritical artificial intelligence.)",
+            "showImage": true,
+            "image": "story/pictures/endstory3.png"
+        },
+        {
+            "text": "(And... the previous \"me\" who took off the mask to atone.)",
+            "showImage": true,
+            "image": "story/pictures/endstory3.png"
+        },
+        {
+            "text": "Perhaps...",
+            "showImage": true,
+            "image": "story/pictures/endstory5.jpg"
+        },
+        {
+            "text": "I will meet the next \"me\".",
+            "showImage": true,
+            "image": "story/pictures/endstory5.jpg"
         }
     ]
 }

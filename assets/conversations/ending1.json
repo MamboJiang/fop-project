@@ -1,0 +1,50 @@
+{
+  "leftCharacterImage": "player/lihui/boss.png",
+  "leftScale": 2,
+  "leftOffsetX": -200.0,
+  "leftOffsetY": -500,
+  "rightCharacterImage": "player/lihui/nonolh.png",
+  "rightScale": 1.0,
+  "rightOffsetX": 0.0,
+  "rightOffsetY": 0.0,
+  "leftPortraitScale": 3,
+  "leftPortraitOffsetX": -190.0,
+  "leftPortraitOffsetY": -650.0,
+  "rightPortraitScale": 1.5,
+  "rightPortraitOffsetX": -100.0,
+  "rightPortraitOffsetY": -100.0,
+  "lines": [
+    {
+      "text": "Stop!",
+      "speaker": "???",
+      "isLeft": true,
+      "portrait": "player/lihui/boss.png",
+      "hideLeft": true,
+      "hideRight": true
+    },
+    {
+      "text": "Do not put the serum into the launcher!",
+      "speaker": "???",
+      "isLeft": true,
+      "portrait": "player/lihui/boss.png",
+      "hideLeft": true,
+      "hideRight": true
+    },
+    {
+      "text": "Don't stop!",
+      "speaker": "Stranger",
+      "isLeft": false,
+      "portrait": "player/lihui/nonolhright.png",
+      "hideLeft": true,
+      "hideRight": true
+    },
+    {
+      "text": "He is a traitor!",
+      "speaker": "Stranger",
+      "isLeft": false,
+      "portrait": "player/lihui/nonolhright.png",
+      "hideLeft": true,
+      "hideRight": true
+    }
+  ]
+}

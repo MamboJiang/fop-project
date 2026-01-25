@@ -1,0 +1,82 @@
+{
+    "leftCharacterImage": "player/lihui/maincharacterlhmask.png",
+    "leftScale": 2,
+    "leftOffsetX": -200.0,
+    "leftOffsetY": -500,
+    "rightCharacterImage": "player/lihui/boss.png",
+    "rightScale": 1.5,
+    "rightOffsetX": 0.0,
+    "rightOffsetY": -200.0,
+    "leftPortraitScale": 5,
+    "leftPortraitOffsetX": -450.0,
+    "leftPortraitOffsetY": -1300.0,
+    "rightPortraitScale": 3,
+    "rightPortraitOffsetX": -190.0,
+    "rightPortraitOffsetY": -650.0,
+    "lines": [
+        {
+            "text": "I...",
+            "speaker": "???",
+            "isLeft": false,
+            "portrait": "player/lihui/boss.png",
+            "hideLeft": true,
+            "hideRight": true
+        },
+        {
+            "text": "My mission is over...",
+            "speaker": "???",
+            "isLeft": false,
+            "portrait": "player/lihui/boss.png",
+            "hideLeft": true,
+            "hideRight": true
+        },
+        {
+            "text": "The fate of humanity rests on you...",
+            "speaker": "???",
+            "isLeft": false,
+            "portrait": "player/lihui/boss.png",
+            "hideLeft": true,
+            "hideRight": true
+        },
+        {
+            "text": "No...",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlh.png",
+            "hideLeft": true,
+            "hideRight": true
+        },
+        {
+            "text": "What is going on here?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlh.png",
+            "hideLeft": true,
+            "hideRight": true
+        },
+        {
+            "text": "Nono, why does she look exactly like me?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlh.png",
+            "hideLeft": true,
+            "hideRight": true
+        },
+        {
+            "text": "Nono?",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlh.png",
+            "hideLeft": true,
+            "hideRight": true
+        },
+        {
+            "text": "......",
+            "speaker": "Player",
+            "isLeft": true,
+            "portrait": "player/lihui/maincharacterlh.png",
+            "hideLeft": true,
+            "hideRight": true
+        }
+    ]
+}

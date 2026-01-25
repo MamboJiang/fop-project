@@ -1,0 +1,42 @@
+{
+  "leftCharacterImage": "player/lihui/maincharacterlhmask.png",
+  "leftScale": 2,
+  "leftOffsetX": -200.0,
+  "leftOffsetY": -500,
+  "rightCharacterImage": "player/lihui/nonolh.png",
+  "rightScale": 1.0,
+  "rightOffsetX": 0.0,
+  "rightOffsetY": 0.0,
+  "leftPortraitScale": 5,
+  "leftPortraitOffsetX": -450.0,
+  "leftPortraitOffsetY": -1300.0,
+  "rightPortraitScale": 1.5,
+  "rightPortraitOffsetX": -100.0,
+  "rightPortraitOffsetY": -100.0,
+  "lines": [
+    {
+      "text": "So, you figured it out.",
+      "speaker": "Stranger",
+      "isLeft": false,
+      "portrait": "player/lihui/nonolh.png",
+      "hideLeft": true,
+      "hideRight": true
+    },
+    {
+      "text": "Another failure. Just as predicted.",
+      "speaker": "Stranger",
+      "isLeft": false,
+      "portrait": "player/lihui/nonolh.png",
+      "hideLeft": true,
+      "hideRight": true
+    },
+    {
+      "text": "But it doesn't matter. We will meet again.",
+      "speaker": "Stranger",
+      "isLeft": false,
+      "portrait": "player/lihui/nonolh.png",
+      "hideLeft": true,
+      "hideRight": true
+    }
+  ]
+}
