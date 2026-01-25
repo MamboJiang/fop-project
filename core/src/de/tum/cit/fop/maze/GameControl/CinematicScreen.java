@@ -281,7 +281,7 @@ public class CinematicScreen implements Screen {
 
                 // Wait, if next frame has SAME image but DIFFERENT text, updateFrame is called.
                 // Check for Ending 5 Trigger (Specific Text)
-                if (frame.getText() != null && frame.getText().contains("who took off the mask to atone")) {
+                if (frame.getText() != null && frame.getText().contains("###")) {
                     dialogueManager.loadDialogue("ending5");
                     dialogueManager.startDialogue();
                 }

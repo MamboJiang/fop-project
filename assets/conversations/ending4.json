@@ -18,7 +18,7 @@
             "text": "I...",
             "speaker": "???",
             "isLeft": false,
-            "portrait": "player/lihui/boss.png",
+            "portrait": "player/lihui/bossdamaged.png",
             "hideLeft": true,
             "hideRight": true
         },
@@ -26,7 +26,7 @@
             "text": "My mission is over...",
             "speaker": "???",
             "isLeft": false,
-            "portrait": "player/lihui/boss.png",
+            "portrait": "player/lihui/bossdamaged.png",
             "hideLeft": true,
             "hideRight": true
         },
@@ -34,7 +34,7 @@
             "text": "The fate of humanity rests on you...",
             "speaker": "???",
             "isLeft": false,
-            "portrait": "player/lihui/boss.png",
+            "portrait": "player/lihui/bossdamaged.png",
             "hideLeft": true,
             "hideRight": true
         },
@@ -42,7 +42,7 @@
             "text": "No...",
             "speaker": "Player",
             "isLeft": true,
-            "portrait": "player/lihui/maincharacterlh.png",
+            "portrait": "player/lihui/maincharacterlhdamaged.png",
             "hideLeft": true,
             "hideRight": true
         },
@@ -50,7 +50,7 @@
             "text": "What is going on here?",
             "speaker": "Player",
             "isLeft": true,
-            "portrait": "player/lihui/maincharacterlh.png",
+            "portrait": "player/lihui/maincharacterlhdamaged.png",
             "hideLeft": true,
             "hideRight": true
         },
@@ -58,7 +58,7 @@
             "text": "Nono, why does she look exactly like me?",
             "speaker": "Player",
             "isLeft": true,
-            "portrait": "player/lihui/maincharacterlh.png",
+            "portrait": "player/lihui/maincharacterlhdamaged.png",
             "hideLeft": true,
             "hideRight": true
         },
@@ -66,7 +66,7 @@
             "text": "Nono?",
             "speaker": "Player",
             "isLeft": true,
-            "portrait": "player/lihui/maincharacterlh.png",
+            "portrait": "player/lihui/maincharacterlhdamaged.png",
             "hideLeft": true,
             "hideRight": true
         },
@@ -74,7 +74,7 @@
             "text": "......",
             "speaker": "Player",
             "isLeft": true,
-            "portrait": "player/lihui/maincharacterlh.png",
+            "portrait": "player/lihui/maincharacterlhdamaged.png",
             "hideLeft": true,
             "hideRight": true
         }

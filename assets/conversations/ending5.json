@@ -18,7 +18,7 @@
       "text": "So, you figured it out.",
       "speaker": "Stranger",
       "isLeft": false,
-      "portrait": "player/lihui/nonolh.png",
+      "portrait": "player/lihui/nonodamaged.png",
       "hideLeft": true,
       "hideRight": true
     },
@@ -26,7 +26,7 @@
       "text": "Another failure. Just as predicted.",
       "speaker": "Stranger",
       "isLeft": false,
-      "portrait": "player/lihui/nonolh.png",
+      "portrait": "player/lihui/nonodamaged.png",
       "hideLeft": true,
       "hideRight": true
     },
@@ -34,7 +34,7 @@
       "text": "But it doesn't matter. We will meet again.",
       "speaker": "Stranger",
       "isLeft": false,
-      "portrait": "player/lihui/nonolh.png",
+      "portrait": "player/lihui/nonodamaged.png",
       "hideLeft": true,
       "hideRight": true
     }

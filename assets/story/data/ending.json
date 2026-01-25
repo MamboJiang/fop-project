@@ -46,6 +46,11 @@
             "image": "story/pictures/endstory3.png"
         },
         {
+            "text": "###",
+            "showImage": true,
+            "image": "story/pictures/endstory3.png"
+        },
+        {
             "text": "Perhaps...",
             "showImage": true,
             "image": "story/pictures/endstory5.jpg"

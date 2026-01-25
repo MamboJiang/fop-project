@@ -26,7 +26,7 @@
       "text": "Argh...",
       "speaker": "Stranger",
       "isLeft": false,
-      "portrait": "player/lihui/nonolh.png",
+      "portrait": "player/lihui/nonodamaged.png",
       "hideLeft": true,
       "hideRight": true
     },
@@ -42,7 +42,7 @@
       "text": "Don't turn around... Do what you have to do.",
       "speaker": "Stranger",
       "isLeft": false,
-      "portrait": "player/lihui/nonolh.png",
+      "portrait": "player/lihui/nonodamaged.png",
       "hideLeft": true,
       "hideRight": true
     },
@@ -58,7 +58,7 @@
       "text": "BZRT!",
       "speaker": "Stranger",
       "isLeft": false,
-      "portrait": "player/lihui/nonolh.png",
+      "portrait": "player/lihui/nonodamaged.png",
       "hideLeft": true,
       "hideRight": true
     }

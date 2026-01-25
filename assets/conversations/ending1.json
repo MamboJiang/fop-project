@@ -18,7 +18,7 @@
       "text": "Stop!",
       "speaker": "???",
       "isLeft": true,
-      "portrait": "player/lihui/boss.png",
+      "portrait": "player/lihui/bossdamaged.png",
       "hideLeft": true,
       "hideRight": true
     },
@@ -26,7 +26,7 @@
       "text": "Do not put the serum into the launcher!",
       "speaker": "???",
       "isLeft": true,
-      "portrait": "player/lihui/boss.png",
+      "portrait": "player/lihui/bossdamaged.png",
       "hideLeft": true,
       "hideRight": true
     },
