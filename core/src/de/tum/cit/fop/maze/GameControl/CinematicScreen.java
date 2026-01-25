@@ -58,12 +58,24 @@ public class CinematicScreen implements Screen {
     // Dialogue Integration
     private DialogueManager dialogueManager;
 
+    /**
+     * Default Constructor.
+     * 
+     * @param game The main game class.
+     */
     public CinematicScreen(MazeRunnerGame game) {
         this(game, "story/data/opening.json", () -> {
             game.setScreen(new de.tum.cit.fop.maze.GameScreen(game, Gdx.files.internal("maps/level-0.properties")));
         });
     }
 
+    /**
+     * Constructor with custom story path and callback.
+     * 
+     * @param game      The main game class.
+     * @param storyPath Path to the JSON story file.
+     * @param onFinish  Runnable to execute when cinematic finishes.
+     */
     public CinematicScreen(MazeRunnerGame game, String storyPath, Runnable onFinish) {
         this.game = game;
         this.storyPath = storyPath;
@@ -72,7 +84,7 @@ public class CinematicScreen implements Screen {
 
         // Initialize DialogueManager
         this.dialogueManager = new DialogueManager(game.getSkin(), game.getPlayerState());
-        this.dialogueManager.setBackgroundScrimVisible(false); // No dark overlay for cinematic
+        this.dialogueManager.setBackgroundScrimVisible(false);
 
         loadData();
         setupUI();
@@ -265,18 +277,9 @@ public class CinematicScreen implements Screen {
                 storyImage.setColor(1, 1, 1, 1); // Ensure full alpha
                 storyImage.clearActions();
 
-                // Still check for Dialogue Triggers (in case same image triggers different
-                // dialogue? Unlikely but safe)
+                // Check for special endings based on image path
                 if (newImagePath.endsWith("endstory.png")) {
-                    // Check if not active? Actually better to not re-trigger if already running?
-                    // No, let updateFrame trigger checks logic.
-                    // But if it's the SAME image, usually we don't want to re-trigger START
-                    // dialogue if it's the same sequence.
-                    // User said: "If same image, don't pop up".
-                    // Implies we probably shouldn't restart dialogue either if it's the exact same
-                    // file.
-                    // But user specifically asked about IMAGE pop up.
-                    // Let's stick to IMAGE logic.
+                    // Logic handled in updateFrame triggers
                 }
 
                 // Wait, if next frame has SAME image but DIFFERENT text, updateFrame is called.
@@ -418,13 +421,7 @@ public class CinematicScreen implements Screen {
             }
         }
 
-        // Draw Dialogue on top if active (Called by dialogueManager.render usually, but
-        // render calls stage.draw inside)
-        // DialogueManager.render() calls stage.draw(). So we don't need to call it
-        // again here.
-        // Wait, DialogueManager.render() clears screen?
-        // Checking DialogueManager.java: No, it just calls stage.act and stage.draw.
-        // Screen clear is done here in CinematicScreen.render.
+        // Draw Dialogue on top if active is handled by dialogueManager.render()
     }
 
     @Override

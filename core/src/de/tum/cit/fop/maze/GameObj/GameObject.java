@@ -11,29 +11,24 @@ import com.badlogic.gdx.math.Vector2;
  */
 public abstract class GameObject {
 
-
     protected Vector2 position;
-
 
     protected float width;
     protected float height;
 
-
     protected Rectangle bounds;
-
 
     protected TextureRegion textureRegion;
 
-
     protected boolean markedForRemoval = false;
-
 
     /**
      * Constructor for GameObject.
-     * @param x The x-coordinate.
-     * @param y The y-coordinate.
-     * @param width The width of the object.
-     * @param height The height of the object.
+     * 
+     * @param x             The x-coordinate.
+     * @param y             The y-coordinate.
+     * @param width         The width of the object.
+     * @param height        The height of the object.
      * @param textureRegion The visual texture of the object.
      */
     public GameObject(float x, float y, float width, float height, TextureRegion textureRegion) {
@@ -56,6 +51,9 @@ public abstract class GameObject {
         this.position = position;
     }
 
+    /**
+     * @return Object width.
+     */
     public float getWidth() {
         return width;
     }
@@ -64,6 +62,9 @@ public abstract class GameObject {
         this.width = width;
     }
 
+    /**
+     * @return Object height.
+     */
     public float getHeight() {
         return height;
     }

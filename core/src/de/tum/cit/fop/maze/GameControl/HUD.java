@@ -60,7 +60,6 @@ public class HUD {
     private final Skin skin;
     private Character character;
 
-
     private Table bossTable;
     private Image bossHealthBar;
     private Label bossNameLabel;
@@ -80,19 +79,20 @@ public class HUD {
         stage = new Stage(new com.badlogic.gdx.utils.viewport.ExtendViewport(1920, 1080), spriteBatch);
 
         // Load Mask Icons for Lives
-        // We reused objectsTexture variable name, rename it to maskTexture for clarity or just use new var
+        // We reused objectsTexture variable name, rename it to maskTexture for clarity
+        // or just use new var
         objectsTexture = new Texture(Gdx.files.internal("selfmade/maskicon.png")); // This is now maskicon
-        
+
         Texture maskTexture = objectsTexture; // Alias
         heartRegions = new TextureRegion[5];
-        for(int i=0; i<5; i++) {
+        for (int i = 0; i < 5; i++) {
             heartRegions[i] = new TextureRegion(maskTexture);
         }
 
         // Load Key (Card) Icon
         Texture basicTile = new Texture(Gdx.files.internal("selfmade/basictile.png"));
-        TextureRegion[][] tiles = TextureRegion.split(basicTile, 32, 32); 
-        keyRegion = tiles[1][1]; 
+        TextureRegion[][] tiles = TextureRegion.split(basicTile, 32, 32);
+        keyRegion = tiles[1][1];
 
         // Load Atlas for Achievement Background (original objects.png)
         Texture atlasTexture = new Texture(Gdx.files.internal("objects.png"));
@@ -110,138 +110,137 @@ public class HUD {
     }
 
     private void setupBossHUD() {
-        // 1. 动态生成一个 1x1 的纯白纹理，用于做血条
+        // 1. Generate a 1x1 white texture for the health bar
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
         pixmap.fill();
         blankTexture = new Texture(pixmap);
         pixmap.dispose();
 
-        // 2. 创建 Boss 血条的容器 Table
+        // 2. Create Boss Health Bar Container Table
         bossTable = new Table();
-        bossTable.top(); // 靠上对齐
+        bossTable.top();
         bossTable.setFillParent(true);
-        bossTable.setVisible(false); // 默认隐藏，只有Boss出现时才显示
+        bossTable.setVisible(false); // Hidden by default
 
-        // 3. 创建 Boss 名字标签
+        // 3. Create Boss Name Label
         Label.LabelStyle nameStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.RED);
         bossNameLabel = new Label("The Guardian", nameStyle);
         bossNameLabel.setFontScale(1.5f);
 
-        // 4. 创建血条组合 (背景黑条 + 前景红条)
-        // 使用 Stack 让红条覆盖在黑条上面
+        // 4. Create Health Bar Stack (Background + Foreground)
         com.badlogic.gdx.scenes.scene2d.ui.Stack barStack = new com.badlogic.gdx.scenes.scene2d.ui.Stack();
 
-        // 背景 (黑色)
+        // Background (Black)
         Image bgBar = new Image(blankTexture);
         bgBar.setColor(Color.BLACK);
 
-        // 前景 (红色)
+        // Foreground (Red)
         bossHealthBar = new Image(blankTexture);
         bossHealthBar.setColor(Color.RED);
 
-        // 注意：这里需要把 Image 包装一下或者直接操作，为了简单，我们让 Stack 决定大小
         barStack.add(bgBar);
 
-        // 为了让红条能缩短，我们需要把它放在一个左对齐的容器里，否则 Stack 会强制拉伸它
+        // Inner table to support left alignment for resizing
         Table innerTable = new Table();
-        innerTable.left(); // 关键：左对齐
+        innerTable.left();
         innerTable.add(bossHealthBar).width(bossBarMaxWidth).height(30);
         barStack.add(innerTable);
 
-        // 5. 布局到 bossTable
-        // 位置：使用 padTop 将整个血条往下推，避免与时间重叠
+        // 5. Layout
         bossTable.add(bossNameLabel).padTop(70).padBottom(10).row();
         bossTable.add(barStack).width(bossBarMaxWidth).height(30);
 
         stage.addActor(bossTable);
     }
 
-
     private void setupUI() {
-        if (table != null) table.remove();
-        
+        if (table != null)
+            table.remove();
+
         com.badlogic.gdx.scenes.scene2d.ui.Stack stack = new com.badlogic.gdx.scenes.scene2d.ui.Stack();
         stack.setFillParent(true);
-        
+
         // Layer 1: Time/Score (Centered)
         Table centerLayer = new Table();
-        centerLayer.top(); 
+        centerLayer.top();
         Label.LabelStyle fontStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.WHITE);
         timeLabel = new Label("Time: 00:00\nScore: 1000", fontStyle);
         timeLabel.setAlignment(Align.center);
-        
-        // Ensure perfect centering by adding to a container that spans width but aligns top
-        centerLayer.add(timeLabel).pad(10); 
+
+        // Ensure perfect centering by adding to a container that spans width but aligns
+        // top
+        centerLayer.add(timeLabel).pad(10);
         stack.add(centerLayer);
-        
+
         // Layer 2: Hearts (Left) and Key (Right)
         Table sidesLayer = new Table();
         sidesLayer.top().left();
         sidesLayer.setFillParent(true);
-        
+
         heartsTable = new Table();
         heartsTable.top().left();
-        
+
         keyImage = new Image(keyRegion);
-        
+
         // Left: Hearts
         sidesLayer.add(heartsTable).top().left().pad(10);
-        
+
         // Spacer to push Key to right
         sidesLayer.add().expandX();
-        
+
         // Right: Key and Level Name
         Table rightTable = new Table();
         rightTable.top().right();
         rightTable.add(keyImage).size(64, 64).row();
-        
+
         Label.LabelStyle smallStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.WHITE);
         floorLabel = new Label("", smallStyle);
         floorLabel.setFontScale(0.8f);
         rightTable.add(floorLabel).padTop(5);
-        
+
         sidesLayer.add(rightTable).top().right().pad(10);
-        
+
         stack.add(sidesLayer);
-        
+
         // Add Hint Labels (add to stage directly or another layer)
-        // Hints are generally centered bottom or somewhere else. 
+        // Hints are generally centered bottom or somewhere else.
         // Existing code added them to 'stage' but they were not in the main table.
         // I'll re-add them to stage.
-        
-    Label.LabelStyle blueStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.GREEN);
-    promptLabel = new Label("Press [F] to Interact", blueStyle);
-    promptLabel.setFontScale(1f);
-    promptLabel.setVisible(false);
-    
-    // Position hints manually or add to a layer?
-    // Hints appear dynamically. Code sets position/visibility elsewhere?
-    // Let's keep them added to stage.
-        
-    stage.addActor(promptLabel);
 
-    // Tutorial hints
-    moveHintLabel = new Label("Press [WASD] to Move", blueStyle);
-    moveHintLabel.setFontScale(1f);
-    moveHintLabel.setVisible(false);
-    stage.addActor(moveHintLabel);
+        Label.LabelStyle blueStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.GREEN);
+        promptLabel = new Label("Press [F] to Interact", blueStyle);
+        promptLabel.setFontScale(1f);
+        promptLabel.setVisible(false);
 
-    sprintHintLabel = new Label("Hold [Shift] to Run", blueStyle);
-    sprintHintLabel.setFontScale(1f);
-    sprintHintLabel.setVisible(false);
-    stage.addActor(sprintHintLabel);
+        // Position hints manually or add to a layer?
+        // Hints appear dynamically. Code sets position/visibility elsewhere?
+        // Let's keep them added to stage.
 
-    attackHintLabel = new Label("Press [J] to Attack", blueStyle);
-    attackHintLabel.setFontScale(1f);
-    attackHintLabel.setVisible(false);
-    stage.addActor(attackHintLabel);
+        stage.addActor(promptLabel);
+
+        // Tutorial hints
+        moveHintLabel = new Label("Press [WASD] to Move", blueStyle);
+        moveHintLabel.setFontScale(1f);
+        moveHintLabel.setVisible(false);
+        stage.addActor(moveHintLabel);
+
+        sprintHintLabel = new Label("Hold [Shift] to Run", blueStyle);
+        sprintHintLabel.setFontScale(1f);
+        sprintHintLabel.setVisible(false);
+        stage.addActor(sprintHintLabel);
+
+        attackHintLabel = new Label("Press [J] to Attack", blueStyle);
+        attackHintLabel.setFontScale(1f);
+        attackHintLabel.setVisible(false);
+        stage.addActor(attackHintLabel);
 
         stage.addActor(stack);
-        this.table = sidesLayer; // Keep reference to one of them if needed for debug? 
+        this.table = sidesLayer; // Keep reference to one of them if needed for debug?
         // Actually 'table' variable is used? Assuming 'table' field exists.
         // Yes, 'private Table table'.
-        // I will point 'table' to the stack or sidesLayer? Not critical if no external access.
+        // I will point 'table' to the stack or sidesLayer? Not critical if no external
+        // access.
     }
 
     private void setupDebugMenu() {
@@ -428,7 +427,7 @@ public class HUD {
 
         String timeStr = gameScreen.getFormattedTime();
         timeLabel.setText(timeStr);
-        
+
         if (floorLabel != null && gameScreen.getCurrentLevelName().startsWith("Floor")) {
             floorLabel.setVisible(true);
             floorLabel.setText(gameScreen.getCurrentLevelName());
@@ -444,9 +443,12 @@ public class HUD {
             heartImages.clear();
             for (int i = 0; i < maxLives; i++) {
                 Image img = new Image(heartRegions[0]); // Default full
-                heartsTable.add(img).size(64, 64).padRight(5).padBottom(5); // Increased padBottom, smaller size? User asked for grid.
-                // Assuming mask icons are roughly 32x32 or scaled. Previous code used 64x64. Let's stick to user request or reasonable size. 
-                // User didn't specify size, but 64x64 is big for many masks. I'll keep 64 if possible or 48.
+                heartsTable.add(img).size(64, 64).padRight(5).padBottom(5); // Increased padBottom, smaller size? User
+                                                                            // asked for grid.
+                // Assuming mask icons are roughly 32x32 or scaled. Previous code used 64x64.
+                // Let's stick to user request or reasonable size.
+                // User didn't specify size, but 64x64 is big for many masks. I'll keep 64 if
+                // possible or 48.
                 // Let's use 48x48 to fit 5.
                 // Row break every 5 items
                 if ((i + 1) % 5 == 0) {
@@ -460,42 +462,43 @@ public class HUD {
         // Since we now use a single mask icon, this part is simplified:
         // We either show it or don't? OR we assume full health logic applies?
         // Wait, maskicon is likely just "one mask = 4 HP" or "one mask = 1 HP"?
-        // Original logic: 1 heart = 4 HP. 
-        // If we switch to mask icons, does 1 mask = 1 HP? 
+        // Original logic: 1 heart = 4 HP.
+        // If we switch to mask icons, does 1 mask = 1 HP?
         // User said: "左上角HUD的爱心换成...maskicon.png...12345个...满5个换行".
         // This implies count of masks = count of lives/health?
-        // "Lives" in this game seem to be HP chunks. 
+        // "Lives" in this game seem to be HP chunks.
         // Let's assume 1 Mask = 1 Life Unit (1 HP).
         // Original: numHearts = ceil(maxLives / 4.0).
         // If user wants "1, 2, 3, 4, 5个", maybe they want 1 icon per 1 HP?
         // If so, I should change numHearts calculation to just 'maxLives'.
-        
+
         // Let's Assume 1 Mask = 1 HP based on "12345 ge".
         // Re-calculating numHearts
-        int numIcons = maxLives; 
-        
+        int numIcons = maxLives;
+
         if (heartImages.size != numIcons) {
-             heartsTable.clearChildren();
-             heartImages.clear();
-             for (int i = 0; i < numIcons; i++) {
-                 Image img = new Image(heartRegions[0]); 
-                 heartsTable.add(img).size(48, 48).padRight(5).padBottom(5);
-                 if ((i + 1) % 5 == 0) {
-                     heartsTable.row();
-                 }
-                 heartImages.add(img);
-             }
+            heartsTable.clearChildren();
+            heartImages.clear();
+            for (int i = 0; i < numIcons; i++) {
+                Image img = new Image(heartRegions[0]);
+                heartsTable.add(img).size(48, 48).padRight(5).padBottom(5);
+                if ((i + 1) % 5 == 0) {
+                    heartsTable.row();
+                }
+                heartImages.add(img);
+            }
         }
-        
+
         // Update visibility/texture
         for (int i = 0; i < heartImages.size; i++) {
             Image img = heartImages.get(i);
             // If currentLives > i, this mask is active (full).
-            // If currentLives <= i, this mask is empty/lost? 
-            // Or just hide it? 
-            // Usually we keep empty containers. 
-            // Since we don't have an "empty mask" texture, we might tint it black or reduce alpha.
-            
+            // If currentLives <= i, this mask is empty/lost?
+            // Or just hide it?
+            // Usually we keep empty containers.
+            // Since we don't have an "empty mask" texture, we might tint it black or reduce
+            // alpha.
+
             if (i < currentLives) {
                 img.setColor(Color.WHITE);
             } else {
@@ -511,22 +514,18 @@ public class HUD {
 
         Boss boss = gameScreen.getActiveBoss();
         if (boss != null && !boss.isDead()) {
-            bossTable.setVisible(true); // 显示血条
+            bossTable.setVisible(true);
             bossNameLabel.setVisible(true);
-
 
             float percent = boss.getHealthPercentage();
 
-
             bossHealthBar.setWidth(bossBarMaxWidth * percent);
-
 
             bossHealthBar.invalidate();
         } else {
-            // 如果没有 Boss 或 Boss 死了，隐藏血条
+            // Hide if no boss
             bossTable.setVisible(false);
         }
-
 
         if (debugInfoLabel != null) {
             float speed = character.getVelocity().len();
@@ -537,15 +536,17 @@ public class HUD {
         // Update Floating Prompt Position
         if (promptLabel.isVisible() && character != null) {
             // World position: Below feet. Character is ~16x16 or 20x20.
-            Vector3 worldPos = new Vector3(character.getPosition().x + character.getWidth() / 2f, character.getPosition().y - 12f, 0);
+            Vector3 worldPos = new Vector3(character.getPosition().x + character.getWidth() / 2f,
+                    character.getPosition().y - 12f, 0);
             Vector3 screenPos = gameScreen.getCamera().project(worldPos);
             Vector2 stagePos = stage.screenToStageCoordinates(new Vector2(screenPos.x, screenPos.y));
-            
+
             promptLabel.setPosition(stagePos.x, stagePos.y, Align.center | Align.top);
         }
 
         // Update Tutorial Hints Position
-        Vector3 worldPos2 = new Vector3(character.getPosition().x + character.getWidth() / 2f, character.getPosition().y - 12f, 0);
+        Vector3 worldPos2 = new Vector3(character.getPosition().x + character.getWidth() / 2f,
+                character.getPosition().y - 12f, 0);
         Vector3 screenPos2 = gameScreen.getCamera().project(worldPos2);
         Vector2 stagePos2 = stage.screenToStageCoordinates(new Vector2(screenPos2.x, screenPos2.y));
 

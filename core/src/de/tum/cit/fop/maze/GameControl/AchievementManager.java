@@ -30,16 +30,19 @@ public class AchievementManager {
         }
         return instance;
     }
-    
+
+    /**
+     * Sets the HUD reference for displaying popups.
+     *
+     * @param hud The HUD instance.
+     */
     public void setHUD(HUD hud) {
         this.hud = hud;
     }
 
     private void loadAchievements() {
         createDefaultAchievements();
-
     }
-    
 
     /**
      * Resets all achievements to locked state.
@@ -50,18 +53,19 @@ public class AchievementManager {
             a.setProgress(0);
         }
     }
-    
 
     /**
      * Syncs achievement state from PlayerState.
+     *
      * @param state The player state to load from.
      */
     public void syncFrom(PlayerState state) {
-        if (state == null) return;
-        
+        if (state == null)
+            return;
+
         java.util.HashMap<String, Boolean> unlocked = state.getUnlockedAchievements();
         java.util.HashMap<String, Integer> progress = state.getAchievementProgress();
-        
+
         for (Achievement a : achievements.values()) {
             if (unlocked.containsKey(a.getId())) {
                 a.setUnlocked(unlocked.get(a.getId()));
@@ -74,19 +78,21 @@ public class AchievementManager {
 
     /**
      * Syncs achievement state to PlayerState for saving.
+     *
      * @param state The player state to write to.
      */
     public void syncTo(PlayerState state) {
-        if (state == null) return;
-        
+        if (state == null)
+            return;
+
         java.util.HashMap<String, Boolean> unlocked = new java.util.HashMap<>();
         java.util.HashMap<String, Integer> progress = new java.util.HashMap<>();
-        
+
         for (Achievement a : achievements.values()) {
             unlocked.put(a.getId(), a.isUnlocked());
             progress.put(a.getId(), a.getProgress());
         }
-        
+
         state.setUnlockedAchievements(unlocked);
         state.setAchievementProgress(progress);
     }
@@ -98,30 +104,37 @@ public class AchievementManager {
         addDefault("serial_killer", "Serial Killer", "Kill 10 enemies.", EventType.KILL_ENEMY, 10);
         addDefault("story_boss_slayer", "Boss Slayer", "Defeat a Boss in Story Mode.", EventType.KILL_BOSS_STORY, 1);
 
+        addDefault("survivor_novice", "Undying Warrior", "Kill 3 Bosses in Endless Mode.", EventType.KILL_BOSS_ENDLESS,
+                3);
         addDefault("rich", "Treasure Hunter", "Collect 5 items.", EventType.COLLECT_ITEM, 5);
         addDefault("escape_artist", "Escape Artist", "Complete your first level.", EventType.LEVEL_COMPLETE, 1);
         addDefault("survivor_novice", "Undying Warrior", "Kill 3 Bosses in Endless Mode.", EventType.KILL_BOSS_ENDLESS, 3);
         addDefault("story_champion", "Savior", "Complete the Story Mode for the first time.", EventType.GAME_COMPLETE, 1);
 
     }
-    
+
     private void addDefault(String id, String name, String desc, EventType type, int target) {
         Achievement a = new Achievement(id, name, desc, type, target);
         achievements.put(id, a);
     }
 
-
+    /**
+     * Saves achievements (Implementation pending).
+     */
     private void saveAchievements() {
+        // Placeholder for future save implementation
     }
 
     /**
      * Triggers progress for an event type.
-     * @param type Event type (e.g., KILL_ENEMY).
+     *
+     * @param type   Event type (e.g., KILL_ENEMY).
      * @param amount Amount to increment.
      */
     public void onEvent(EventType type, int amount) {
         for (Achievement a : achievements.values()) {
-            if (a.isUnlocked()) continue;
+            if (a.isUnlocked())
+                continue;
             if (a.getType() == type) {
                 a.setProgress(a.getProgress() + amount);
                 checkUnlock(a);
@@ -129,9 +142,17 @@ public class AchievementManager {
         }
     }
 
+    /**
+     * Updates status from an external source (e.g. game save load) and checks for
+     * unlocks.
+     *
+     * @param type  The event type.
+     * @param value The value to check against target.
+     */
     public void onStatusUpdate(EventType type, int value) {
-         for (Achievement a : achievements.values()) {
-            if (a.isUnlocked()) continue;
+        for (Achievement a : achievements.values()) {
+            if (a.isUnlocked())
+                continue;
             if (a.getType() == type) {
 
                 if (value >= a.getTarget()) {
@@ -142,6 +163,11 @@ public class AchievementManager {
         }
     }
 
+    /**
+     * Checks if an achievement has reached its target.
+     *
+     * @param a The achievement to check.
+     */
     private void checkUnlock(Achievement a) {
         if (a.getProgress() >= a.getTarget()) {
             unlock(a);
@@ -155,16 +181,24 @@ public class AchievementManager {
             hud.showAchievementPopup(a);
         }
     }
-    
+
+    /**
+     * Debug method to force unlock an achievement.
+     *
+     * @param id The ID of the achievement.
+     */
     public void debugUnlock(String id) {
         Achievement a = achievements.get(id);
         if (a != null) {
-             unlock(a);
+            unlock(a);
         } else {
-             Gdx.app.log("Achievement", "ID not found: " + id);
+            Gdx.app.log("Achievement", "ID not found: " + id);
         }
     }
-    
+
+    /**
+     * @return A collection of all achievements.
+     */
     public java.util.Collection<Achievement> getAchievements() {
         return achievements.values();
     }

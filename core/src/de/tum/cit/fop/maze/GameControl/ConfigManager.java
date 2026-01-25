@@ -52,15 +52,21 @@ public class ConfigManager {
         keys.put("CONSOLE", Keys.GRAVE);
         saveConfig();
     }
-    
+
     private void validateKeyBindings() {
         Map<String, Integer> keys = config.getKeyBindings();
-        if (!keys.containsKey("UP")) keys.put("UP", Keys.W);
-        if (!keys.containsKey("DOWN")) keys.put("DOWN", Keys.S);
-        if (!keys.containsKey("LEFT")) keys.put("LEFT", Keys.A);
-        if (!keys.containsKey("RIGHT")) keys.put("RIGHT", Keys.D);
-        if (!keys.containsKey("PAUSE")) keys.put("PAUSE", Keys.ESCAPE);
-        if (!keys.containsKey("CONSOLE")) keys.put("CONSOLE", Keys.GRAVE);
+        if (!keys.containsKey("UP"))
+            keys.put("UP", Keys.W);
+        if (!keys.containsKey("DOWN"))
+            keys.put("DOWN", Keys.S);
+        if (!keys.containsKey("LEFT"))
+            keys.put("LEFT", Keys.A);
+        if (!keys.containsKey("RIGHT"))
+            keys.put("RIGHT", Keys.D);
+        if (!keys.containsKey("PAUSE"))
+            keys.put("PAUSE", Keys.ESCAPE);
+        if (!keys.containsKey("CONSOLE"))
+            keys.put("CONSOLE", Keys.GRAVE);
     }
 
     /**
@@ -70,7 +76,6 @@ public class ConfigManager {
         FileHandle file = Gdx.files.local(CONFIG_FILE);
         file.writeString(json.prettyPrint(config), false);
     }
-
 
     public float getMusicVolume() {
         return config.getMusicVolume();
@@ -90,13 +95,20 @@ public class ConfigManager {
         saveConfig();
     }
 
+    /**
+     * Gets the key code for a specific action.
+     * 
+     * @param action The action name (e.g., "UP").
+     * @return The key code, or Keys.UNKNOWN if not found.
+     */
     public int getKey(String action) {
         return config.getKeyBindings().getOrDefault(action, Keys.UNKNOWN);
     }
 
     /**
      * Sets a key binding.
-     * @param action Action name.
+     * 
+     * @param action  Action name.
      * @param keyCode Input.Keys key code.
      */
     public void setKey(String action, int keyCode) {

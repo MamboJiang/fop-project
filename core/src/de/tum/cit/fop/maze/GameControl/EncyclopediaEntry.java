@@ -4,9 +4,17 @@ public class EncyclopediaEntry {
     private String id;
     private String name;
     private String description;
-    private String texturePath; // 图片资源路径
+    private String texturePath;
     private boolean isSecret;
 
+    /**
+     * Constructor for EncyclopediaEntry.
+     * 
+     * @param id          Unique ID.
+     * @param name        Display name.
+     * @param description Lore description.
+     * @param texturePath Path to the image asset.
+     */
     public EncyclopediaEntry(String id, String name, String description, String texturePath) {
         this.id = id;
         this.name = name;
@@ -16,10 +24,24 @@ public class EncyclopediaEntry {
     }
 
     // Getters...
-    public String getId() { return id; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public String getTexturePath() { return texturePath; }
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @return Path to the image asset.
+     */
+    public String getTexturePath() {
+        return texturePath;
+    }
 
     public void setId(String id) {
         this.id = id;

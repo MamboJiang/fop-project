@@ -18,7 +18,7 @@ public class Boss extends Enemy {
     private float maxHealth = 500f;
     private boolean active = false; // Default inactive
 
-    // 基础属性
+    // Base stats
     private float normalSpeed = 60f;
     private float dashSpeed = 400f;
 
@@ -28,10 +28,11 @@ public class Boss extends Enemy {
     private List<Projectile> projectilesRef;
     private TextureRegion bulletTexture;
 
-    // 缓存冲刺方向，防止冲刺途中拐弯
+    // Cache dash direction
     private Vector2 dashDirection = new Vector2();
 
-    public Boss(float x, float y, Animation<TextureRegion>[] anims, Grid grid, Character target, List<Projectile> projectiles, TextureRegion bulletTex) {
+    public Boss(float x, float y, Animation<TextureRegion>[] anims, Grid grid, Character target,
+            List<Projectile> projectiles, TextureRegion bulletTex) {
         super(x, y, anims, grid, target);
         this.health = 500;
         this.maxHealth = 500;
@@ -40,10 +41,11 @@ public class Boss extends Enemy {
         this.projectilesRef = projectiles;
         this.bulletTexture = bulletTex;
 
-        // Adjust collision bounds for larger Boss (proportionally smaller than visual size)
+        // Adjust collision bounds for larger Boss (proportionally smaller than visual
+        // size)
         this.bounds = new com.badlogic.gdx.math.Rectangle(x + 24, y + 24, 48, 48);
-        
-        // 调整物理属性，让Boss移动更顺滑
+
+        // Adjust physics for smoother movement
         this.acceleration = 1000f;
         this.friction = 800f;
     }
@@ -60,33 +62,41 @@ public class Boss extends Enemy {
         stateTimer += delta;
         dashCooldown -= delta;
 
-        // 重置输入
+        // Reset inputs
         inputVector.set(0, 0);
 
-        // 状态机逻辑
+        // State Machine
         switch (bossState) {
-            case IDLE: handleIdle(delta); break;
-            case CHASE: handleChase(delta); break;
-            case SHOOTING: handleShooting(delta); break;
-            case DASHING: handleDashing(delta); break;
+            case IDLE:
+                handleIdle(delta);
+                break;
+            case CHASE:
+                handleChase(delta);
+                break;
+            case SHOOTING:
+                handleShooting(delta);
+                break;
+            case DASHING:
+                handleDashing(delta);
+                break;
         }
 
-        // 1. 计算物理速度
+        // 1. Calculate physics
         updatePhysics(delta);
 
-        // 2. 应用位移 (这是让 Boss 动起来的核心！)
+        // 2. Apply movement
         if (velocity.len() > 1f) {
-            // --- X轴移动 ---
+            // --- X Axis ---
             float oldX = position.x;
             position.x += velocity.x * delta;
             updateBounds();
 
-            if (checkCollision()) { // 这里直接调用下面的 checkCollision
+            if (checkCollision()) {
                 position.x = oldX;
                 updateBounds();
             }
 
-            // --- Y轴移动 ---
+            // --- Y Axis ---
             float oldY = position.y;
             position.y += velocity.y * delta;
             updateBounds();
@@ -105,11 +115,11 @@ public class Boss extends Enemy {
             }
         }
 
-        if (damageFlashTime > 0) damageFlashTime -= delta;
+        if (damageFlashTime > 0)
+            damageFlashTime -= delta;
     }
 
-    // 碰撞检测方法
-    // 因为 grid 已经是 protected 了，这里可以直接用 grid.isWalkable
+    // Collision check using the grid
     private boolean checkCollision() {
         int minX = (int) (bounds.x / 16);
         int maxX = (int) ((bounds.x + bounds.width) / 16);
@@ -118,7 +128,6 @@ public class Boss extends Enemy {
 
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
-                // 【注意】这里直接使用了父类的 grid 变量
                 if (!grid.isWalkable(x, y)) {
                     return true;
                 }
@@ -127,11 +136,11 @@ public class Boss extends Enemy {
         return false;
     }
 
-    // 根据速度方向选择动画帧
+    // Select animation frame based on velocity
     private void updateAnimation(float delta) {
         // Increment stateTime for animation playback
         stateTime += delta;
-        
+
         if (velocity.len() > 10f) {
             Animation<TextureRegion> currentAnim = walkDown;
             if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
@@ -139,10 +148,9 @@ public class Boss extends Enemy {
             } else {
                 currentAnim = velocity.y > 0 ? walkUp : walkDown;
             }
-            // stateTime 在父类定义了
             this.textureRegion = currentAnim.getKeyFrame(stateTime, true);
         } else {
-            // 站立时
+            // Idle frame
             this.textureRegion = walkDown.getKeyFrame(stateTime, true);
         }
     }
@@ -172,7 +180,7 @@ public class Boss extends Enemy {
     private void handleChase(float delta) {
         this.maxSpeed = normalSpeed;
 
-        // 【关键修改】设置 inputVector 而不是 velocity
+        // Set inputVector towards target
         Vector2 dir = new Vector2(target.getPosition()).sub(position).nor();
         inputVector.set(dir);
 
@@ -182,7 +190,7 @@ public class Boss extends Enemy {
     }
 
     private void handleShooting(float delta) {
-        // 射击时不设置 inputVector，Boss 会自动停下
+        // Stop movement during shooting (inputVector remains 0)
 
         shootCooldown -= delta;
         if (shootCooldown <= 0) {
@@ -197,16 +205,15 @@ public class Boss extends Enemy {
 
     private void shootProjectile() {
         if (projectilesRef != null) {
-            // 从 Boss 中心发射
+            // Shoot from center
             float centerX = position.x + width / 2 - 8; // Center bullet (assuming 16px bullet)
             float centerY = position.y + height / 2 - 8;
 
-            // 使用角色的碰撞箱中心来瞄准，而不是位置中心
+            // Aim at center of target
             com.badlogic.gdx.math.Rectangle targetBounds = target.getBounds();
             Vector2 targetCenter = new Vector2(
-                targetBounds.x + targetBounds.width / 2, 
-                targetBounds.y + targetBounds.height / 2
-            );
+                    targetBounds.x + targetBounds.width / 2,
+                    targetBounds.y + targetBounds.height / 2);
             Vector2 origin = new Vector2(centerX, centerY);
             Vector2 dir = targetCenter.sub(origin).nor();
 
@@ -215,20 +222,17 @@ public class Boss extends Enemy {
     }
 
     private void handleDashing(float delta) {
-        // 持续维持最高速度设定，防止被其他逻辑覆盖
+        // Enforce max speed
         this.maxSpeed = dashSpeed;
 
-        // 持续给予输入，防止摩擦力让Boss停下来
+        // Apply input to prevent friction from stopping boss
         inputVector.set(dashDirection);
 
-        // 也可以选择每帧都强制锁定速度，确保不受阻力影响（可选，更霸道）
-        // velocity.set(dashDirection).scl(dashSpeed);
-
-        // 冲刺结束判断
+        // Check Dash end
         if (stateTimer > 0.5f) {
-            dashCooldown = 3.0f; // 重置冷却
-            velocity.set(0, 0);  // 冲完急停，更有打击感
-            switchState(BossState.CHASE); // 冲完接着追
+            dashCooldown = 3.0f; // Reset cooldown
+            velocity.set(0, 0); // Stop immediately
+            switchState(BossState.CHASE); // Return to chase
         }
     }
 
@@ -237,20 +241,18 @@ public class Boss extends Enemy {
         this.stateTimer = 0f;
 
         if (newState == BossState.DASHING) {
-            // 1. 锁定方向
+            // 1. Lock direction
             if (target != null) {
                 dashDirection = new Vector2(target.getPosition()).sub(position).nor();
             } else {
-                dashDirection.set(1, 0); // 防御性代码
+                dashDirection.set(1, 0); // Fallback
             }
 
-            // 2. 【关键】瞬间赋予最大速度，不再等待加速度慢慢加上去
+            // 2. Instant velocity set, don't wait for acceleration
             velocity.set(dashDirection).scl(dashSpeed);
-
-            System.out.println("DASH INIT! Vel: " + velocity);
         }
     }
-    
+
     @Override
     public void draw(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
         setupDamageFlash(batch);
@@ -259,19 +261,18 @@ public class Boss extends Enemy {
         endDamageFlash(batch);
     }
 
-    
     public void setMaxHealth(float maxHealth) {
         this.maxHealth = maxHealth;
     }
-    
+
     public float getHealthPercentage() {
-        return (float)health / maxHealth;
+        return (float) health / maxHealth;
     }
 
     public void setActive(boolean active) {
         this.active = active;
     }
-    
+
     public boolean isActive() {
         return active;
     }

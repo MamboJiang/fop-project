@@ -23,12 +23,16 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 /**
  * Screen where players can spend XP to upgrade skills.
+ * Features a scrolling background and achievement popup notifications.
  */
 public class SkillTreeScreen implements Screen {
 
     private final MazeRunnerGame game;
     private final Stage stage;
-    private Table rootTable; // 用于放置 UI 内容的根表格
+    /** Root table for holding all UI content. */
+    private Table rootTable;
+
+    private Label xpLabel;
 
     // Background Fields
     private Texture backgroundTexture;
@@ -42,19 +46,21 @@ public class SkillTreeScreen implements Screen {
     private float scrollSpeed = 25f;
     private static final float CINEMATIC_RATIO = 0.125f;
 
-    // Achievement Popup Resources
-    private Texture objectsTexture; // 加载 objects.png
-    private NinePatch achievementNinePatch; // 弹窗背景
+    /** Achievement popup resources. */
+    private Texture objectsTexture;
+    /** Nine-patch drawable for achievement popup background. */
+    private NinePatch achievementNinePatch;
 
     /**
      * Constructor for SkillTreeScreen.
+     *
      * @param game Main game instance.
      */
     public SkillTreeScreen(MazeRunnerGame game) {
         this.game = game;
         this.stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080));
 
-        loadAssets(); // 加载资源
+        loadAssets();
 
         // Background Setup
         backgroundTexture = new Texture(Gdx.files.internal("selfmade/background.png"));
@@ -95,33 +101,36 @@ public class SkillTreeScreen implements Screen {
         stage.addActor(cinematicBarTop);
         stage.addActor(cinematicBarBottom);
 
-        // 初始化根表格
+        // Initialize root table
         rootTable = new Table();
         rootTable.setFillParent(true);
         stage.addActor(rootTable);
 
-        // 构建 UI
         rebuildUI();
     }
 
+    /**
+     * Loads assets for achievement popup display.
+     * Extracts the popup background region from objects.png texture.
+     */
     private void loadAssets() {
-        // 加载用于弹窗的资源（复用 HUD 中的逻辑）
         try {
             objectsTexture = new Texture(Gdx.files.internal("objects.png"));
-            // 提取弹窗背景区域
-            com.badlogic.gdx.graphics.g2d.TextureRegion bgRegion = new com.badlogic.gdx.graphics.g2d.TextureRegion(objectsTexture, 4 * 16, 18 * 16, 4 * 16, 2 * 16);
+            com.badlogic.gdx.graphics.g2d.TextureRegion bgRegion = new com.badlogic.gdx.graphics.g2d.TextureRegion(
+                    objectsTexture, 4 * 16, 18 * 16, 4 * 16, 2 * 16);
             achievementNinePatch = new NinePatch(bgRegion, 16, 16, 0, 0);
-            achievementNinePatch.scale(4, 4); // 保持和 HUD 一致的缩放
+            achievementNinePatch.scale(4, 4);
         } catch (Exception e) {
             Gdx.app.error("SkillTree", "Failed to load popup assets: " + e.getMessage());
         }
     }
 
     /**
-     * 核心方法：清空并重新构建 UI，实现“原地刷新”而不销毁屏幕
+     * Clears and rebuilds the entire UI in-place without destroying the screen.
+     * This allows for live updates when skills are upgraded.
      */
     private void rebuildUI() {
-        rootTable.clear(); // 清空旧内容
+        rootTable.clear();
 
         Label.LabelStyle titleStyle = new Label.LabelStyle(game.getSkin().getFont("hoefler"), Color.WHITE);
         Label.LabelStyle bodyStyle = new Label.LabelStyle(game.getSkin().getFont("hoefler"), Color.WHITE);
@@ -130,14 +139,13 @@ public class SkillTreeScreen implements Screen {
         titleLabel.setFontScale(1.5f);
         rootTable.add(titleLabel).padBottom(50).colspan(2).row();
 
-        Label xpLabel = new Label("Available XP: " + game.getPlayerState().getCurrentXP(), bodyStyle);
+        xpLabel = new Label("Available XP: " + game.getPlayerState().getCurrentXP(), bodyStyle);
         rootTable.add(xpLabel).padBottom(30).colspan(2).row();
 
         String attackStatus = game.getPlayerState().isAttackUnlocked() ? "Unlocked" : "Locked";
         Label attackLabel = new Label("Attack Ability: " + attackStatus, bodyStyle);
         rootTable.add(attackLabel).padBottom(30).colspan(2).row();
 
-        // 重新添加行
         createUpgradeRow(rootTable, "Health (+1 Max HP)", "HEALTH");
         createUpgradeRow(rootTable, "Speed (+10% Movement)", "SPEED");
         createUpgradeRow(rootTable, "Defense (+10% Block Chance)", "DEFENSE");
@@ -152,11 +160,18 @@ public class SkillTreeScreen implements Screen {
         rootTable.add(backButton).colspan(2).padTop(50);
     }
 
+    /**
+     * Creates a row in the upgrade table for a specific skill.
+     *
+     * @param table The UI table.
+     * @param name  Display name of the skill.
+     * @param type  Internal skill type identifier.
+     */
     private void createUpgradeRow(Table table, String name, String type) {
         PlayerState state = game.getPlayerState();
 
-        int currentLvl = (type.equals("HEALTH") ? state.getHealthLevel() :
-                type.equals("SPEED") ? state.getSpeedLevel() : state.getDefenseLevel());
+        int currentLvl = (type.equals("HEALTH") ? state.getHealthLevel()
+                : type.equals("SPEED") ? state.getSpeedLevel() : state.getDefenseLevel());
 
         Label.LabelStyle bodyStyle = new Label.LabelStyle(game.getSkin().getFont("hoefler"), Color.WHITE);
         table.add(new Label(name + " (Lvl " + currentLvl + ")", bodyStyle)).left().pad(10);
@@ -167,24 +182,19 @@ public class SkillTreeScreen implements Screen {
         btn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // 1. 检查升级前 "Power Up" 是否已解锁
                 boolean wasPowerUpUnlocked = isAchievementUnlocked("power_up");
 
                 if (game.getPlayerState().upgradeSkill(type)) {
-                    // 2. 触发事件 (逻辑层面解锁)
                     AchievementManager.getInstance().onEvent(EventType.UPGRADE_SKILL, 1);
                     game.saveGame();
 
-                    // 3. 检查升级后是否刚解锁
                     boolean isPowerUpUnlockedNow = isAchievementUnlocked("power_up");
 
                     if (!wasPowerUpUnlocked && isPowerUpUnlockedNow) {
-                        // 刚解锁 -> 手动显示弹窗
                         showLocalAchievementPopup(AchievementManager.getInstance().getAchievements()
                                 .stream().filter(a -> a.getId().equals("power_up")).findFirst().orElse(null));
                     }
 
-                    // 4. 原地刷新 UI，而不是 setScreen(new ...)
                     rebuildUI();
                 }
             }
@@ -198,7 +208,12 @@ public class SkillTreeScreen implements Screen {
         table.add(btn).pad(10).row();
     }
 
-    // 辅助方法：检查成就状态
+    /**
+     * Checks if an achievement with the given ID is unlocked.
+     *
+     * @param id Achievement ID to check.
+     * @return True if the achievement is unlocked, false otherwise.
+     */
     private boolean isAchievementUnlocked(String id) {
         for (Achievement a : AchievementManager.getInstance().getAchievements()) {
             if (a.getId().equals(id)) {
@@ -208,9 +223,14 @@ public class SkillTreeScreen implements Screen {
         return false;
     }
 
-    // 在当前 Stage 显示弹窗
+    /**
+     * Displays an achievement popup on the current stage.
+     *
+     * @param achievement The achievement to display.
+     */
     private void showLocalAchievementPopup(Achievement achievement) {
-        if (achievement == null || achievementNinePatch == null) return;
+        if (achievement == null || achievementNinePatch == null)
+            return;
 
         AchievementPopup popup = new AchievementPopup(achievement, game.getSkin(), achievementNinePatch);
         stage.addActor(popup);
@@ -218,12 +238,23 @@ public class SkillTreeScreen implements Screen {
         popup.animate();
     }
 
-    // 内部类：AchievementPopup (从 HUD 复制并适配)
+    /**
+     * Inner class for displaying achievement unlock notifications.
+     * Adapted from HUD implementation.
+     */
     private static class AchievementPopup extends Table {
-        public AchievementPopup(Achievement achievement, com.badlogic.gdx.scenes.scene2d.ui.Skin skin, NinePatch bgPatch) {
+        /**
+         * Constructs an achievement popup.
+         *
+         * @param achievement The achievement to display.
+         * @param skin        The UI skin.
+         * @param bgPatch     The nine-patch background.
+         */
+        public AchievementPopup(Achievement achievement, com.badlogic.gdx.scenes.scene2d.ui.Skin skin,
+                NinePatch bgPatch) {
             this.setBackground(new NinePatchDrawable(bgPatch));
             this.setSize(340, 128);
-            this.setPosition((1920 - 340) / 2f, 1080 + 10); // 初始位置在屏幕上方
+            this.setPosition((1920 - 340) / 2f, 1080 + 10);
 
             Label titleLabel = new Label("Achievement!", skin);
             titleLabel.setFontScale(0.8f);
@@ -234,49 +265,71 @@ public class SkillTreeScreen implements Screen {
             this.add(nameLabel).padTop(-5).padLeft(100);
         }
 
+        /**
+         * Animates the popup with slide-in, delay, and slide-out effects.
+         */
         public void animate() {
             this.addAction(Actions.sequence(
-                    Actions.moveTo(this.getX(), 1080 - 150, 0.5f, Interpolation.swingOut), // 滑入
-                    Actions.delay(3f), // 停留
-                    Actions.moveTo(this.getX(), 1080 + 10, 0.5f, Interpolation.swingIn), // 滑出
-                    Actions.removeActor() // 移除
-            ));
+                    Actions.moveTo(this.getX(), 1080 - 150, 0.5f, Interpolation.swingOut),
+                    Actions.delay(3f),
+                    Actions.moveTo(this.getX(), 1080 + 10, 0.5f, Interpolation.swingIn),
+                    Actions.removeActor()));
         }
     }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         updateBackground(delta);
+
         stage.act(delta);
         stage.draw();
     }
 
+    /**
+     * Updates the scrolling background animation.
+     *
+     * @param delta Time elapsed since last frame.
+     */
     private void updateBackground(float delta) {
-        if (backgroundImage1 == null || backgroundImage2 == null) return;
+        if (backgroundImage1 == null || backgroundImage2 == null)
+            return;
+
         backgroundImage1.setX(backgroundImage1.getX() - scrollSpeed * delta);
         backgroundImage2.setX(backgroundImage2.getX() - scrollSpeed * delta);
 
+        // Normalize saved position to ensure consistency across screens
         float w = backgroundImage1.getWidth();
         float currentX = backgroundImage1.getX() % w;
-        if (currentX > 0) currentX -= w;
+        if (currentX > 0)
+            currentX -= w;
         StoryMenu.savedBackgroundX = currentX;
 
         float width = backgroundImage1.getWidth();
-        if (backgroundImage1.getX() + width <= 0) backgroundImage1.setX(backgroundImage2.getX() + width);
-        if (backgroundImage2.getX() + width <= 0) backgroundImage2.setX(backgroundImage1.getX() + width);
+        if (backgroundImage1.getX() + width <= 0)
+            backgroundImage1.setX(backgroundImage2.getX() + width);
+        if (backgroundImage2.getX() + width <= 0)
+            backgroundImage2.setX(backgroundImage1.getX() + width);
     }
 
-    @Override public void show() { Gdx.input.setInputProcessor(stage); }
+    @Override
+    public void show() {
+        Gdx.input.setInputProcessor(stage);
+    }
 
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+
         float stageW = stage.getWidth();
         float stageH = stage.getHeight();
-        if (backgroundImage1 != null) backgroundImage1.setSize(stageW, stageH);
-        if (backgroundImage2 != null) backgroundImage2.setSize(stageW, stageH);
-        if (overlayImage != null) overlayImage.setSize(stageW, stageH);
+        if (backgroundImage1 != null)
+            backgroundImage1.setSize(stageW, stageH);
+        if (backgroundImage2 != null)
+            backgroundImage2.setSize(stageW, stageH);
+        if (overlayImage != null)
+            overlayImage.setSize(stageW, stageH);
         if (cinematicBarTop != null && cinematicBarBottom != null) {
             float barHeight = stageH * CINEMATIC_RATIO;
             cinematicBarBottom.setSize(stageW, barHeight);
@@ -289,13 +342,25 @@ public class SkillTreeScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        if (backgroundTexture != null) backgroundTexture.dispose();
-        if (overlayTexture != null) overlayTexture.dispose();
-        if (blackTexture != null) blackTexture.dispose();
-        if (objectsTexture != null) objectsTexture.dispose(); // 记得释放新加载的资源
+        if (backgroundTexture != null)
+            backgroundTexture.dispose();
+        if (overlayTexture != null)
+            overlayTexture.dispose();
+        if (blackTexture != null)
+            blackTexture.dispose();
+        if (objectsTexture != null)
+            objectsTexture.dispose();
     }
 
-    @Override public void pause() {}
-    @Override public void resume() {}
-    @Override public void hide() {}
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
+    public void hide() {
+    }
 }

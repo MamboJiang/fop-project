@@ -28,38 +28,41 @@ public class GameOverMenu extends Table implements com.badlogic.gdx.utils.Dispos
     private Table leaderboardTable;
     private Table bottomRankTable;
     private int xp;
-    
+
     // Assets
     private com.badlogic.gdx.graphics.Texture menuBgTex;
-    private com.badlogic.gdx.graphics.Texture titleBgTex; 
-    private com.badlogic.gdx.graphics.Texture btnUpTex; 
-    private com.badlogic.gdx.graphics.Texture btnDownTex; 
-    private com.badlogic.gdx.graphics.Texture btnOverTex; 
-    
+    private com.badlogic.gdx.graphics.Texture titleBgTex;
+    private com.badlogic.gdx.graphics.Texture btnUpTex;
+    private com.badlogic.gdx.graphics.Texture btnDownTex;
+    private com.badlogic.gdx.graphics.Texture btnOverTex;
+
     private com.badlogic.gdx.graphics.g2d.BitmapFont titleFont;
     private com.badlogic.gdx.graphics.g2d.BitmapFont regularFont;
     private com.badlogic.gdx.graphics.g2d.BitmapFont leaderboardFont; // Smaller for leaderboard
 
-    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int finalScore, int xp) {
+    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin,
+            int finalScore, int xp) {
         this(game, onRetry, onExit, onNextLevel, isWin, -1, finalScore, xp);
     }
 
     /**
      * Constructor for GameOverMenu.
-     * @param game Main game instance.
-     * @param onRetry Callback for retry.
-     * @param onExit Callback for exit.
-     * @param onNextLevel Callback for next level.
-     * @param isWin True if level was completed successfully.
+     * 
+     * @param game         Main game instance.
+     * @param onRetry      Callback for retry.
+     * @param onExit       Callback for exit.
+     * @param onNextLevel  Callback for next level.
+     * @param isWin        True if level was completed successfully.
      * @param wavesCleared Number of waves cleared (if endless mode), or -1.
-     * @param finalScore The final score achieved.
-     * @param xp The XP gained.
+     * @param finalScore   The final score achieved.
+     * @param xp           The XP gained.
      */
-    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin, int wavesCleared, int finalScore, int xp) {
+    public GameOverMenu(MazeRunnerGame game, Runnable onRetry, Runnable onExit, Runnable onNextLevel, boolean isWin,
+            int wavesCleared, int finalScore, int xp) {
         this.game = game;
         this.onRetry = onRetry;
         this.onExit = onExit;
-        this.isWin  = isWin;
+        this.isWin = isWin;
         this.onNextLevel = onNextLevel;
         this.wavesCleared = wavesCleared;
         this.finalScore = finalScore;
@@ -71,103 +74,115 @@ public class GameOverMenu extends Table implements com.badlogic.gdx.utils.Dispos
         setupUI();
     }
 
-    private void setupUI(){
+    /**
+     * Initializes the UI components.
+     */
+    private void setupUI() {
         Skin skin = game.getSkin();
-        
+
         // Load Custom Assets
-        menuBgTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/menuscreenxxxx.png"));
-        titleBgTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttontype2.png"));
-        
-        btnUpTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttonbasemiddle.png"));
-        btnDownTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttonpressedmiddle.png"));
-        btnOverTex = new com.badlogic.gdx.graphics.Texture(com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttononmiddle.png"));
-        
+        menuBgTex = new com.badlogic.gdx.graphics.Texture(
+                com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/menuscreenxxxx.png"));
+        titleBgTex = new com.badlogic.gdx.graphics.Texture(
+                com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttontype2.png"));
+
+        btnUpTex = new com.badlogic.gdx.graphics.Texture(
+                com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttonbasemiddle.png"));
+        btnDownTex = new com.badlogic.gdx.graphics.Texture(
+                com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttonpressedmiddle.png"));
+        btnOverTex = new com.badlogic.gdx.graphics.Texture(
+                com.badlogic.gdx.Gdx.files.internal("selfmade/uielements/buttononmiddle.png"));
+
         // Lighter Blue color
         com.badlogic.gdx.graphics.Color textColor = com.badlogic.gdx.graphics.Color.valueOf("6699CC");
 
         // Load Font (Hoefler)
-        com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator generator = new com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator(com.badlogic.gdx.Gdx.files.internal("other/Hoefler Text Regular.ttf"));
+        com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator generator = new com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator(
+                com.badlogic.gdx.Gdx.files.internal("other/Hoefler Text Regular.ttf"));
         com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter parameter = new com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter();
-        
+
         // Title Font
         parameter.size = 36;
         parameter.color = textColor;
         titleFont = generator.generateFont(parameter);
-        
+
         // Regular Text Font
         parameter.size = 34;
         parameter.color = textColor;
         regularFont = generator.generateFont(parameter);
-        
+
         // Leaderboard Font (Smaller)
         parameter.size = 24;
         leaderboardFont = generator.generateFont(parameter);
-        
-        generator.dispose(); 
-        
+
+        generator.dispose();
+
         // Main Container (Even Deeper Blue)
         Drawable dimBg = skin.newDrawable("white", 0.01f, 0.02f, 0.1f, 0.95f);
         setBackground(dimBg);
 
         Table content = new Table();
-        content.setBackground(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new com.badlogic.gdx.graphics.g2d.TextureRegion(menuBgTex)));
+        content.setBackground(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(
+                new com.badlogic.gdx.graphics.g2d.TextureRegion(menuBgTex)));
 
         // Title Section
         Table titleTable = new Table();
-        titleTable.setBackground(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new com.badlogic.gdx.graphics.g2d.TextureRegion(titleBgTex)));
-        
+        titleTable.setBackground(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(
+                new com.badlogic.gdx.graphics.g2d.TextureRegion(titleBgTex)));
+
         String titleText = isWin ? "LEVEL CLEARED!" : "GAME OVER";
         if (wavesCleared >= 0 && !isWin) {
-             titleText = "RUN ENDED";
+            titleText = "RUN ENDED";
         }
-        
+
         Label.LabelStyle titleStyle = new Label.LabelStyle(titleFont, textColor);
-        titleTable.add(new Label(titleText, titleStyle)).padBottom(10); 
-        
+        titleTable.add(new Label(titleText, titleStyle)).padBottom(10);
+
         content.add(titleTable).padTop(-200).padBottom(-20).row(); // Adjusted slightly for content
 
         Label.LabelStyle infoStyle = new Label.LabelStyle(regularFont, textColor);
-        
+
         Label scoreLabel = new Label("Score: " + finalScore, infoStyle);
         Label xpLabel = new Label("XP gained: " + xp, infoStyle);
-        
-        
 
         bottomRankTable = new Table();
 
         if (wavesCleared >= 0 && !isWin) {
             // Endless Mode Leaderboard
-            
+
             // Stats
             Label wavesLabel = new Label("Waves Cleared: " + wavesCleared, infoStyle);
             content.add(wavesLabel).pad(1).row();
             content.add(scoreLabel).pad(1).row();
-            
+
             // Leaderboard Area
             leaderboardTable = new Table();
             leaderboardTable.top();
-            
-            com.badlogic.gdx.scenes.scene2d.ui.ScrollPane scrollPane = new com.badlogic.gdx.scenes.scene2d.ui.ScrollPane(leaderboardTable, skin);
+
+            com.badlogic.gdx.scenes.scene2d.ui.ScrollPane scrollPane = new com.badlogic.gdx.scenes.scene2d.ui.ScrollPane(
+                    leaderboardTable, skin);
             scrollPane.setFadeScrollBars(false);
-            
-            // Use a darker background or just text for leaderboard? 
+
+            // Use a darker background or just text for leaderboard?
             // scrollPane is usually transparent.
-            
+
             content.add(scrollPane).width(450).height(200).pad(10).row();
             content.add(bottomRankTable).growX().pad(5).row();
-            
-        } else {
-             // Normal Win/Loss
-             content.add(scoreLabel).pad(1).row();
-             content.add(xpLabel).pad(1).padBottom(5).row();
-        }
 
+        } else {
+            // Normal Win/Loss
+            content.add(scoreLabel).pad(1).row();
+            content.add(xpLabel).pad(1).padBottom(5).row();
+        }
 
         // Buttons Style
         TextButton.TextButtonStyle btnStyle = new TextButton.TextButtonStyle();
-        btnStyle.up = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new com.badlogic.gdx.graphics.g2d.TextureRegion(btnUpTex));
-        btnStyle.down = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new com.badlogic.gdx.graphics.g2d.TextureRegion(btnDownTex));
-        btnStyle.over = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new com.badlogic.gdx.graphics.g2d.TextureRegion(btnOverTex));
+        btnStyle.up = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(
+                new com.badlogic.gdx.graphics.g2d.TextureRegion(btnUpTex));
+        btnStyle.down = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(
+                new com.badlogic.gdx.graphics.g2d.TextureRegion(btnDownTex));
+        btnStyle.over = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(
+                new com.badlogic.gdx.graphics.g2d.TextureRegion(btnOverTex));
         btnStyle.font = regularFont;
         btnStyle.fontColor = textColor;
 
@@ -175,7 +190,8 @@ public class GameOverMenu extends Table implements com.badlogic.gdx.utils.Dispos
         retryBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (onRetry != null) onRetry.run();
+                if (onRetry != null)
+                    onRetry.run();
                 setVisible(false);
             }
         });
@@ -184,8 +200,10 @@ public class GameOverMenu extends Table implements com.badlogic.gdx.utils.Dispos
         exitBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (onExit != null) onExit.run();
-                else game.goToMenu();
+                if (onExit != null)
+                    onExit.run();
+                else
+                    game.goToMenu();
             }
         });
 
@@ -201,36 +219,39 @@ public class GameOverMenu extends Table implements com.badlogic.gdx.utils.Dispos
         });
 
         if (!isWin) {
-             // LOSS
+            // LOSS
             if (wavesCleared >= 0) {
-                 // Endless Loss -> Exit only? Or Retry? Usually Exit to restart run from main menu
-                 content.add(retryBtn).width(300).height(80).pad(5).row();
-                 content.add(exitBtn).width(300).height(80).pad(5).row();
+                // Endless Loss -> Exit only? Or Retry? Usually Exit to restart run from main
+                // menu
+                content.add(retryBtn).width(300).height(80).pad(5).row();
+                content.add(exitBtn).width(300).height(80).pad(5).row();
             } else {
-                 // Level Loss
-                 content.add(retryBtn).width(300).height(80).pad(5).row();
-                 content.add(exitBtn).width(300).height(80).pad(5).row();
+                // Level Loss
+                content.add(retryBtn).width(300).height(80).pad(5).row();
+                content.add(exitBtn).width(300).height(80).pad(5).row();
             }
         } else {
             // WIN
             content.add(nextLevelBtn).width(300).height(80).pad(5).row();
             if (wavesCleared == -1) {
-                 // Normal Win - Retry? Maybe replay level.
-                 content.add(retryBtn).width(300).height(80).pad(5).row();
+                // Normal Win - Retry? Maybe replay level.
+                content.add(retryBtn).width(300).height(80).pad(5).row();
             }
             content.add(exitBtn).width(300).height(80).pad(5).row();
         }
 
         // Add content table, scale down size to 55%
-        com.badlogic.gdx.scenes.scene2d.ui.Cell cell = add(content).size(menuBgTex.getWidth() * 0.55f, menuBgTex.getHeight() * 0.55f).center();
-        
+        com.badlogic.gdx.scenes.scene2d.ui.Cell cell = add(content)
+                .size(menuBgTex.getWidth() * 0.55f, menuBgTex.getHeight() * 0.55f).center();
+
         if (wavesCleared >= 0) {
-            // Endless Mode: Move frame down, keep content stationary (move up relative to frame)
-            cell.padTop(200); 
+            // Endless Mode: Move frame down, keep content stationary (move up relative to
+            // frame)
+            cell.padTop(200);
             content.padBottom(200);
         }
     }
-    
+
     public void show() {
         setVisible(true);
         toFront();
@@ -244,8 +265,9 @@ public class GameOverMenu extends Table implements com.badlogic.gdx.utils.Dispos
      * Fetches and displays the leaderboard scores.
      */
     public void loadLeaderboard() {
-        if (leaderboardTable == null) return;
-        
+        if (leaderboardTable == null)
+            return;
+
         leaderboardTable.clear();
         Label loading = new Label("Loading...", game.getSkin());
         loading.setStyle(new Label.LabelStyle(leaderboardFont, com.badlogic.gdx.graphics.Color.valueOf("6699CC")));
@@ -256,25 +278,27 @@ public class GameOverMenu extends Table implements com.badlogic.gdx.utils.Dispos
             public void onScoresLoaded(ArrayList<LeaderboardManager.ScoreEntry> scores) {
                 leaderboardTable.clear();
 
-                if (bottomRankTable != null) bottomRankTable.clear();
-                
+                if (bottomRankTable != null)
+                    bottomRankTable.clear();
+
                 com.badlogic.gdx.graphics.Color textColor = com.badlogic.gdx.graphics.Color.valueOf("6699CC");
                 Label.LabelStyle lbStyle = new Label.LabelStyle(leaderboardFont, textColor);
 
                 if (scores.isEmpty()) {
                     leaderboardTable.add(new Label("No records yet!", lbStyle)).expandX().center();
-                    if (bottomRankTable != null) bottomRankTable.add(new Label("You: " + finalScore, lbStyle)).center();
+                    if (bottomRankTable != null)
+                        bottomRankTable.add(new Label("You: " + finalScore, lbStyle)).center();
                 } else {
                     boolean userFound = false;
                     String currentUserName = game.getPlayerState().getUsername();
                     int myRank = -1;
-                    
-                     for (int i = 0; i < scores.size(); i++) {
+
+                    for (int i = 0; i < scores.size(); i++) {
                         LeaderboardManager.ScoreEntry entry = scores.get(i);
 
                         Label rankLabel = new Label("#" + (i + 1), lbStyle);
                         Label entryLabel = new Label(entry.name + ": " + entry.score, lbStyle);
-                        
+
                         boolean isHighlight = (entry.score == finalScore && entry.name.equals(currentUserName));
                         if (isHighlight) {
                             userFound = true;
@@ -282,50 +306,58 @@ public class GameOverMenu extends Table implements com.badlogic.gdx.utils.Dispos
                             rankLabel.setColor(com.badlogic.gdx.graphics.Color.GOLD);
                             entryLabel.setColor(com.badlogic.gdx.graphics.Color.GOLD);
                         }
-                        
+
                         Table rowTable = new Table();
                         rowTable.add(rankLabel).padRight(15).right().width(40);
                         rowTable.add(entryLabel).left();
 
                         leaderboardTable.add(rowTable).expandX().center().padRight(20).padBottom(5).row();
                     }
-                    
+
                     if (bottomRankTable != null) {
-                         Label footerRank;
-                         if (userFound) {
-                             footerRank = new Label("Your Rank: #" + myRank, lbStyle);
-                         } else {
-                             footerRank = new Label("Your Rank: Not in Top " + scores.size(), lbStyle);
-                         }
-                         Label footerScore = new Label("Score: " + finalScore, lbStyle);
-                         footerRank.setColor(com.badlogic.gdx.graphics.Color.GOLD);
-                         footerScore.setColor(com.badlogic.gdx.graphics.Color.GOLD);
-                         
-                         bottomRankTable.add(footerRank).padRight(20);
-                         bottomRankTable.add(footerScore);
+                        Label footerRank;
+                        if (userFound) {
+                            footerRank = new Label("Your Rank: #" + myRank, lbStyle);
+                        } else {
+                            footerRank = new Label("Your Rank: Not in Top " + scores.size(), lbStyle);
+                        }
+                        Label footerScore = new Label("Score: " + finalScore, lbStyle);
+                        footerRank.setColor(com.badlogic.gdx.graphics.Color.GOLD);
+                        footerScore.setColor(com.badlogic.gdx.graphics.Color.GOLD);
+
+                        bottomRankTable.add(footerRank).padRight(20);
+                        bottomRankTable.add(footerScore);
                     }
                 }
             }
 
             @Override
             public void onError(String message) {
-                 leaderboardTable.clear();
-                 Label error = new Label("Error: " + message, game.getSkin());
-                 error.setStyle(new Label.LabelStyle(leaderboardFont, com.badlogic.gdx.graphics.Color.RED));
-                 leaderboardTable.add(error).expandX().center();
+                leaderboardTable.clear();
+                Label error = new Label("Error: " + message, game.getSkin());
+                error.setStyle(new Label.LabelStyle(leaderboardFont, com.badlogic.gdx.graphics.Color.RED));
+                leaderboardTable.add(error).expandX().center();
             }
         });
     }
 
     @Override
     public void dispose() {
-        if (menuBgTex != null) menuBgTex.dispose();
-        if (titleBgTex != null) titleBgTex.dispose();
-        if (btnUpTex != null) btnUpTex.dispose();
-        if (btnDownTex != null) btnDownTex.dispose();
-        if (btnOverTex != null) btnOverTex.dispose();
-        if (titleFont != null) titleFont.dispose();
-        if (regularFont != null) regularFont.dispose();
-        if (leaderboardFont != null) leaderboardFont.dispose();
+        if (menuBgTex != null)
+            menuBgTex.dispose();
+        if (titleBgTex != null)
+            titleBgTex.dispose();
+        if (btnUpTex != null)
+            btnUpTex.dispose();
+        if (btnDownTex != null)
+            btnDownTex.dispose();
+        if (btnOverTex != null)
+            btnOverTex.dispose();
+        if (titleFont != null)
+            titleFont.dispose();
+        if (regularFont != null)
+            regularFont.dispose();
+        if (leaderboardFont != null)
+            leaderboardFont.dispose();
     }
 }

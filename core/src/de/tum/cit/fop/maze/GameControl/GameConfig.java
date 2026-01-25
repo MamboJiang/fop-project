@@ -33,6 +33,9 @@ public class GameConfig {
         this.musicVolume = musicVolume;
     }
 
+    /**
+     * @return Sound volume (0.0 to 1.0).
+     */
     public float getSoundVolume() {
         return soundVolume;
     }

@@ -191,6 +191,9 @@ public class Character extends MovableObject {
         this.textureRegion = downFrames[0];
     }
 
+    /**
+     * Updates the appearance when the player wears a mask.
+     */
     public void loadMaskAppearance() {
         if (characterTexture != null)
             characterTexture.dispose();

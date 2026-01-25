@@ -28,7 +28,7 @@ public class EncyclopediaScreen implements Screen {
     private final Skin skin;
     private final EncyclopediaManager encyclopediaManager;
 
-    // --- UI Assets (与 StoryMenu/PauseMenu 保持一致) ---
+    // UI Assets
     private Texture backgroundTexture;
     private Image backgroundImage1;
     private Image backgroundImage2;
@@ -39,12 +39,12 @@ public class EncyclopediaScreen implements Screen {
     private Image cinematicBarBottom;
     private static final float CINEMATIC_RATIO = 0.125f;
 
-    private Texture titleBgTexture; // buttontype2.png
-    private Texture cardBgTexture;  // 半透明背景用于卡片
+    private Texture titleBgTexture;
+    private Texture cardBgTexture;
 
     private Texture detailPanelTexture;
 
-    // 字体样式
+    // Font Styles
     private Label.LabelStyle titleStyle;
     private Label.LabelStyle bodyStyle;
     private Color themeColor = Color.valueOf("6699CC"); // 统一的淡蓝色
@@ -54,14 +54,14 @@ public class EncyclopediaScreen implements Screen {
         this.skin = game.getSkin();
         this.encyclopediaManager = EncyclopediaManager.getInstance();
 
-        // 使用 ExtendViewport 1920x1080 (与 StoryMenu 保持一致)
+        // Use ExtendViewport 1920x1080
         this.stage = new Stage(new ExtendViewport(1920, 1080), game.getSpriteBatch());
 
         loadAssets();
         setupStyles();
         buildUI();
 
-        // 更新主角名字
+        // Update protagonist name
         if (this.encyclopediaManager.getAllEntries().containsKey("main_character")) {
             this.encyclopediaManager.getAllEntries().get("main_character").setName(game.getPlayerState().getUsername());
         }
@@ -69,7 +69,7 @@ public class EncyclopediaScreen implements Screen {
     }
 
     private void loadAssets() {
-        // 1. 背景 (复用 StoryMenu 的逻辑)
+        // 1. Background
         backgroundTexture = new Texture(Gdx.files.internal("selfmade/background.png"));
         backgroundImage1 = new Image(backgroundTexture);
         backgroundImage2 = new Image(backgroundTexture);
@@ -77,14 +77,14 @@ public class EncyclopediaScreen implements Screen {
         backgroundImage2.setScaling(Scaling.stretch);
         detailPanelTexture = new Texture(Gdx.files.internal("selfmade/uielements/levelbuttonbase.png"));
 
-        // 保持背景位置同步
+        // Sync background position
         backgroundImage1.setPosition(StoryMenu.savedBackgroundX, 0);
-        backgroundImage2.setPosition(StoryMenu.savedBackgroundX + stage.getWidth(), 0); // 初始宽度可能不准，resize会修正
+        backgroundImage2.setPosition(StoryMenu.savedBackgroundX + stage.getWidth(), 0);
 
         stage.addActor(backgroundImage1);
         stage.addActor(backgroundImage2);
 
-        // 2. 电影黑边
+        // 2. Cinematic Bars
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.BLACK);
         pixmap.fill();
@@ -95,10 +95,10 @@ public class EncyclopediaScreen implements Screen {
         stage.addActor(cinematicBarTop);
         stage.addActor(cinematicBarBottom);
 
-        // 3. UI 元素纹理
+        // 3. UI Elements
         titleBgTexture = new Texture(Gdx.files.internal("selfmade/uielements/buttontype2.png"));
 
-        // 创建一个半透明的黑色背景用于卡片
+        // Semi-transparent black background for cards
         Pixmap p2 = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         p2.setColor(0, 0, 0, 0.5f);
         p2.fill();
@@ -118,18 +118,17 @@ public class EncyclopediaScreen implements Screen {
         root.setFillParent(true);
         stage.addActor(root);
 
-        // --- 1. 标题部分 (模仿 PauseMenu) ---
+        // --- 1. Title Section ---
         Table titleTable = new Table();
         titleTable.setBackground(new TextureRegionDrawable(titleBgTexture));
 
         Label titleLabel = new Label("Encyclopedia", titleStyle);
         titleLabel.setFontScale(1.2f);
-        titleTable.add(titleLabel).padBottom(10); // 微调文字在背景中的位置
+        titleTable.add(titleLabel).padBottom(10);
 
-        // 放在页面顶部，留出黑边位置
         root.add(titleTable).padTop(80).padBottom(20).row();
 
-        // --- 2. 内容区域 (Grid) ---
+        // --- 2. Content Area (Grid) ---
         Table contentTable = new Table();
         contentTable.top();
 
@@ -139,29 +138,27 @@ public class EncyclopediaScreen implements Screen {
         for (EncyclopediaEntry entry : entries.values()) {
             boolean isUnlocked = game.getPlayerState().getDiscoveredEncyclopediaIds().contains(entry.getId());
 
-            // 创建卡片
+            // Create Card
             Table card = createEntryCard(entry, isUnlocked);
 
-            // 调整卡片大小和间距
             contentTable.add(card).width(320).height(380).pad(20);
 
             columns++;
-            if (columns >= 3) { // 每行3个
+            if (columns >= 3) {
                 contentTable.row();
                 columns = 0;
             }
         }
 
-        // --- 3. 滚动面板 ---
-        ScrollPane scrollPane = new ScrollPane(contentTable); // 默认皮肤样式可能带背景，这里去掉
-        // scrollPane.setFadeScrollBars(false);
-        scrollPane.setScrollingDisabled(true, false); // 禁止水平滚动
+        // --- 3. Scroll Pane ---
+        ScrollPane scrollPane = new ScrollPane(contentTable);
+        scrollPane.setScrollingDisabled(true, false);
         scrollPane.setFadeScrollBars(false);
         scrollPane.setOverscroll(false, true);
-        // 放在中间，稍微缩进
+
         root.add(scrollPane).expand().fill().pad(20).padBottom(40).row();
 
-        // --- 4. 返回按钮 ---
+        // --- 4. Back Button ---
         TextButton backButton = createHoverButton("Back to Menu", "short");
         backButton.addListener(new ChangeListener() {
             @Override
@@ -169,18 +166,17 @@ public class EncyclopediaScreen implements Screen {
                 game.goToMenu();
             }
         });
-        root.add(backButton).bottom().padBottom(100); // 抬高一点避开黑边
+        root.add(backButton).bottom().padBottom(100);
     }
 
     /**
-     * 创建统一风格的悬停按钮
+     * Creates a hoverable button with consistent style.
      */
     private TextButton createHoverButton(String text, String styleName) {
-        final TextButton button = new TextButton(text, skin, styleName); // 使用 skin 里定义的样式 (short/middle)
+        final TextButton button = new TextButton(text, skin, styleName);
         button.setTransform(true);
         button.setOrigin(Align.center);
 
-        // 覆盖字体颜色为统一主题色 (如果 style 里不是的话)
         button.getLabel().setStyle(new Label.LabelStyle(skin.getFont("hoefler"), themeColor));
 
         button.addListener(new ClickListener() {
@@ -192,6 +188,7 @@ public class EncyclopediaScreen implements Screen {
                     button.addAction(Actions.scaleTo(1.1f, 1.1f, 0.1f, Interpolation.smooth));
                 }
             }
+
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                 super.exit(event, x, y, pointer, toActor);
@@ -208,17 +205,17 @@ public class EncyclopediaScreen implements Screen {
         Table card = new Table();
         card.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
 
-        // 使用半透明黑色背景，带一点边框感
         card.setBackground(new TextureRegionDrawable(cardBgTexture));
 
-        // 图片逻辑
+        // Icon Logic
         Image icon;
         Texture texture;
         try {
             texture = new Texture(Gdx.files.internal(entry.getTexturePath()));
         } catch (Exception e) {
             Pixmap p = new Pixmap(64, 64, Pixmap.Format.RGBA8888);
-            p.setColor(Color.RED); p.fill();
+            p.setColor(Color.RED);
+            p.fill();
             texture = new Texture(p);
             p.dispose();
         }
@@ -229,18 +226,18 @@ public class EncyclopediaScreen implements Screen {
             icon.setColor(Color.BLACK);
         }
 
-        // 文字逻辑
+        // Text Logic
         String nameText = isUnlocked ? entry.getName() : "???";
         Label nameLabel = new Label(nameText, bodyStyle);
         nameLabel.setAlignment(Align.center);
-        // 如果未解锁，文字变灰
-        if (!isUnlocked) nameLabel.setColor(Color.GRAY);
+        if (!isUnlocked)
+            nameLabel.setColor(Color.GRAY);
 
-        // 组装
+        // Assemble
         card.add(icon).size(128, 128).pad(20).row();
         card.add(nameLabel).padBottom(20).row();
 
-        // 交互效果
+        // Interaction
         card.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -248,13 +245,17 @@ public class EncyclopediaScreen implements Screen {
                     showDetailDialog(entry);
                 }
             }
+
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if (isUnlocked) card.addAction(Actions.scaleTo(1.05f, 1.05f, 0.1f));
+                if (isUnlocked)
+                    card.addAction(Actions.scaleTo(1.05f, 1.05f, 0.1f));
             }
+
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                if (isUnlocked) card.addAction(Actions.scaleTo(1f, 1f, 0.1f));
+                if (isUnlocked)
+                    card.addAction(Actions.scaleTo(1f, 1f, 0.1f));
             }
         });
 
@@ -266,12 +267,12 @@ public class EncyclopediaScreen implements Screen {
     private void showDetailDialog(EncyclopediaEntry entry) {
         Dialog dialog = new Dialog("", skin) {
             @Override
-            protected void result(Object object) {}
+            protected void result(Object object) {
+            }
         };
 
         // 设置 Dialog 背景为深色半透明，统一风格
         dialog.setBackground(new TextureRegionDrawable(detailPanelTexture));
-
 
         dialog.setMovable(false);
         dialog.setModal(true);
@@ -290,7 +291,8 @@ public class EncyclopediaScreen implements Screen {
             Image bigImage = new Image(bigTex);
             bigImage.setScaling(Scaling.fit);
             content.add(bigImage).size(400, 400).padBottom(30).row();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         // 描述
         Label descLabel = new Label(entry.getDescription(), bodyStyle); // 使用白色字体
@@ -311,7 +313,6 @@ public class EncyclopediaScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // --- 核心：更新背景 ---
         updateBackground(delta);
 
         stage.act(delta);
@@ -319,20 +320,21 @@ public class EncyclopediaScreen implements Screen {
     }
 
     private void updateBackground(float delta) {
-        if (backgroundImage1 == null || backgroundImage2 == null) return;
+        if (backgroundImage1 == null || backgroundImage2 == null)
+            return;
 
-        // 滚动逻辑
+        // Scrolling Logic
         backgroundImage1.setX(backgroundImage1.getX() - scrollSpeed * delta);
         backgroundImage2.setX(backgroundImage2.getX() - scrollSpeed * delta);
 
-        // 更新全局状态，保证切换场景时背景连贯
         float w = backgroundImage1.getWidth();
-        // 修正：处理负数取模
+        // Fix modulo for negative numbers
         float currentX = backgroundImage1.getX() % w;
-        if (currentX > 0) currentX -= w;
+        if (currentX > 0)
+            currentX -= w;
         StoryMenu.savedBackgroundX = currentX;
 
-        // 循环衔接
+        // Loop
         if (backgroundImage1.getX() + w <= 0) {
             backgroundImage1.setX(backgroundImage2.getX() + w);
         }
@@ -349,8 +351,10 @@ public class EncyclopediaScreen implements Screen {
         float stageH = stage.getHeight();
 
         // 调整背景尺寸
-        if (backgroundImage1 != null) backgroundImage1.setSize(stageW, stageH);
-        if (backgroundImage2 != null) backgroundImage2.setSize(stageW, stageH);
+        if (backgroundImage1 != null)
+            backgroundImage1.setSize(stageW, stageH);
+        if (backgroundImage2 != null)
+            backgroundImage2.setSize(stageW, stageH);
 
         // 调整黑边尺寸
         if (cinematicBarTop != null && cinematicBarBottom != null) {
@@ -363,17 +367,33 @@ public class EncyclopediaScreen implements Screen {
         }
     }
 
-    @Override public void show() { Gdx.input.setInputProcessor(stage); }
-    @Override public void hide() {}
-    @Override public void pause() {}
-    @Override public void resume() {}
+    @Override
+    public void show() {
+        Gdx.input.setInputProcessor(stage);
+    }
+
+    @Override
+    public void hide() {
+    }
+
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void resume() {
+    }
 
     @Override
     public void dispose() {
         stage.dispose();
-        if (backgroundTexture != null) backgroundTexture.dispose();
-        if (blackTexture != null) blackTexture.dispose();
-        if (titleBgTexture != null) titleBgTexture.dispose();
-        if (cardBgTexture != null) cardBgTexture.dispose();
+        if (backgroundTexture != null)
+            backgroundTexture.dispose();
+        if (blackTexture != null)
+            blackTexture.dispose();
+        if (titleBgTexture != null)
+            titleBgTexture.dispose();
+        if (cardBgTexture != null)
+            cardBgTexture.dispose();
     }
 }

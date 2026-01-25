@@ -69,9 +69,9 @@ public class Enemy extends MovableObject {
         this.grid = grid;
         this.target = target;
         this.currentState = State.PATROL;
-        
+
         this.bounds = new Rectangle(x + 4, y + 4, 8, 8);
-        
+
         this.health = 60; // Set initial health to 60
 
         this.maxSpeed = speed;
@@ -79,6 +79,11 @@ public class Enemy extends MovableObject {
         this.friction = 50f;
     }
 
+    /**
+     * Applies knockback to the enemy.
+     * 
+     * @param direction Direction of the knockback.
+     */
     public void knockback(Vector2 direction) {
         this.velocity.set(direction).scl(250f); // Knockback speed
         this.stunTimer = 0.5f; // 0.5s stun
@@ -92,9 +97,9 @@ public class Enemy extends MovableObject {
     public void takeDamage(int amount) {
         if (damageCooldownTimer <= 0) {
             this.health -= amount;
-            this.damageFlashTime = FLASH_DURATION; 
+            this.damageFlashTime = FLASH_DURATION;
             // Separate cooldown for enemies: 0.3s (allows combos)
-            this.damageCooldownTimer = 0.3f; 
+            this.damageCooldownTimer = 0.3f;
 
             if (this.health <= 0) {
                 this.health = 0;
@@ -237,10 +242,16 @@ public class Enemy extends MovableObject {
         updateBounds();
     }
 
+    /**
+     * @return The center coordinates of the enemy.
+     */
     protected Vector2 getCenter() {
         return new Vector2(position.x + width / 2, position.y + height / 2);
     }
 
+    /**
+     * @return The center coordinates of the target (player).
+     */
     protected Vector2 getTargetCenter() {
         Rectangle tBounds = target.getBounds();
         return new Vector2(tBounds.x + tBounds.width / 2, tBounds.y + tBounds.height / 2);
@@ -248,6 +259,11 @@ public class Enemy extends MovableObject {
 
     private boolean isSuicide = false;
 
+    /**
+     * Sets whether the enemy should die upon hitting the player (Kamikaze).
+     * 
+     * @param suicide True to enable suicide mode.
+     */
     public void setSuicide(boolean suicide) {
         this.isSuicide = suicide;
     }
@@ -522,6 +538,9 @@ public class Enemy extends MovableObject {
         }
     }
 
+    /**
+     * Updates the collision bounds based on position.
+     */
     protected void updateBounds() {
         this.bounds.setPosition(position.x + 4, position.y + 4);
     }
@@ -556,7 +575,7 @@ public class Enemy extends MovableObject {
 
     public void draw(SpriteBatch batch) {
         setupDamageFlash(batch);
-        batch.draw(getTextureRegion(), getPosition().x -2, getPosition().y-2, 20, 20);
+        batch.draw(getTextureRegion(), getPosition().x - 2, getPosition().y - 2, 20, 20);
         endDamageFlash(batch);
     }
 

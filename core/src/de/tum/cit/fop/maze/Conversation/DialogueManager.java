@@ -90,6 +90,12 @@ public class DialogueManager {
     private Table charTable;
     private Image backgroundScrim;
 
+    /**
+     * Sets up all the UI elements for the dialogue system, including character
+     * display,
+     * background scrim, text box, speaker name, dialogue text, portrait, and the
+     * advance arrow.
+     */
     private void setupUI() {
         // 0. Background Scrim (Shadow for game world)
         Image scrim = new Image(skin.newDrawable("white", 0, 0, 0, 0.5f));
@@ -374,6 +380,11 @@ public class DialogueManager {
         }
     }
 
+    /**
+     * Updates the portrait image with a cross-fade effect.
+     * 
+     * @param path File path to the new portrait.
+     */
     private void updatePortrait(String path) {
         if (path == null) {
             if (currentPortraitPath == null)
@@ -465,6 +476,9 @@ public class DialogueManager {
         }
     }
 
+    /**
+     * Starts the dialogue sequence.
+     */
     public void startDialogue() {
         if (isDialogueActive)
             return;
@@ -492,6 +506,10 @@ public class DialogueManager {
             uiTable.setVisible(false);
     }
 
+    /**
+     * Advances to the next line of dialogue.
+     * Ends dialogue if no lines remain.
+     */
     public void advanceDialogue() {
         conversationIndex++;
         if (currentDialogueData != null && conversationIndex >= currentDialogueData.getLines().size()) {
@@ -537,13 +555,13 @@ public class DialogueManager {
         dialogueText.setText("");
         typingFinished = false;
         charTimer = 0;
-        
-        if(line.getSpeaker().equals("Player")){
+
+        if (line.getSpeaker().equals("Player")) {
             speakerName.setText(playerState.getUsername());
-        }else{
+        } else {
             speakerName.setText(line.getSpeaker());
         }
-        
+
         // 2. Portrait
         if (line.getPortrait() != null) {
             updatePortrait(line.getPortrait());

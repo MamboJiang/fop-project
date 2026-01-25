@@ -23,16 +23,18 @@ import com.badlogic.gdx.utils.Align;
 
 /**
  * The MenuScreen class represents the main menu of the game.
- * It provides options for New Game, Continue, Level Selection, Endless Mode, and Settings.
+ * It provides options for New Game, Continue, Level Selection, Endless Mode,
+ * and Settings.
  */
 public class MenuScreen implements Screen {
 
     private final Stage stage;
-    private Table contentTable; 
-    private Table animatedTable; 
+    private Table contentTable;
+    private Table animatedTable;
 
     /**
      * Constructor for MenuScreen. Initializes the UI stage and buttons.
+     * 
      * @param game The main game instance.
      */
     public MenuScreen(MazeRunnerGame game) {
@@ -48,13 +50,13 @@ public class MenuScreen implements Screen {
         if (!isLoaded) {
 
             contentTable.add(new Label("Maze Runner", game.getSkin(), "title")).padBottom(80).row();
-            
+
             // Add animated table for buttons
             animatedTable = new Table();
             contentTable.add(animatedTable).row();
 
             int latestSlot = de.tum.cit.fop.maze.GameControl.GameSaveManager.getLatestSaveSlot();
-            
+
             // Story Mode Button
             TextButton storyButton = createHoverButton("Story Mode", game.getSkin());
             animatedTable.add(storyButton).padBottom(15).row();
@@ -71,7 +73,7 @@ public class MenuScreen implements Screen {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         if (game.loadGame(latestSlot)) {
-                             game.goToMenu(); 
+                            game.goToMenu();
                         }
                     }
                 });
@@ -80,7 +82,6 @@ public class MenuScreen implements Screen {
                 continueButton.setColor(0.5f, 0.5f, 0.5f, 1f);
             }
             animatedTable.add(continueButton).padBottom(15).row();
-
 
             TextButton newGameButton = createHoverButton("New Game", game.getSkin());
             animatedTable.add(newGameButton).padBottom(15).row();
@@ -91,7 +92,6 @@ public class MenuScreen implements Screen {
                 }
             });
 
-
             TextButton loadGameButton = createHoverButton("Load Game", game.getSkin());
             animatedTable.add(loadGameButton).padBottom(15).row();
             loadGameButton.addListener(new ChangeListener() {
@@ -100,7 +100,6 @@ public class MenuScreen implements Screen {
                     game.setScreen(new de.tum.cit.fop.maze.GameControl.SaveSlotScreen(game, true));
                 }
             });
-            
 
             TextButton settingsButton = createHoverButton("Settings", game.getSkin());
             animatedTable.add(settingsButton).padBottom(15).row();
@@ -110,7 +109,6 @@ public class MenuScreen implements Screen {
                     game.goToSettings();
                 }
             });
-
 
             TextButton exitButton = createHoverButton("Exit", game.getSkin());
             animatedTable.add(exitButton).row();
@@ -125,7 +123,7 @@ public class MenuScreen implements Screen {
 
             String title = "Welcome, " + game.getPlayerState().getUsername();
             contentTable.add(new Label(title, game.getSkin(), "title")).padBottom(50).row();
-            
+
             // Add animated table for buttons
             animatedTable = new Table();
             contentTable.add(animatedTable).row();
@@ -139,7 +137,6 @@ public class MenuScreen implements Screen {
                 }
             });
 
-
             TextButton endlessButton = createHoverButton("Endless Mode", game.getSkin());
             animatedTable.add(endlessButton).padBottom(15).row();
             endlessButton.addListener(new ChangeListener() {
@@ -150,7 +147,7 @@ public class MenuScreen implements Screen {
 
                         de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
                         boolean hasRun = state.getEndlessWave() > 1 || state.getCurrentRunScore() > 0;
-                        
+
                         if (hasRun) {
                             Dialog dialog = new Dialog("Resume Run?", game.getSkin()) {
                                 @Override
@@ -182,7 +179,6 @@ public class MenuScreen implements Screen {
                 }
             });
 
-
             TextButton skillsButton = createHoverButton("Skills & Upgrades", game.getSkin());
             animatedTable.add(skillsButton).padBottom(15).row();
             skillsButton.addListener(new ChangeListener() {
@@ -191,7 +187,6 @@ public class MenuScreen implements Screen {
                     game.goToSkillTree();
                 }
             });
-
 
             TextButton achButton = createHoverButton("Achievements", game.getSkin());
             animatedTable.add(achButton).padBottom(15).row();
@@ -208,11 +203,10 @@ public class MenuScreen implements Screen {
             encyclopediaButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    // 切换到刚才创建的屏幕
+                    // Switch to the screen just created
                     game.setScreen(new de.tum.cit.fop.maze.GameControl.EncyclopediaScreen(game));
                 }
             });
-            
 
             TextButton settingsButton = createHoverButton("Settings", game.getSkin());
             animatedTable.add(settingsButton).padBottom(15).row();
@@ -222,7 +216,6 @@ public class MenuScreen implements Screen {
                     game.goToSettings();
                 }
             });
-
 
             TextButton backButton = createHoverButton("Return to Title", game.getSkin());
             animatedTable.add(backButton).row();
@@ -243,7 +236,7 @@ public class MenuScreen implements Screen {
         final TextButton button = new TextButton(text, skin);
         button.setTransform(true); // Enable transform for scaling
         button.setOrigin(Align.center); // Scale from center
-        
+
         button.addListener(new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -253,7 +246,7 @@ public class MenuScreen implements Screen {
                     button.addAction(Actions.scaleTo(1.1f, 1.1f, 0.1f, Interpolation.smooth));
                 }
             }
-            
+
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                 super.exit(event, x, y, pointer, toActor);
@@ -263,13 +256,13 @@ public class MenuScreen implements Screen {
                 }
             }
         });
-        
+
         return button;
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); 
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
     }
@@ -287,29 +280,36 @@ public class MenuScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
-        
+
         // Entrance Animation: Slide up from bottom
-        // We use setTransform(true) on table if needed, but actions on position usually work fine.
+        // We use setTransform(true) on table if needed, but actions on position usually
+        // work fine.
         // We set initial position below screen (-height)
-        // Note: setFillParent(true) layout might interfere if not handled, but Actions often override.
-        // If it snaps back, we might need to disable fillParent, but let's try this standard approach first.
-        
+        // Note: setFillParent(true) layout might interfere if not handled, but Actions
+        // often override.
+        // If it snaps back, we might need to disable fillParent, but let's try this
+        // standard approach first.
+
         if (animatedTable != null) {
             // Force layout to determine correct center position first
             contentTable.pack(); // Force layout on the parent table
-            
+
             animatedTable.clearActions();
             animatedTable.addAction(Actions.sequence(
-                Actions.moveBy(0, -stage.getHeight()),
-                Actions.moveBy(0, stage.getHeight(), 0.3f, Interpolation.exp5Out)
-            ));
+                    Actions.moveBy(0, -stage.getHeight()),
+                    Actions.moveBy(0, stage.getHeight(), 0.3f, Interpolation.exp5Out)));
         }
     }
 
     @Override
-    public void pause() {}
+    public void pause() {
+    }
+
     @Override
-    public void resume() {}
+    public void resume() {
+    }
+
     @Override
-    public void hide() {}
+    public void hide() {
+    }
 }
