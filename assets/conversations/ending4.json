@@ -16,7 +16,7 @@
     "lines": [
         {
             "text": "I...",
-            "speaker": "???",
+            "speaker": "The Guardian",
             "isLeft": false,
             "portrait": "player/lihui/boss_injured.png",
             "hideLeft": true,
@@ -24,7 +24,7 @@
         },
         {
             "text": "My mission is over...",
-            "speaker": "???",
+            "speaker": "The Guardian",
             "isLeft": false,
             "portrait": "player/lihui/boss_injured.png",
             "hideLeft": true,
@@ -32,7 +32,7 @@
         },
         {
             "text": "The fate of humanity rests on you...",
-            "speaker": "???",
+            "speaker": "The Guardian",
             "isLeft": false,
             "portrait": "player/lihui/boss_injured.png",
             "hideLeft": true,

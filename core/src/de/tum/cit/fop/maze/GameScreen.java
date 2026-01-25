@@ -91,6 +91,9 @@ public class GameScreen implements Screen {
     private Texture wallTextureForLock;
     private List<de.tum.cit.fop.maze.GameObj.Wall> lockedWalls = new ArrayList<>();
 
+    private boolean level5EndingTriggered = false;
+    private float endingTimer = 0f;
+
     /**
      * Constructor for loading a specific map file.
      * 
@@ -271,6 +274,7 @@ public class GameScreen implements Screen {
 
         shapeRenderer = new ShapeRenderer();
         hud = new HUD(game.getSpriteBatch(), this, game.getSkin());
+        de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance().setHUD(hud);
         screenShake = new de.tum.cit.fop.maze.VFX.ScreenShake();
 
         setupPauseMenu();
@@ -1110,6 +1114,17 @@ public class GameScreen implements Screen {
             }
         }
 
+        if (level5EndingTriggered) {
+            endingTimer += delta;
+            if (endingTimer > 2.5f) {
+                game.setScreen(
+                        new de.tum.cit.fop.maze.GameControl.CinematicScreen(game, "story/data/ending.json", () -> {
+                            game.goToMenu(false);
+                        }));
+                return; // 跳转后直接返回，不再执行后续渲染
+            }
+        }
+
         // Level 4 After Dialogue (Key Pickup)
         if ("level-4".equals(currentLevelName) && !levelAfterDialoguePlayed && character != null
                 && character.hasKey()) {
@@ -1322,12 +1337,13 @@ public class GameScreen implements Screen {
                     // Check if not already transitioning?
                     // Just trigger ending directly
 
-                    awardXP(true);
-                    game.setScreen(
-                            new de.tum.cit.fop.maze.GameControl.CinematicScreen(game, "story/data/ending.json", () -> {
-                                game.goToMenu(false);
-                            }));
-                    return;
+                    if (!level5EndingTriggered) {
+                        // ... 这里保持不变，只负责设置 true ...
+                        level5EndingTriggered = true;
+                        AchievementManager.getInstance().onEvent(de.tum.cit.fop.maze.GameControl.EventType.GAME_COMPLETE, 1);
+                        awardXP(true);
+                        showPopupMessage("Level Complete! Exiting...");
+                    }
                 }
 
                 character.update(delta, mapObjects, enemies, game.getConfigManager());
@@ -1451,7 +1467,7 @@ public class GameScreen implements Screen {
             if (mapObjects != null) {
                 mapObjects.removeIf(GameObject::isMarkedForRemoval);
             }
-            if (character.isLevelCompleted()) {
+            if (character.isLevelCompleted() && !level5EndingTriggered) {
                 de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
                         .onEvent(de.tum.cit.fop.maze.GameControl.EventType.LEVEL_COMPLETE, 1);
                 showGameOverMenu(true);
@@ -1461,89 +1477,92 @@ public class GameScreen implements Screen {
                 showGameOverMenu(false);
             }
         }
+        if (!level5EndingTriggered) {
+            viewport.apply();
+            game.getSpriteBatch().setProjectionMatrix(camera.combined);
+            game.getSpriteBatch().begin();
+            game.getSpriteBatch().setColor(com.badlogic.gdx.graphics.Color.WHITE);
 
-        viewport.apply();
-        game.getSpriteBatch().setProjectionMatrix(camera.combined);
-        game.getSpriteBatch().begin();
 
-        if (mapObjects != null) {
-            for (GameObject obj : mapObjects) {
-                // Skip rendering Enemies/Boss here as they are rendered separately
-                if (obj instanceof de.tum.cit.fop.maze.GameObj.Enemy) {
-                    continue;
-                }
+            if (mapObjects != null) {
+                for (GameObject obj : mapObjects) {
+                    // Skip rendering Enemies/Boss here as they are rendered separately
+                    if (obj instanceof de.tum.cit.fop.maze.GameObj.Enemy) {
+                        continue;
+                    }
 
-                if (obj instanceof de.tum.cit.fop.maze.GameObj.Heart) {
-                    ((de.tum.cit.fop.maze.GameObj.Heart) obj).update(delta);
-                } else if (obj instanceof de.tum.cit.fop.maze.GameObj.ShieldItem) {
-                    ((de.tum.cit.fop.maze.GameObj.ShieldItem) obj).update(delta);
-                } else if (obj instanceof de.tum.cit.fop.maze.GameObj.NonoNPC) {
-                    ((de.tum.cit.fop.maze.GameObj.NonoNPC) obj).update(delta);
-                }
+                    if (obj instanceof de.tum.cit.fop.maze.GameObj.Heart) {
+                        ((de.tum.cit.fop.maze.GameObj.Heart) obj).update(delta);
+                    } else if (obj instanceof de.tum.cit.fop.maze.GameObj.ShieldItem) {
+                        ((de.tum.cit.fop.maze.GameObj.ShieldItem) obj).update(delta);
+                    } else if (obj instanceof de.tum.cit.fop.maze.GameObj.NonoNPC) {
+                        ((de.tum.cit.fop.maze.GameObj.NonoNPC) obj).update(delta);
+                    }
 
-                if (obj.getTextureRegion() != null) {
-                    game.getSpriteBatch().draw(obj.getTextureRegion(), obj.getPosition().x, obj.getPosition().y,
-                            obj.getWidth(), obj.getHeight());
+                    if (obj.getTextureRegion() != null) {
+                        game.getSpriteBatch().draw(obj.getTextureRegion(), obj.getPosition().x, obj.getPosition().y,
+                                obj.getWidth(), obj.getHeight());
+                    }
                 }
             }
-        }
 
-        if (character != null) {
-            character.draw(game.getSpriteBatch());
-        }
-
-        if (nono != null) {
-            nono.draw(game.getSpriteBatch());
-        }
-        if (projectiles != null) {
-            for (de.tum.cit.fop.maze.GameObj.Projectile p : projectiles) {
-
-                game.getSpriteBatch().draw(p.getTextureRegion(), p.getPosition().x, p.getPosition().y, 8, 8);
-            }
-        }
-        for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
-            enemy.draw(game.getSpriteBatch());
-
-            enemy.drawStatus(game.getSpriteBatch(), font, debugEnabled);
-        }
-
-        // Level 4 Lighting (Draws Multiply layer over map AND characters/enemies)
-        if ("level-4".equals(currentLevelName) && flashlightEffect != null && level4IntroState >= 8) {
-            game.getSpriteBatch().end(); // End batch from map/entity rendering
-
-            Vector2 targetPos = null;
             if (character != null) {
-                targetPos = new Vector2(character.getPosition().x + character.getWidth() / 2,
-                        character.getPosition().y + character.getHeight() / 2);
+                character.draw(game.getSpriteBatch());
             }
-            Vector2 nonoPos = null;
+
             if (nono != null) {
-                nonoPos = new Vector2(nono.getPosition().x + nono.getWidth() / 2,
-                        nono.getPosition().y + nono.getHeight() / 2);
+                nono.draw(game.getSpriteBatch());
             }
+            if (projectiles != null) {
+                for (de.tum.cit.fop.maze.GameObj.Projectile p : projectiles) {
 
-            flashlightEffect.render(delta, camera, viewport, game.getSpriteBatch(), shapeRenderer, nonoPos, targetPos);
-
-            game.getSpriteBatch().begin(); // Restart batch for damage numbers
-        }
-
-        if (damageNumbers != null) {
-            java.util.Iterator<de.tum.cit.fop.maze.VFX.DamageNumber> iter = damageNumbers.iterator();
-            while (iter.hasNext()) {
-                de.tum.cit.fop.maze.VFX.DamageNumber dn = iter.next();
-                dn.render(game.getSpriteBatch(), font);
-
-                if (!isPaused && !isGameOver && !character.isLevelCompleted() && !dialogueManager.isActive()) {
-                    dn.update(delta);
-                }
-
-                if (dn.isFinished()) {
-                    iter.remove();
+                    game.getSpriteBatch().draw(p.getTextureRegion(), p.getPosition().x, p.getPosition().y, 8, 8);
                 }
             }
-        }
+            for (de.tum.cit.fop.maze.GameObj.Enemy enemy : enemies) {
+                enemy.draw(game.getSpriteBatch());
 
-        game.getSpriteBatch().end();
+                enemy.drawStatus(game.getSpriteBatch(), font, debugEnabled);
+            }
+
+            // Level 4 Lighting (Draws Multiply layer over map AND characters/enemies)
+            if ("level-4".equals(currentLevelName) && flashlightEffect != null && level4IntroState >= 8) {
+                game.getSpriteBatch().end(); // End batch from map/entity rendering
+
+                Vector2 targetPos = null;
+                if (character != null) {
+                    targetPos = new Vector2(character.getPosition().x + character.getWidth() / 2,
+                            character.getPosition().y + character.getHeight() / 2);
+                }
+                Vector2 nonoPos = null;
+                if (nono != null) {
+                    nonoPos = new Vector2(nono.getPosition().x + nono.getWidth() / 2,
+                            nono.getPosition().y + nono.getHeight() / 2);
+                }
+
+                flashlightEffect.render(delta, camera, viewport, game.getSpriteBatch(), shapeRenderer, nonoPos, targetPos);
+
+                game.getSpriteBatch().begin(); // Restart batch for damage numbers
+            }
+
+            if (damageNumbers != null) {
+                java.util.Iterator<de.tum.cit.fop.maze.VFX.DamageNumber> iter = damageNumbers.iterator();
+                while (iter.hasNext()) {
+                    de.tum.cit.fop.maze.VFX.DamageNumber dn = iter.next();
+                    dn.render(game.getSpriteBatch(), font);
+
+                    if (!isPaused && !isGameOver && !character.isLevelCompleted() && !dialogueManager.isActive()) {
+                        dn.update(delta);
+                    }
+
+                    if (dn.isFinished()) {
+                        iter.remove();
+                    }
+                }
+            }
+
+            game.getSpriteBatch().end();
+        }
 
         if (!isPaused && !isGameOver && !character.isLevelCompleted() && !dialogueManager.isActive()) {
             java.util.Iterator<de.tum.cit.fop.maze.GameObj.Enemy> enemyIter = enemies.iterator();
@@ -1559,6 +1578,12 @@ public class GameScreen implements Screen {
 
                     // Trigger Cinematic Screen if Boss dies (with 2s delay)
                     if (enemy instanceof de.tum.cit.fop.maze.GameObj.Boss) {
+
+                        if (!isProcedural) {
+                            de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
+                                    .onEvent(de.tum.cit.fop.maze.GameControl.EventType.KILL_BOSS_STORY, 1);
+                        }
+
                         bossDeathTimer += delta;
                         if (bossDeathTimer < 2.0f) {
                             continue; // Wait until timer reaches 2.0s
@@ -1787,7 +1812,7 @@ public class GameScreen implements Screen {
             }
 
             hud.update(character);
-            hud.render(delta);
+            //hud.render(delta);
         }
 
         if (debugEnabled && character != null) {
@@ -1852,6 +1877,10 @@ public class GameScreen implements Screen {
         if (isPaused || isGameOver || isLevelCompleted) {
             pauseStage.act(delta);
             pauseStage.draw();
+        }
+
+        if (hud != null) {
+            hud.render(delta);
         }
 
         if (dialogueManager.isActive()) {

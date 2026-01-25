@@ -590,10 +590,11 @@ public class Character extends MovableObject {
      * @param configManager Config manager.
      */
     private void handleInput(de.tum.cit.fop.maze.GameControl.ConfigManager configManager) {
+        float multiplier = (playerState != null) ? playerState.getSpeedMultiplier() : 1.0f;
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
-            maxSpeed = RUN_SPEED;
+            maxSpeed = RUN_SPEED * multiplier;
         } else {
-            maxSpeed = WALK_SPEED;
+            maxSpeed = WALK_SPEED * multiplier;
         }
 
         inputVector.set(0, 0);

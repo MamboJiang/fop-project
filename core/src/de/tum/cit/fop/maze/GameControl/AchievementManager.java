@@ -94,10 +94,14 @@ public class AchievementManager {
     private void createDefaultAchievements() {
         achievements.clear();
         addDefault("first_blood", "First Blood", "Kill your first enemy.", EventType.KILL_ENEMY, 1);
+        addDefault("power_up", "Power Up", "Upgrade a skill for the first time.", EventType.UPGRADE_SKILL, 1);
         addDefault("serial_killer", "Serial Killer", "Kill 10 enemies.", EventType.KILL_ENEMY, 10);
-        addDefault("survivor_novice", "Undying Warrior", "Kill 3 Bosses in Endless Mode.", EventType.KILL_BOSS_ENDLESS, 3);
+        addDefault("story_boss_slayer", "Boss Slayer", "Defeat a Boss in Story Mode.", EventType.KILL_BOSS_STORY, 1);
+
         addDefault("rich", "Treasure Hunter", "Collect 5 items.", EventType.COLLECT_ITEM, 5);
         addDefault("escape_artist", "Escape Artist", "Complete your first level.", EventType.LEVEL_COMPLETE, 1);
+        addDefault("survivor_novice", "Undying Warrior", "Kill 3 Bosses in Endless Mode.", EventType.KILL_BOSS_ENDLESS, 3);
+        addDefault("story_champion", "Savior", "Complete the Story Mode for the first time.", EventType.GAME_COMPLETE, 1);
 
     }
     

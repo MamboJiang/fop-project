@@ -16,7 +16,7 @@
     "lines": [
         {
             "text": "As expected, you haven't taken off that mask.",
-            "speaker": "???",
+            "speaker": "The Guardian",
             "isLeft": false,
             "portrait": "player/lihui/boss.png"
         },
@@ -28,7 +28,7 @@
         },
         {
             "text": "Hahahahaha, the current you is just as determined as I once was.",
-            "speaker": "???",
+            "speaker": "The Guardian",
             "isLeft": false,
             "portrait": "player/lihui/boss.png"
         },
@@ -40,13 +40,13 @@
         },
         {
             "text": "I definitely won't let you pass.",
-            "speaker": "???",
+            "speaker": "The Guardian",
             "isLeft": false,
             "portrait": "player/lihui/boss.png"
         },
         {
             "text": "Consider it as an atonement for the previous us.",
-            "speaker": "???",
+            "speaker": "The Guardian",
             "isLeft": false,
             "portrait": "player/lihui/boss.png"
         },

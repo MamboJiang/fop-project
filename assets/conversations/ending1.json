@@ -16,7 +16,7 @@
   "lines": [
     {
       "text": "Stop!",
-      "speaker": "???",
+      "speaker": "The Guardian",
       "isLeft": true,
       "portrait": "player/lihui/bossdamaged.png",
       "hideLeft": true,
@@ -24,7 +24,7 @@
     },
     {
       "text": "Do not put the serum into the launcher!",
-      "speaker": "???",
+      "speaker": "The Guardian",
       "isLeft": true,
       "portrait": "player/lihui/bossdamaged.png",
       "hideLeft": true,
