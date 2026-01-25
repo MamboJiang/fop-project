@@ -65,63 +65,147 @@ Visual effects.
 
 ```mermaid
 classDiagram
-    %% Core Game
+    %% --- Core Architecture ---
     class MazeRunnerGame {
         +SpriteBatch spriteBatch
         +Skin skin
+        +PlayerState playerState
+        +Music backgroundMusic
         +create()
         +goToGame(FileHandle map)
+        +goToEndlessMode(String name)
         +goToMenu()
-        +goToEndlessMode()
     }
-    
-    %% Screens
-    class Screen {
-        <<interface>>
-        +render(delta)
-        +resize(width, height)
-        +dispose()
-    }
-    
+    class Screen { <<interface>> }
+    MazeRunnerGame --|> Game
     MazeRunnerGame --> Screen : manages
-    Screen <|.. GameScreen
-    Screen <|.. StoryMenu
-    Screen <|.. CinematicScreen
-    Screen <|.. EncyclopediaScreen
-    Screen <|.. LevelSelectionScreen
-    Screen <|.. SkillTreeScreen
-    Screen <|.. SettingsScreen
-    
-    %% Game Objects
-    class GameObject
-    class MovableObject
-    class Character
-    class Enemy
-    class Ghost
-    
+
+    class GameScreen {
+        -Character character
+        -List~GameObject~ mapObjects
+        -HUD hud
+        -DialogueManager dialogueManager
+        -DungeonController dungeonController
+        -FlashlightEffect flashlight
+        +render(float delta)
+        +update(float delta)
+    }
+    GameScreen ..|> Screen
+
+    class MenuScreen {
+        +render(float delta)
+    }
+    MenuScreen ..|> Screen
+
+    class StoryMenu {
+        +playBackgroundAnimation()
+    }
+    StoryMenu ..|> Screen
+
+    %% --- Game Objects ---
+    class GameObject {
+        #Vector2 position
+        #Rectangle bounds
+        +draw(SpriteBatch)
+        +update(float delta)
+    }
+    class MovableObject {
+        #float speed
+        #Vector2 velocity
+        +move(float delta)
+    }
+    class Character {
+        -float health
+        -int lives
+        +move()
+        +attack()
+        +dash()
+    }
+    class Enemy {
+        #float damage
+        #float detectionRange
+        +seekPlayer()
+    }
+    class Boss {
+        -float attackTimer
+        +spawnMinions()
+        +shootProjectiles()
+    }
+    class Ghost {
+        +passThroughWalls()
+    }
+    class Wall
+    class Key
+    class Trap
+    class Exit
+    class Heart
+    class ShieldItem
+
     GameObject <|-- MovableObject
+    GameObject <|-- Wall
+    GameObject <|-- Key
+    GameObject <|-- Trap
+    GameObject <|-- Exit
+    GameObject <|-- Heart
+    GameObject <|-- ShieldItem
+    
     MovableObject <|-- Character
     MovableObject <|-- Enemy
+    Enemy <|-- Boss
     Enemy <|-- Ghost
-    
-    %% Systems
-    class HUD
-    class ConfigManager
-    class GameSaveManager
-    class DialogueManager
-    class EncyclopediaManager
-    
-    GameScreen --> HUD
-    MazeRunnerGame --> ConfigManager
-    GameScreen --> DialogueManager
-    StoryMenu --> EncyclopediaManager
-    
-    %% AI & PCG
-    class PathFinder
-    class DungeonGenerator
-    
-    Enemy --> PathFinder
-    GameScreen --> DungeonGenerator
+
+    %% --- Systems & Managers ---
+    class HUD {
+        +update(Character)
+        +render(float delta)
+    }
+    class DialogueManager {
+        +loadDialogue(String id)
+        +startDialogue()
+        +render(float delta)
+    }
+    class DungeonController {
+        -List~Room~ rooms
+        +init(List~Room~, boolean isBoss)
+        +update(float delta)
+    }
+    class PathFinder {
+        +findPath(Grid, start, end)
+    }
+    class Grid {
+        +isWalkable(x, y)
+    }
+    class GameSaveManager {
+        +saveGame(PlayerState, int slot)
+        +loadGame(int slot)
+    }
+    class AchievementManager {
+        +onEvent(EventType, int value)
+    }
+    class EncyclopediaManager {
+        +unlockEntry(String id)
+    }
+
+    %% --- Procedural Generation ---
+    class DungeonGeneratorV2 {
+        +generate(int difficulty) : List~GameObject~
+    }
+    class Room {
+        +int x, y, width, height
+    }
+
+    %% --- Dependencies ---
+    MazeRunnerGame --> GameSaveManager : uses
+    MazeRunnerGame --> AchievementManager : accesses
+    MazeRunnerGame --> EncyclopediaManager : accesses
+    GameScreen --> HUD : owns
+    GameScreen --> DialogueManager : owns
+    GameScreen --> DungeonController : uses
+    GameScreen ..> DungeonGeneratorV2 : uses
+    DungeonController --> Room : manages
+    Enemy ..> PathFinder : uses
+    PathFinder ..> Grid : uses
+    GameScreen --> Character : controls
 ```
 
 ## How to Run
