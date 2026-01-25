@@ -16,7 +16,7 @@
   "lines": [
     {
       "text": "So, you figured it out.",
-      "speaker": "Stranger",
+      "speaker": "NONO",
       "isLeft": false,
       "portrait": "player/lihui/nonodamaged.png",
       "hideLeft": true,
@@ -24,7 +24,7 @@
     },
     {
       "text": "Another failure. Just as predicted.",
-      "speaker": "Stranger",
+      "speaker": "NONO",
       "isLeft": false,
       "portrait": "player/lihui/nonodamaged.png",
       "hideLeft": true,
@@ -32,7 +32,7 @@
     },
     {
       "text": "But it doesn't matter. We will meet again.",
-      "speaker": "Stranger",
+      "speaker": "NONO",
       "isLeft": false,
       "portrait": "player/lihui/nonodamaged.png",
       "hideLeft": true,

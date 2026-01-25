@@ -16,13 +16,13 @@
     "lines": [
         {
             "text": "Finally arrived!",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "(Excited) Just one last step away from my success!",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
@@ -34,13 +34,13 @@
         },
         {
             "text": "I... I mean... our success...",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "Just keep walking forward and you'll find the launch device.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         }

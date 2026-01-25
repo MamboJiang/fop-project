@@ -16,13 +16,13 @@
     "lines": [
         {
             "text": "This is the decontamination zone. You need to find the access card.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "Then, cross the corridor to enter the interior of the research facility.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
@@ -34,7 +34,7 @@
         },
         {
             "text": "They are the rogue robots. Watch out for them, and the slime on the ground!",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
@@ -46,7 +46,7 @@
         },
         {
             "text": "FOLLOW ME. I will guide your way.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         }

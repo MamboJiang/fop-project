@@ -22,25 +22,25 @@
         },
         {
             "text": "Yes, you just need to place it into the launch pad.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "Then everything will return to normal!",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "There is no time to waste.",
-            "speaker": "Player",
+            "speaker": "NONO",
             "isLeft": true,
             "portrait": "player/lihui/maincharacterlhmask.png"
         },
         {
             "text": "Take me there quickly!",
-            "speaker": "Player",
+            "speaker": "NONO",
             "isLeft": true,
             "portrait": "player/lihui/maincharacterlhmask.png"
         }

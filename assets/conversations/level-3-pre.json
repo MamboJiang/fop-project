@@ -22,19 +22,19 @@
         },
         {
             "text": "How did your protective mask get broken?",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "You need to pay attention to the mask's condition at all times.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "Once it's damaged, the consequences are unimaginable!",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },

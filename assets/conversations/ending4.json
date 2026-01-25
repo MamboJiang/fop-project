@@ -18,7 +18,7 @@
             "text": "I...",
             "speaker": "???",
             "isLeft": false,
-            "portrait": "player/lihui/bossdamaged.png",
+            "portrait": "player/lihui/boss_injured.png",
             "hideLeft": true,
             "hideRight": true
         },
@@ -26,7 +26,7 @@
             "text": "My mission is over...",
             "speaker": "???",
             "isLeft": false,
-            "portrait": "player/lihui/bossdamaged.png",
+            "portrait": "player/lihui/boss_injured.png",
             "hideLeft": true,
             "hideRight": true
         },
@@ -34,7 +34,7 @@
             "text": "The fate of humanity rests on you...",
             "speaker": "???",
             "isLeft": false,
-            "portrait": "player/lihui/bossdamaged.png",
+            "portrait": "player/lihui/boss_injured.png",
             "hideLeft": true,
             "hideRight": true
         },

@@ -16,7 +16,7 @@
     "lines": [
         {
             "text": "(Sighs deeply) That was a close call.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
@@ -28,7 +28,7 @@
         },
         {
             "text": "Judging by your moves... I think you need a weapon.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },

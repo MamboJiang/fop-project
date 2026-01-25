@@ -16,13 +16,13 @@
     "lines": [
         {
             "text": "Put on your mask, and go to the Exit. let's move. But remember:",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "ONCE YOU WALK THROUGH THAT DOOR, THERE IS NO TURNING BACK.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },

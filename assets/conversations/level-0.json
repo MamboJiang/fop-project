@@ -27,20 +27,26 @@
             "portrait": "player/lihui/maincharacterlhupscale.png"
         },
         {
+          "text": "You can call me NONO.",
+          "speaker": "Stranger",
+          "isLeft": false,
+          "portrait": "player/lihui/nonolhright.png"
+        },
+        {
             "text": "You are one of the few survivors left after the Day of Silence.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "This is the D-3 Buffer Zone. It is the only passage connecting the Meridian Foundation shelter to the research facility.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "Now, it is up to you to save the other survivors.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
@@ -52,7 +58,7 @@
         },
         {
             "text": "I will guide you. There is no time to waste. Put on this gas mask to prevent infection.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         }

@@ -22,7 +22,7 @@
         },
         {
             "text": "According to combat history, it is just a power outage.",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
@@ -40,13 +40,13 @@
         },
         {
             "text": "(Stammering) I meant a guess, a guess...",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },
         {
             "text": "Now we need to find the serum, and I will light the way for you!",
-            "speaker": "Stranger",
+            "speaker": "NONO",
             "isLeft": false,
             "portrait": "player/lihui/nonolhright.png"
         },

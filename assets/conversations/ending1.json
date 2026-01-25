@@ -32,7 +32,7 @@
     },
     {
       "text": "Don't stop!",
-      "speaker": "Stranger",
+      "speaker": "NONO",
       "isLeft": false,
       "portrait": "player/lihui/nonolhright.png",
       "hideLeft": true,
@@ -40,7 +40,7 @@
     },
     {
       "text": "He is a traitor!",
-      "speaker": "Stranger",
+      "speaker": "NONO",
       "isLeft": false,
       "portrait": "player/lihui/nonolhright.png",
       "hideLeft": true,
