@@ -71,7 +71,7 @@ public class CinematicScreen implements Screen {
         this.stage = new Stage(new ExtendViewport(1920, 1080), game.getSpriteBatch());
 
         // Initialize DialogueManager
-        this.dialogueManager = new DialogueManager(game.getSkin());
+        this.dialogueManager = new DialogueManager(game.getSkin(), game.getPlayerState());
         this.dialogueManager.setBackgroundScrimVisible(false); // No dark overlay for cinematic
 
         loadData();
