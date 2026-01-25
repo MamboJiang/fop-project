@@ -52,7 +52,7 @@ public class Character extends MovableObject {
     private Animation<TextureRegion> attackRight;
     private Animation<TextureRegion> attackUp;
     private Animation<TextureRegion> attackLeft;
-    
+
     private Texture characterTexture;
 
     /**
@@ -157,7 +157,7 @@ public class Character extends MovableObject {
         // Frame extraction for Walking
         int frameW = 26;
         int frameH = 46;
-        
+
         // Load Attack Texture
         Texture attSheet = new Texture(Gdx.files.internal("player/sprite/aligned_character_mask_knife.png"));
         int attFrameW = 32;
@@ -166,14 +166,14 @@ public class Character extends MovableObject {
         for (int i = 0; i < 4; i++) {
             // Walking: Rows 0-3, 46x26 from 'texture'
             downFrames[i] = new TextureRegion(characterTexture, i * frameW, 0, frameW, frameH);
-            rightFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH*3, frameW, frameH);
+            rightFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH * 3, frameW, frameH);
             upFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH * 2, frameW, frameH);
             leftFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH, frameW, frameH);
 
             // Attacking: Rows 0-3 from 'attSheet', 32x48
             // Order assumption: Down(0), Right(1), Up(2), Left(3) to match previous logic
             attDownFrames[i] = new TextureRegion(attSheet, i * attFrameW, 0, attFrameW, attFrameH);
-            attRightFrames[i] = new TextureRegion(attSheet, i * attFrameW, attFrameH*3, attFrameW, attFrameH);
+            attRightFrames[i] = new TextureRegion(attSheet, i * attFrameW, attFrameH * 3, attFrameW, attFrameH);
             attUpFrames[i] = new TextureRegion(attSheet, i * attFrameW, attFrameH * 2, attFrameW, attFrameH);
             attLeftFrames[i] = new TextureRegion(attSheet, i * attFrameW, attFrameH, attFrameW, attFrameH);
         }
@@ -192,23 +192,24 @@ public class Character extends MovableObject {
     }
 
     public void loadMaskAppearance() {
-       if (characterTexture != null) characterTexture.dispose();
+        if (characterTexture != null)
+            characterTexture.dispose();
         characterTexture = new Texture(Gdx.files.internal("player/sprite/aligned_character_mask.png"));
-       
-       int frameW = 26;
-       int frameH = 46;
-       // Recreate animations
-       TextureRegion[] downFrames = new TextureRegion[4];
-       TextureRegion[] rightFrames = new TextureRegion[4];
-       TextureRegion[] upFrames = new TextureRegion[4];
-       TextureRegion[] leftFrames = new TextureRegion[4];
 
-       for (int i = 0; i < 4; i++) {
+        int frameW = 26;
+        int frameH = 46;
+        // Recreate animations
+        TextureRegion[] downFrames = new TextureRegion[4];
+        TextureRegion[] rightFrames = new TextureRegion[4];
+        TextureRegion[] upFrames = new TextureRegion[4];
+        TextureRegion[] leftFrames = new TextureRegion[4];
+
+        for (int i = 0; i < 4; i++) {
             downFrames[i] = new TextureRegion(characterTexture, i * frameW, 0, frameW, frameH);
-            rightFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH*3, frameW, frameH);
+            rightFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH * 3, frameW, frameH);
             upFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH * 2, frameW, frameH);
             leftFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH, frameW, frameH);
-       }
+        }
         walkDown = new Animation<>(0.1f, downFrames);
         walkRight = new Animation<>(0.1f, rightFrames);
         walkUp = new Animation<>(0.1f, upFrames);
@@ -280,8 +281,12 @@ public class Character extends MovableObject {
                     updateBounds();
                 }
             } else if (hitObject instanceof Trap) {
-                this.takeDamage();
-                System.out.println("Stepped on a trap! Lives left: " + getLives());
+                if (!isShielded()) {
+                    this.takeDamage();
+                    System.out.println("Stepped on a trap! Lives left: " + getLives());
+                } else {
+                    System.out.println("Shield protected against trap!");
+                }
             }
         }
     }
@@ -302,14 +307,14 @@ public class Character extends MovableObject {
 
         // Attack Logic
         if (Gdx.input.isKeyJustPressed(Input.Keys.J)) {
-             if (isAttackUnlocked() && !isAttacking) {
+            if (isAttackUnlocked() && !isAttacking) {
                 attack();
-                game.playBlockSound(); 
+                game.playBlockSound();
 
                 Rectangle attackBox = getAttackRect();
                 Vector2 knockbackDir = new Vector2();
-                
-                 switch (currentDirection) {
+
+                switch (currentDirection) {
                     case UP:
                         knockbackDir.set(0, 1);
                         break;
@@ -335,7 +340,6 @@ public class Character extends MovableObject {
             }
         }
 
-
         if (isAttacking) {
             attackTimer += delta;
 
@@ -345,8 +349,7 @@ public class Character extends MovableObject {
         }
 
         updatePhysics(delta);
-// ... existing code ...
-
+        // ... existing code ...
 
         if (isMoving) {
 
@@ -487,15 +490,15 @@ public class Character extends MovableObject {
 
         if (isAttacking) {
             // Draw 24x36 sprite centered on 16x32 body (width difference 8 -> offset -4)
-            batch.draw(textureRegion, position.x -2, position.y, 20, 32);
+            batch.draw(textureRegion, position.x - 2, position.y, 20, 32);
         } else {
             batch.draw(textureRegion, position.x, position.y, width, height);
         }
 
         endDamageFlash(batch);
-        
+
         // drawArrow(batch); // Disabled as per user request
-        
+
         batch.setColor(Color.WHITE);
 
         if (shieldTime > 0 && shieldAnimation != null) {
@@ -729,7 +732,6 @@ public class Character extends MovableObject {
         return playerState != null && playerState.isAttackUnlocked();
     }
 
-
     public void setLives(int lives) {
         this.health = lives;
         int max = getMaxLives();
@@ -869,11 +871,12 @@ public class Character extends MovableObject {
         int max = getMaxLives();
         if (this.health > max)
             this.health = max;
-            this.health = 0;
+        this.health = 0;
     }
 
     /**
      * Calculates the attack hitbox based on current direction.
+     * 
      * @return Rectangle representing the attack area.
      */
     public Rectangle getAttackRect() {
