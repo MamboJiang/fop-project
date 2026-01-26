@@ -227,11 +227,17 @@ public class GameOverMenu extends Table implements com.badlogic.gdx.utils.Dispos
         }
     }
 
+    /**
+     * Shows the game over menu.
+     */
     public void show() {
         setVisible(true);
         toFront();
     }
 
+    /**
+     * Hides the game over menu.
+     */
     public void hide() {
         setVisible(false);
     }
@@ -316,6 +322,9 @@ public class GameOverMenu extends Table implements com.badlogic.gdx.utils.Dispos
         });
     }
 
+    /**
+     * Disposes of assets.
+     */
     @Override
     public void dispose() {
         if (menuBgTex != null)

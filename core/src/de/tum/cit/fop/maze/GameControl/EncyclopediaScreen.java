@@ -21,6 +21,10 @@ import com.badlogic.gdx.math.Interpolation;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 import java.util.Map;
 
+/**
+ * Screen for viewing encyclopedia entries.
+ * Displays unlocked characters, enemies, and lore.
+ */
 public class EncyclopediaScreen implements Screen {
 
     private final MazeRunnerGame game;
@@ -49,6 +53,10 @@ public class EncyclopediaScreen implements Screen {
     private Label.LabelStyle bodyStyle;
     private Color themeColor = Color.valueOf("6699CC");
 
+    /**
+     * Constructor for EncyclopediaScreen.
+     * @param game The main game instance.
+     */
     public EncyclopediaScreen(MazeRunnerGame game) {
         this.game = game;
         this.skin = game.getSkin();
@@ -67,8 +75,10 @@ public class EncyclopediaScreen implements Screen {
         this.encyclopediaManager.updateEntriesContent(game.getPlayerState());
     }
 
+    /**
+     * Loads textures and other assets required for the screen.
+     */
     private void loadAssets() {
-
         backgroundTexture = new Texture(Gdx.files.internal("selfmade/background.png"));
         backgroundImage1 = new Image(backgroundTexture);
         backgroundImage2 = new Image(backgroundTexture);
@@ -102,11 +112,17 @@ public class EncyclopediaScreen implements Screen {
         pixmap.dispose();
     }
 
+    /**
+     * Initializes label styles and fonts.
+     */
     private void setupStyles() {
         titleStyle = new Label.LabelStyle(skin.getFont("hoefler"), themeColor);
         bodyStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.WHITE);
     }
 
+    /**
+     * Constructs the main UI layout, including the title, card grid, and back button.
+     */
     private void buildUI() {
         Table root = new Table();
         root.setFillParent(true);
@@ -190,6 +206,12 @@ public class EncyclopediaScreen implements Screen {
         return button;
     }
 
+    /**
+     * Creates a card for an encyclopedia entry.
+     * @param entry The entry to display.
+     * @param isUnlocked Whether the entry is unlocked.
+     * @return The table representing the card.
+     */
     private Table createEntryCard(EncyclopediaEntry entry, boolean isUnlocked) {
         Table card = new Table();
         card.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
@@ -249,6 +271,10 @@ public class EncyclopediaScreen implements Screen {
         return card;
     }
 
+    /**
+     * Shows a modal dialog with details about the encyclopedia entry.
+     * @param entry The entry to show details for.
+     */
     private void showDetailDialog(EncyclopediaEntry entry) {
         Dialog dialog = new Dialog("", skin) {
             @Override
@@ -289,6 +315,10 @@ public class EncyclopediaScreen implements Screen {
         dialog.show(stage);
     }
 
+    /**
+     * Renders the screen.
+     * @param delta Time delta.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -299,6 +329,10 @@ public class EncyclopediaScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Updates the scrolling background position.
+     * @param delta Time delta.
+     */
     private void updateBackground(float delta) {
         if (backgroundImage1 == null || backgroundImage2 == null)
             return;
@@ -323,6 +357,11 @@ public class EncyclopediaScreen implements Screen {
         }
     }
 
+    /**
+     * Resizes the viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
@@ -347,23 +386,38 @@ public class EncyclopediaScreen implements Screen {
         }
     }
 
+    /**
+     * Called when the screen becomes the current screen.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
     }
 
+    /**
+     * Called when the screen is hidden.
+     */
     @Override
     public void hide() {
     }
 
+    /**
+     * Called when application is paused.
+     */
     @Override
     public void pause() {
     }
 
+    /**
+     * Called when application is resumed.
+     */
     @Override
     public void resume() {
     }
 
+    /**
+     * Disposes of the screen assets.
+     */
     @Override
     public void dispose() {
         stage.dispose();

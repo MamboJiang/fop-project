@@ -94,6 +94,10 @@ public class SaveSlotScreen implements Screen {
         buttonsTable.add(backButton).padTop(30);
     }
     
+    /**
+     * Shows a confirmation dialog for overwriting a save slot.
+     * @param slotIndex The index of the slot to overwrite.
+     */
     private void showOverwriteDialog(int slotIndex) {
         Dialog dialog = new Dialog("Overwrite Save?", game.getSkin()) {
             @Override
@@ -109,6 +113,10 @@ public class SaveSlotScreen implements Screen {
         dialog.show(stage);
     }
     
+    /**
+     * Shows an input dialog for entering the player's name.
+     * @param slotIndex The slot index.
+     */
     private void showNameInputDialog(int slotIndex) {
         TextField nameField = new TextField("Player", game.getSkin());
         Dialog dialog = new Dialog("Enter Player Name", game.getSkin()) {
@@ -129,6 +137,9 @@ public class SaveSlotScreen implements Screen {
         dialog.show(stage);
     }
 
+    /**
+     * Called when the screen becomes current.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -142,6 +153,10 @@ public class SaveSlotScreen implements Screen {
         }
     }
 
+    /**
+     * Renders the screen.
+     * @param delta Time delta.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -149,17 +164,34 @@ public class SaveSlotScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Resizes the viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
+    /**
+     * Called when application is paused.
+     */
     @Override
     public void pause() {}
+    /**
+     * Called when application is resumed.
+     */
     @Override
     public void resume() {}
+    /**
+     * Called when screen is hidden.
+     */
     @Override
     public void hide() {}
+    /**
+     * Disposes of assets.
+     */
     @Override
     public void dispose() {
         stage.dispose();

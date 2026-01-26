@@ -25,15 +25,28 @@ public class Room {
         this.height = height;
     }
     
+    /**
+     * Checks if this room intersects with another.
+     * @param other The other room.
+     * @return true if intersects.
+     */
     public boolean intersects(Room other) {
         return (x < other.x + other.width && x + width > other.x &&
                 y < other.y + other.height && y + height > other.y);
     }
     
+    /**
+     * Gets the center coordinate of the room.
+     * @return Center Vector2.
+     */
     public Vector2 getCenter() {
         return new Vector2(x + width / 2, y + height / 2);
     }
     
+    /**
+     * Gets a random point inside the room (not on walls).
+     * @return Random internal point.
+     */
     public Vector2 getRandomPoint() {
         return new Vector2(
             MathUtils.random(x + 1, x + width - 2),

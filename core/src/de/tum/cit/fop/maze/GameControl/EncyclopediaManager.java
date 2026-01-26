@@ -7,6 +7,10 @@ import java.util.Map;
 import de.tum.cit.fop.maze.GameObj.PlayerState;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 
+/**
+ * Singleton manager for the encyclopedia entries.
+ * Handles loading, storing, and updating the state of all encyclopedia entries.
+ */
 public class EncyclopediaManager {
     private static EncyclopediaManager instance;
     private Map<String, EncyclopediaEntry> allEntries;
@@ -17,6 +21,9 @@ public class EncyclopediaManager {
 
     }
 
+    /**
+     * @return The singleton instance of EncyclopediaManager.
+     */
     public static EncyclopediaManager getInstance() {
         if (instance == null)
             instance = new EncyclopediaManager();
@@ -45,10 +52,20 @@ public class EncyclopediaManager {
         addEntry("boss_guardian", "The Guardian", "Keep your distance!", "player/lihui/boss.png");
     }
 
+    /**
+     * Adds a new entry to the encyclopedia.
+     * @param id Unique ID.
+     * @param name Display name.
+     * @param desc Description.
+     * @param path Image path.
+     */
     private void addEntry(String id, String name, String desc, String path) {
         allEntries.put(id, new EncyclopediaEntry(id, name, desc, path));
     }
 
+    /**
+     * @return Map of all encyclopedia entries.
+     */
     public Map<String, EncyclopediaEntry> getAllEntries() {
         return allEntries;
     }

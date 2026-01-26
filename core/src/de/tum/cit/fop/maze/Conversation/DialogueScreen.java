@@ -124,6 +124,9 @@ public class DialogueScreen implements Screen {
         stage.addActor(backBtn);
     }
     
+    /**
+     * Advances to the next dialogue/demo step.
+     */
     private void advanceDialogue() {
         conversationIndex++;
         if (conversationIndex >= texts.length) {
@@ -133,6 +136,9 @@ public class DialogueScreen implements Screen {
         updateDialogue();
     }
     
+    /**
+     * Updates the dialogue box content for the current step.
+     */
     private void updateDialogue() {
         String text = texts[conversationIndex];
         DialogueBox.DialogueType type = types[conversationIndex];
@@ -160,6 +166,10 @@ public class DialogueScreen implements Screen {
         }
     }
 
+    /**
+     * Renders the screen.
+     * @param delta Time delta.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -167,22 +177,39 @@ public class DialogueScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Resizes the viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
+    /**
+     * Called when the application is paused.
+     */
     @Override
     public void pause() {}
 
+    /**
+     * Called when the application is resumed.
+     */
     @Override
     public void resume() {}
 
+    /**
+     * Called when this screen is no longer the current screen.
+     */
     @Override
     public void hide() {
         stage.dispose();
     }
 
+    /**
+     * Disposes of assets.
+     */
     @Override
     public void dispose() {
         stage.dispose();

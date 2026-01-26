@@ -42,10 +42,18 @@ public abstract class MovableObject extends GameObject {
         }
     }
 
+    /**
+     * Gets current health.
+     * @return Health
+     */
     public int getHealth() {
         return health;
     }
 
+    /**
+     * Sets health.
+     * @param health Health value
+     */
     public void setHealth(int health) {
         this.health = health;
     }
@@ -57,6 +65,10 @@ public abstract class MovableObject extends GameObject {
         return health <= 0;
     }
 
+    /**
+     * Checks if damaged (in flash state).
+     * @return true if damaged
+     */
     public boolean isDamaged() {
         return damageFlashTime > 0;
     }
@@ -154,18 +166,34 @@ public abstract class MovableObject extends GameObject {
         return velocity;
     }
 
+    /**
+     * Gets max speed.
+     * @return Max speed
+     */
     public float getMaxSpeed() {
         return maxSpeed;
     }
 
+    /**
+     * Sets max speed.
+     * @param maxSpeed Max speed
+     */
     public void setMaxSpeed(float maxSpeed) {
         this.maxSpeed = maxSpeed;
     }
 
+    /**
+     * Sets acceleration.
+     * @param acceleration Acceleration
+     */
     public void setAcceleration(float acceleration) {
         this.acceleration = acceleration;
     }
 
+    /**
+     * Sets friction.
+     * @param friction Friction
+     */
     public void setFriction(float friction) {
         this.friction = friction;
     }

@@ -164,21 +164,39 @@ public class GameScreen implements Screen {
     private boolean isEndlessVer2 = false;
     private de.tum.cit.fop.maze.Procedure.DungeonController dungeonController;
 
+    /**
+     * Adds a game object to the map.
+     * @param obj The object to add.
+     */
     public void addGameObject(GameObject obj) {
         if (mapObjects != null) {
             mapObjects.add(obj);
         }
     }
 
+    /**
+     * Returns the list of game objects.
+     * @return List of game objects.
+     */
     public List<GameObject> getGameObjects() {
         return mapObjects;
     }
 
+    /**
+     * Shows a popup message.
+     * @param message The message to show.
+     */
     public void showPopupMessage(String message) {
         Gdx.app.log("GameScreen", "Popup: " + message);
 
     }
 
+    /**
+     * Spawns a boss at the specified location.
+     * @param x X-coordinate.
+     * @param y Y-coordinate.
+     * @param floor Current floor number.
+     */
     public void spawnBoss(float x, float y, int floor) {
         if (bulletTex == null) {
 
@@ -204,14 +222,28 @@ public class GameScreen implements Screen {
         enemies.add(boss);
     }
 
+    /**
+     * Returns the player character.
+     * @return The character.
+     */
     public de.tum.cit.fop.maze.GameObj.Character getCharacter() {
         return character;
     }
 
+    /**
+     * Returns the list of enemies.
+     * @return List of enemies.
+     */
     public List<de.tum.cit.fop.maze.GameObj.Enemy> getEnemies() {
         return enemies;
     }
 
+    /**
+     * Checks if a grid position is walkable.
+     * @param x Grid X coordinate.
+     * @param y Grid Y coordinate.
+     * @return True if walkable, false otherwise.
+     */
     public boolean isWalkable(int x, int y) {
         if (grid != null) {
             return grid.isWalkable(x, y);
@@ -234,10 +266,18 @@ public class GameScreen implements Screen {
         }
     }
 
+    /**
+     * Sets the endless mode version 2 flag.
+     * @param isEndlessVer2 True to enable endless version 2.
+     */
     public void setEndlessVer2(boolean isEndlessVer2) {
         this.isEndlessVer2 = isEndlessVer2;
     }
 
+    /**
+     * Returns the current level name.
+     * @return The level name.
+     */
     public String getCurrentLevelName() {
         return currentLevelName;
     }
@@ -245,6 +285,9 @@ public class GameScreen implements Screen {
 
 
 
+    /**
+     * Initializes common elements like camera, viewport, and UI.
+     */
     private void initCommon() {
         flashlightEffect = new de.tum.cit.fop.maze.VFX.FlashlightEffect();
 
@@ -268,6 +311,9 @@ public class GameScreen implements Screen {
         }
     }
 
+    /**
+     * Updates the input processor based on the game state.
+     */
     public void updateInputProcessor() {
         InputMultiplexer multiplexer = new InputMultiplexer();
         if (isPaused) {
@@ -864,6 +910,9 @@ public class GameScreen implements Screen {
         debugEnabled = !debugEnabled;
     }
 
+    /**
+     * Toggles the map debug view (zoomed out camera).
+     */
     public void toggleMapDebug() {
         debugMapMode = !debugMapMode;
         if (debugMapMode) {
@@ -893,6 +942,10 @@ public class GameScreen implements Screen {
 
     private de.tum.cit.fop.maze.VFX.ScreenShake screenShake;
 
+    /**
+     * Returns the camera.
+     * @return The OrthographicCamera.
+     */
     public OrthographicCamera getCamera() {
         return camera;
     }
@@ -1698,10 +1751,16 @@ public class GameScreen implements Screen {
         hud.resize(width, height);
     }
 
+    /**
+     * Called when the application is paused.
+     */
     @Override
     public void pause() {
     }
 
+    /**
+     * Called when the application is resumed.
+     */
     @Override
     public void resume() {
     }
@@ -1714,6 +1773,9 @@ public class GameScreen implements Screen {
         updateInputProcessor();
     }
 
+    /**
+     * Called when this screen is no longer the current screen.
+     */
     @Override
     public void hide() {
     }
@@ -1784,6 +1846,10 @@ public class GameScreen implements Screen {
         return game;
     }
 
+    /**
+     * Returns the active boss.
+     * @return The active boss.
+     */
     public Boss getActiveBoss() {
         return activeBoss;
     }

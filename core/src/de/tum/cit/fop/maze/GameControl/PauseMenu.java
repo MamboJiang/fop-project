@@ -57,6 +57,9 @@ public class PauseMenu extends Table implements com.badlogic.gdx.utils.Disposabl
         setupUI();
     }
 
+    /**
+     * Initializes the pause menu UI components.
+     */
     private void setupUI() {
         Skin skin = game.getSkin();
 
@@ -181,6 +184,10 @@ public class PauseMenu extends Table implements com.badlogic.gdx.utils.Disposabl
             xpLabel.setText("Total XP: " + xp);
     }
 
+    /**
+     * Sets the visibility of the stats labels.
+     * @param visible True to show, false to hide.
+     */
     public void setStatsVisible(boolean visible) {
         if (scoreLabel != null)
             scoreLabel.setVisible(visible);
@@ -190,6 +197,9 @@ public class PauseMenu extends Table implements com.badlogic.gdx.utils.Disposabl
             xpLabel.setVisible(visible);
     }
 
+    /**
+     * Disposes of the menu assets.
+     */
     @Override
     public void dispose() {
         if (menuBgTex != null)

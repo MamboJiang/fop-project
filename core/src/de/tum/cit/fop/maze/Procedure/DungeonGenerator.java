@@ -44,6 +44,9 @@ public class DungeonGenerator {
         loadResources();
     }
     
+    /**
+     * Loads tile textures.
+     */
     private void loadResources() {
         Texture texture = new Texture(Gdx.files.internal("selfmade/basictile.png"));
         TextureRegion[][] regions = TextureRegion.split(texture, 32, 32);
@@ -184,6 +187,12 @@ public class DungeonGenerator {
     }
     
 
+    /**
+     * Finds a free random point in a room.
+     * @param r Room.
+     * @param occupied Occupied grid.
+     * @return Vector2 position or null.
+     */
     private Vector2 getFreeRandomPoint(Room r, boolean[][] occupied) {
         for(int k=0; k<10; k++) {
             Vector2 p = r.getRandomPoint();
@@ -196,6 +205,10 @@ public class DungeonGenerator {
         return null;
     }
     
+    /**
+     * Carves out the floor for a room.
+     * @param room The room.
+     */
     private void carveRoom(Room room) {
         for (int x = room.x; x < room.x + room.width; x++) {
             for (int y = room.y; y < room.y + room.height; y++) {
@@ -204,6 +217,11 @@ public class DungeonGenerator {
         }
     }
     
+    /**
+     * Connects two rooms with corridors.
+     * @param r1 Room 1.
+     * @param r2 Room 2.
+     */
     private void connectRooms(Room r1, Room r2) {
         Vector2 c1 = r1.getCenter();
         Vector2 c2 = r2.getCenter();
@@ -222,6 +240,12 @@ public class DungeonGenerator {
         }
     }
     
+    /**
+     * Carves a horizontal corridor.
+     * @param x1 Start X.
+     * @param x2 End X.
+     * @param y Y position.
+     */
     private void carveHCorridor(int x1, int x2, int y) {
         for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
             carvePoint(x, y);
@@ -229,6 +253,12 @@ public class DungeonGenerator {
         }
     }
     
+    /**
+     * Carves a vertical corridor.
+     * @param y1 Start Y.
+     * @param y2 End Y.
+     * @param x X position.
+     */
     private void carveVCorridor(int y1, int y2, int x) {
         for (int y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
             carvePoint(x, y);
@@ -236,6 +266,11 @@ public class DungeonGenerator {
         }
     }
     
+    /**
+     * Carves a single point.
+     * @param x X pos.
+     * @param y Y pos.
+     */
     private void carvePoint(int x, int y) {
         if (x > 0 && x < width - 1 && y > 0 && y < height - 1) {
              map[x][y] = FLOOR;

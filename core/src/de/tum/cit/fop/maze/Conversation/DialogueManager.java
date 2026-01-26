@@ -26,6 +26,9 @@ import de.tum.cit.fop.maze.GameObj.PlayerState;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages the dialogue system, including UI rendering, input handling, and character updates.
+ */
 public class DialogueManager {
 
     private final Stage stage;
@@ -77,6 +80,11 @@ public class DialogueManager {
 
     private PlayerState playerState;
 
+    /**
+     * Constructor for DialogueManager.
+     * @param skin UI Skin.
+     * @param playerState Player state for retrieving player name.
+     */
     public DialogueManager(Skin skin, PlayerState playerState) {
         this.skin = skin;
         this.stage = new Stage(new ExtendViewport(1920, 1080));
@@ -200,6 +208,9 @@ public class DialogueManager {
         bottomContainer.add(arrowImage).bottom().right().padRight(40).padBottom(20);
     }
 
+    /**
+     * Sets up input listeners for advancing dialogue.
+     */
     private void setupInput() {
         stage.addListener(new ClickListener() {
             @Override
@@ -226,6 +237,9 @@ public class DialogueManager {
         });
     }
 
+    /**
+     * Starts the bobbing animation for the arrow.
+     */
     private void startBobbing() {
         if (arrowImage == null)
             return;
@@ -236,6 +250,9 @@ public class DialogueManager {
                         Actions.moveBy(0, 5, 0.5f, Interpolation.sine))));
     }
 
+    /**
+     * Plays feedback animation when the arrow is interacted with.
+     */
     private void playArrowFeedback() {
         if (arrowImage == null)
             return;
@@ -246,6 +263,9 @@ public class DialogueManager {
                 Actions.run(this::startBobbing)));
     }
 
+    /**
+     * Handles input actions to advance dialogue or skip typing.
+     */
     private void handleInput() {
         if (isDialogueActive) {
             if (!typingFinished) {
@@ -258,6 +278,9 @@ public class DialogueManager {
         }
     }
 
+    /**
+     * Creates a simple arrow texture programmatically.
+     */
     private void createArrowTexture() {
 
         Pixmap p = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
@@ -275,6 +298,9 @@ public class DialogueManager {
     private com.badlogic.gdx.scenes.scene2d.ui.Cell<Image> rightCell;
     private com.badlogic.gdx.scenes.scene2d.ui.Cell portraitCell;
 
+    /**
+     * Updates the layout of character images based on current dialogue data.
+     */
     private void updateLayout() {
         if (currentDialogueData == null)
             return;
@@ -338,6 +364,10 @@ public class DialogueManager {
             uiTable.invalidateHierarchy();
     }
 
+    /**
+     * Updates the left character image.
+     * @param path Path to image.
+     */
     private void updateLeftImage(String path) {
         if (leftTexture != null)
             leftTexture.dispose();
@@ -350,6 +380,10 @@ public class DialogueManager {
         }
     }
 
+    /**
+     * Updates the right character image.
+     * @param path Path to image.
+     */
     private void updateRightImage(String path) {
         if (rightTexture != null)
             rightTexture.dispose();
@@ -485,6 +519,9 @@ public class DialogueManager {
         updateDialogue();
     }
 
+    /**
+     * Ends the dialogue session and hides UI.
+     */
     public void endDialogue() {
         isDialogueActive = false;
         leftChar.setColor(1, 1, 1, 0);
@@ -507,6 +544,10 @@ public class DialogueManager {
         updateDialogue();
     }
 
+    /**
+     * Loads a dialogue configuration from a JSON file.
+     * @param levelName Name of the level/conversation file.
+     */
     public void loadDialogue(String levelName) {
         Json json = new Json();
         FileHandle file = Gdx.files.internal("conversations/" + levelName + ".json");
@@ -526,12 +567,19 @@ public class DialogueManager {
         }
     }
 
+    /**
+     * Sets the visibility of the background scrim.
+     * @param visible True to show, false to hide.
+     */
     public void setBackgroundScrimVisible(boolean visible) {
         if (backgroundScrim != null) {
             backgroundScrim.setVisible(visible);
         }
     }
 
+    /**
+     * Updates the UI elements based on the current dialogue line.
+     */
     private void updateDialogue() {
         if (currentDialogueData == null)
             return;
@@ -576,6 +624,10 @@ public class DialogueManager {
         }
     }
 
+    /**
+     * Renders the dialogue stage and updates effects.
+     * @param delta Time delta.
+     */
     public void render(float delta) {
         stage.act(delta);
 
@@ -642,18 +694,28 @@ public class DialogueManager {
         stage.draw();
     }
 
+    /** @return The Stage instance used by DialogueManager. */
     public Stage getStage() {
         return stage;
     }
 
+    /** @return True if dialogue is currently active. */
     public boolean isActive() {
         return isDialogueActive;
     }
 
+    /**
+     * Resizes the stage viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
+    /**
+     * Disposes of assets and stage.
+     */
     public void dispose() {
         stage.dispose();
         if (leftTexture != null)

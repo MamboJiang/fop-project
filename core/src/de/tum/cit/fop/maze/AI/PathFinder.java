@@ -8,12 +8,23 @@ import java.util.*;
  */
 public class PathFinder {
     
+    /**
+     * Represents a node in the pathfinding grid.
+     */
     private static class Node implements Comparable<Node> {
         int x, y;
         Node parent;
         float gCost;
         float hCost;
         
+        /**
+         * Constructor for Node.
+         * @param x X coordinate.
+         * @param y Y coordinate.
+         * @param parent Parent node.
+         * @param g G cost.
+         * @param h H cost.
+         */
         public Node(int x, int y, Node parent, float g, float h) {
             this.x = x;
             this.y = y;
@@ -22,13 +33,27 @@ public class PathFinder {
             this.hCost = h;
         }
         
+        /**
+         * Calculates F cost.
+         * @return F cost.
+         */
         public float fCost() { return gCost + hCost; }
         
+        /**
+         * Compares nodes based on F cost.
+         * @param o Other node.
+         * @return Comparison result.
+         */
         @Override
         public int compareTo(Node o) {
             return Float.compare(this.fCost(), o.fCost());
         }
         
+        /**
+         * Checks for equality based on coordinates.
+         * @param o Other object.
+         * @return True if coordinates match, false otherwise.
+         */
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -37,6 +62,10 @@ public class PathFinder {
             return x == node.x && y == node.y;
         }
         
+        /**
+         * Generates hash code based on coordinates.
+         * @return Hash code.
+         */
         @Override
         public int hashCode() {
             return Objects.hash(x, y);
@@ -101,15 +130,34 @@ public class PathFinder {
         return null;
     }
     
+    /**
+     * Calculates heuristic (Manhattan distance) between two points.
+     * @param x1 Start X.
+     * @param y1 Start Y.
+     * @param x2 End X.
+     * @param y2 End Y.
+     * @return Heuristic value.
+     */
     private static float heuristic(int x1, int y1, int x2, int y2) {
 
         return Math.abs(x1 - x2) + Math.abs(y1 - y2);
     }
     
+    /**
+     * Generates a unique key for the node coordinates.
+     * @param x X coordinate.
+     * @param y Y coordinate.
+     * @return Key string.
+     */
     private static String key(int x, int y) {
         return x + "," + y;
     }
     
+    /**
+     * Reconstructs the path from the end node to the start.
+     * @param endNode The end node.
+     * @return List of waypoints.
+     */
     private static List<Vector2> reconstructPath(Node endNode) {
         List<Vector2> path = new ArrayList<>();
         Node current = endNode;

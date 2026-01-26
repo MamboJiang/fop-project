@@ -47,6 +47,10 @@ public abstract class GameObject {
         return position;
     }
 
+    /**
+     * Sets the position vector.
+     * @param position New position
+     */
     public void setPosition(Vector2 position) {
         this.position = position;
     }
@@ -58,6 +62,10 @@ public abstract class GameObject {
         return width;
     }
 
+    /**
+     * Sets object width.
+     * @param width New width
+     */
     public void setWidth(float width) {
         this.width = width;
     }
@@ -69,6 +77,10 @@ public abstract class GameObject {
         return height;
     }
 
+    /**
+     * Sets object height.
+     * @param height New height
+     */
     public void setHeight(float height) {
         this.height = height;
     }
@@ -80,6 +92,10 @@ public abstract class GameObject {
         return bounds;
     }
 
+    /**
+     * Sets boundary rectangle.
+     * @param bounds New bounds
+     */
     public void setBounds(Rectangle bounds) {
         this.bounds = bounds;
     }
@@ -91,6 +107,10 @@ public abstract class GameObject {
         return textureRegion;
     }
 
+    /**
+     * Sets texture region.
+     * @param textureRegion New texture
+     */
     public void setTextureRegion(TextureRegion textureRegion) {
         this.textureRegion = textureRegion;
     }
@@ -102,6 +122,10 @@ public abstract class GameObject {
         return markedForRemoval;
     }
 
+    /**
+     * Sets removal flag.
+     * @param markedForRemoval True to remove
+     */
     public void setMarkedForRemoval(boolean markedForRemoval) {
         this.markedForRemoval = markedForRemoval;
     }

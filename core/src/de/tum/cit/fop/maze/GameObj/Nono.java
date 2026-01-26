@@ -31,6 +31,12 @@ public class Nono extends GameObject {
     private static final float MAX_SPEED = 200f;
     private static final float FRICTION = 0.9f;
 
+    /**
+     * Creates a Nono companion.
+     * @param x X pos
+     * @param y Y pos
+     * @param target Player target
+     */
     public Nono(float x, float y, Character target) {
         super(x, y, 12, 12, null);
         this.target = target;
@@ -38,6 +44,9 @@ public class Nono extends GameObject {
         loadAnimation();
     }
 
+    /**
+     * Loads animations.
+     */
     private void loadAnimation() {
         Texture texture = new Texture(Gdx.files.internal("player/sprite/nono.png"));
         TextureRegion[][] tmp = TextureRegion.split(texture, 32, 32);
@@ -71,10 +80,18 @@ public class Nono extends GameObject {
     private Vector2 objectivePosition = null;
     private java.util.List<GameObject> mapObjects;
 
+    /**
+     * Sets list of map objects for interaction.
+     * @param mapObjects Map objects
+     */
     public void setMapObjects(java.util.List<GameObject> mapObjects) {
         this.mapObjects = mapObjects;
     }
 
+    /**
+     * Updates Nono's state and movement.
+     * @param delta Time delta
+     */
     public void update(float delta) {
         stateTime += delta;
 
@@ -219,6 +236,9 @@ public class Nono extends GameObject {
         }
     }
 
+    /**
+     * Updates the current objective (item to move towards).
+     */
     private void updateObjective() {
         objectivePosition = null;
         if (mapObjects == null || target == null)
@@ -283,6 +303,10 @@ public class Nono extends GameObject {
         }
     }
 
+    /**
+     * Draws Nono.
+     * @param batch SpriteBatch
+     */
     public void draw(SpriteBatch batch) {
         if (textureRegion != null) {
             float drawY = position.y + hoverOffset;

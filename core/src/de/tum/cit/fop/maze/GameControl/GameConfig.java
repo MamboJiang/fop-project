@@ -29,6 +29,9 @@ public class GameConfig {
         return musicVolume;
     }
 
+    /**
+     * @param musicVolume New music volume (0.0 to 1.0).
+     */
     public void setMusicVolume(float musicVolume) {
         this.musicVolume = musicVolume;
     }
@@ -40,14 +43,24 @@ public class GameConfig {
         return soundVolume;
     }
 
+    /**
+     * @param soundVolume New sound volume (0.0 to 1.0).
+     */
     public void setSoundVolume(float soundVolume) {
         this.soundVolume = soundVolume;
     }
 
+    /**
+     * @return Map of action names to key codes.
+     */
     public Map<String, Integer> getKeyBindings() {
         return keyBindings;
     }
 
+    /**
+     * Sets the key bindings map.
+     * @param keyBindings New key bindings.
+     */
     public void setKeyBindings(Map<String, Integer> keyBindings) {
         this.keyBindings = keyBindings;
     }

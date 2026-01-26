@@ -21,6 +21,9 @@ import java.util.List;
  */
 public class Enemy extends MovableObject {
 
+    /**
+     * Enemy behavior states.
+     */
     protected enum State {
         PATROL, CHASE, RETREAT, CONFUSED
     }
@@ -240,6 +243,7 @@ public class Enemy extends MovableObject {
     }
 
     /**
+     * Gets the center position.
      * @return The center coordinates of the enemy.
      */
     protected Vector2 getCenter() {
@@ -247,6 +251,7 @@ public class Enemy extends MovableObject {
     }
 
     /**
+     * Gets target center.
      * @return The center coordinates of the target (player).
      */
     protected Vector2 getTargetCenter() {
@@ -304,6 +309,10 @@ public class Enemy extends MovableObject {
         }
     }
 
+    /**
+     * Updates patrol behavior.
+     * @param delta Time delta
+     */
     private void updatePatrol(float delta) {
         float distToPlayer = Vector2.dst(getCenter().x, getCenter().y, getTargetCenter().x, getTargetCenter().y);
 
@@ -325,6 +334,10 @@ public class Enemy extends MovableObject {
         }
     }
 
+    /**
+     * Updates chase behavior.
+     * @param delta Time delta
+     */
     private void updateChase(float delta) {
         pathTimer += delta;
         if (pathTimer > PATH_UPDATE_INTERVAL) {
@@ -349,6 +362,10 @@ public class Enemy extends MovableObject {
         }
     }
 
+    /**
+     * Updates retreat behavior.
+     * @param delta Time delta
+     */
     private void updateRetreat(float delta) {
         pathTimer += delta;
 
@@ -380,10 +397,19 @@ public class Enemy extends MovableObject {
         }
     }
 
+    /**
+     * Checks if position is walkable.
+     * @param pos Position
+     * @return true if walkable
+     */
     private boolean isWalkable(Vector2 pos) {
         return grid.isWalkable((int) (pos.x / 16), (int) (pos.y / 16));
     }
 
+    /**
+     * Finds a retreat path if simple flee fails.
+     * @return Path list
+     */
     private List<Vector2> findRetreatPathFallback() {
         int cx = (int) (getCenter().x / 16);
         int cy = (int) (getCenter().y / 16);
@@ -407,6 +433,10 @@ public class Enemy extends MovableObject {
         return null;
     }
 
+    /**
+     * Updates confused behavior.
+     * @param delta Time delta
+     */
     private void updateConfused(float delta) {
         confusedTimer -= delta;
 
@@ -425,6 +455,9 @@ public class Enemy extends MovableObject {
         }
     }
 
+    /**
+     * Picks a random patrol point.
+     */
     private void pickRandomPatrolPoint() {
         int cx = (int) (getCenter().x / 16);
         int cy = (int) (getCenter().y / 16);
@@ -447,6 +480,12 @@ public class Enemy extends MovableObject {
         }
     }
 
+    /**
+     * Checks for line of sight.
+     * @param start Start pos
+     * @param end End pos
+     * @return true if has line of sight
+     */
     private boolean hasLineOfSight(Vector2 start, Vector2 end) {
         int x0 = (int) (start.x / 16);
         int y0 = (int) (start.y / 16);
@@ -479,6 +518,10 @@ public class Enemy extends MovableObject {
         return true;
     }
 
+    /**
+     * Checks for collision with map.
+     * @return Collided object or null
+     */
     private GameObject checkCollision() {
 
         int minX = (int) (bounds.x / 16);
@@ -500,6 +543,13 @@ public class Enemy extends MovableObject {
         return null;
     }
 
+    /**
+     * Handles wall sliding.
+     * @param delta Time delta
+     * @param dir Direction
+     * @param colX Collision X
+     * @param colY Collision Y
+     */
     private void handleWallSliding(float delta, Vector2 dir, GameObject colX, GameObject colY) {
         float SLIDE_THRESHOLD = 8.0f;
         float slideSpeed = speed * 1.5f;
@@ -570,6 +620,11 @@ public class Enemy extends MovableObject {
         }
     }
 
+    @Override
+    /**
+     * Draws the enemy.
+     * @param batch SpriteBatch
+     */
     public void draw(SpriteBatch batch) {
         setupDamageFlash(batch);
         batch.draw(getTextureRegion(), getPosition().x - 2, getPosition().y - 2, 20, 20);

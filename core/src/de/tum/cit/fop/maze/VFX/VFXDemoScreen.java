@@ -72,6 +72,9 @@ public class VFXDemoScreen implements Screen {
         setupUI();
     }
     
+    /**
+     * Sets up the UI stage and elements.
+     */
     private void setupUI() {
         stage = new Stage(viewport, batch);
         Gdx.input.setInputProcessor(stage);
@@ -95,11 +98,18 @@ public class VFXDemoScreen implements Screen {
         stage.addActor(table);
     }
 
+    /**
+     * Called when this screen becomes the current screen for the game.
+     */
     @Override
     public void show() {
-        lightManager.resize((int)viewport.getWorldWidth(), (int)viewport.getWorldHeight()); // Init FBO
+        lightManager.resize((int)viewport.getWorldWidth(), (int)viewport.getWorldHeight());
     }
 
+    /**
+     * Called when the screen should render itself.
+     * @param delta The time in seconds since the last render.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -117,7 +127,7 @@ public class VFXDemoScreen implements Screen {
         batch.begin();
         for (int x = 0; x < 1920; x+=64) {
             for (int y = 0; y < 1080; y+=64) {
-                batch.setColor(0.5f, 0.5f, 0.5f, 1); // Dim base color
+                batch.setColor(0.5f, 0.5f, 0.5f, 1);
                 if (bgTexture != null) batch.draw(bgTexture, x, y, 64, 64);
             }
         }
@@ -130,23 +140,40 @@ public class VFXDemoScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Called when the application is resized.
+     * @param width The new width.
+     * @param height The new height.
+     */
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
         lightManager.resize(width, height);
     }
 
+    /**
+     * Called when the application is paused.
+     */
     @Override
     public void pause() {}
 
+    /**
+     * Called when the application is resumed from a paused state.
+     */
     @Override
     public void resume() {}
 
+    /**
+     * Called when this screen is no longer the current screen for the game.
+     */
     @Override
     public void hide() {
         dispose();
     }
 
+    /**
+     * Called when this screen should release all resources.
+     */
     @Override
     public void dispose() {
         lightManager.dispose();

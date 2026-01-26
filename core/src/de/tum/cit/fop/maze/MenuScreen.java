@@ -254,6 +254,10 @@ public class MenuScreen implements Screen {
         return button;
     }
 
+    /**
+     * Renders the menu screen.
+     * @param delta Time since last frame.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -261,16 +265,27 @@ public class MenuScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Resizes the stage viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
+    /**
+     * Disposes of stage resources.
+     */
     @Override
     public void dispose() {
         stage.dispose();
     }
 
+    /**
+     * Called when the screen shows. Sets input processor and animations.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -285,14 +300,23 @@ public class MenuScreen implements Screen {
         }
     }
 
+    /**
+     * Called when the application is paused.
+     */
     @Override
     public void pause() {
     }
 
+    /**
+     * Called when the application is resumed.
+     */
     @Override
     public void resume() {
     }
 
+    /**
+     * Called when the screen hides.
+     */
     @Override
     public void hide() {
     }

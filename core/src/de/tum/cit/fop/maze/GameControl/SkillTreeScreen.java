@@ -307,11 +307,19 @@ public class SkillTreeScreen implements Screen {
             backgroundImage2.setX(backgroundImage1.getX() + width);
     }
 
+    /**
+     * Called when the screen is shown.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
     }
 
+    /**
+     * Resizes the viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
@@ -333,6 +341,9 @@ public class SkillTreeScreen implements Screen {
         }
     }
 
+    /**
+     * Disposes of assets.
+     */
     @Override
     public void dispose() {
         stage.dispose();
@@ -346,14 +357,23 @@ public class SkillTreeScreen implements Screen {
             objectsTexture.dispose();
     }
 
+    /**
+     * Called when application is paused.
+     */
     @Override
     public void pause() {
     }
 
+    /**
+     * Called when application is resumed.
+     */
     @Override
     public void resume() {
     }
 
+    /**
+     * Called when screen is hidden.
+     */
     @Override
     public void hide() {
     }

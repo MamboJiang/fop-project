@@ -7,8 +7,14 @@ import com.badlogic.gdx.math.MathUtils;
 import de.tum.cit.fop.maze.AI.Grid;
 import java.util.List;
 
+/**
+ * Represents a Boss enemy with multiple states and attacks.
+ */
 public class Boss extends Enemy {
 
+    /**
+     * Enum for boss states.
+     */
     private enum BossState {
         IDLE, CHASE, SHOOTING, DASHING
     }
@@ -29,6 +35,16 @@ public class Boss extends Enemy {
 
     private Vector2 dashDirection = new Vector2();
 
+    /**
+     * Creates a new Boss instance.
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param anims Animation array
+     * @param grid Game grid
+     * @param target Target character
+     * @param projectiles Projectile list
+     * @param bulletTex Bullet texture
+     */
     public Boss(float x, float y, Animation<TextureRegion>[] anims, Grid grid, Character target,
             List<Projectile> projectiles, TextureRegion bulletTex) {
         super(x, y, anims, grid, target);
@@ -46,6 +62,10 @@ public class Boss extends Enemy {
     }
 
     @Override
+    /**
+     * Updates the boss logic.
+     * @param delta Time since last frame
+     */
     public void update(float delta) {
         if (!active) {
             updateAnimation(delta);
@@ -104,6 +124,10 @@ public class Boss extends Enemy {
             damageFlashTime -= delta;
     }
 
+    /**
+     * Checks for collision with walls.
+     * @return true if collision detected
+     */
     private boolean checkCollision() {
         int minX = (int) (bounds.x / 16);
         int maxX = (int) ((bounds.x + bounds.width) / 16);
@@ -121,6 +145,10 @@ public class Boss extends Enemy {
     }
 
 
+    /**
+     * Updates the animation based on movement.
+     * @param delta Time delta
+     */
     private void updateAnimation(float delta) {
 
         stateTime += delta;
@@ -139,6 +167,10 @@ public class Boss extends Enemy {
         }
     }
 
+    /**
+     * Handles the IDLE state logic.
+     * @param delta Time delta
+     */
     private void handleIdle(float delta) {
 
 
@@ -161,6 +193,10 @@ public class Boss extends Enemy {
         }
     }
 
+    /**
+     * Handles the CHASE state logic.
+     * @param delta Time delta
+     */
     private void handleChase(float delta) {
         this.maxSpeed = normalSpeed;
 
@@ -173,6 +209,10 @@ public class Boss extends Enemy {
         }
     }
 
+    /**
+     * Handles the SHOOTING state logic.
+     * @param delta Time delta
+     */
     private void handleShooting(float delta) {
 
 
@@ -187,6 +227,9 @@ public class Boss extends Enemy {
         }
     }
 
+    /**
+     * Fires a projectile at the target.
+     */
     private void shootProjectile() {
         if (projectilesRef != null) {
 
@@ -205,6 +248,10 @@ public class Boss extends Enemy {
         }
     }
 
+    /**
+     * Handles the DASHING state logic.
+     * @param delta Time delta
+     */
     private void handleDashing(float delta) {
 
         this.maxSpeed = dashSpeed;
@@ -220,6 +267,10 @@ public class Boss extends Enemy {
         }
     }
 
+    /**
+     * Switches the boss state.
+     * @param newState The new state
+     */
     private void switchState(BossState newState) {
         this.bossState = newState;
         this.stateTimer = 0f;
@@ -238,6 +289,10 @@ public class Boss extends Enemy {
     }
 
     @Override
+    /**
+     * Draws the boss.
+     * @param batch SpriteBatch
+     */
     public void draw(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
         setupDamageFlash(batch);
 
@@ -245,18 +300,34 @@ public class Boss extends Enemy {
         endDamageFlash(batch);
     }
 
+    /**
+     * Sets the max health.
+     * @param maxHealth Max health value
+     */
     public void setMaxHealth(float maxHealth) {
         this.maxHealth = maxHealth;
     }
 
+    /**
+     * Gets health percentage.
+     * @return Health percentage (0-1)
+     */
     public float getHealthPercentage() {
         return (float) health / maxHealth;
     }
 
+    /**
+     * Sets active state.
+     * @param active Active state
+     */
     public void setActive(boolean active) {
         this.active = active;
     }
 
+    /**
+     * Checks if boss is active.
+     * @return true if active
+     */
     public boolean isActive() {
         return active;
     }

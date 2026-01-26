@@ -104,6 +104,9 @@ public class HUD {
         AchievementManager.getInstance().setHUD(this);
     }
 
+    /**
+     * Initializes the boss health bar UI.
+     */
     private void setupBossHUD() {
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
@@ -141,6 +144,9 @@ public class HUD {
         stage.addActor(bossTable);
     }
 
+    /**
+     * Initializes the main HUD elements (hearts, timer, score, hints).
+     */
     private void setupUI() {
         if (table != null)
             table.remove();
@@ -213,6 +219,9 @@ public class HUD {
         this.table = sidesLayer;
     }
 
+    /**
+     * Initializes the debug console overlay.
+     */
     private void setupDebugMenu() {
         debugTable = new Table();
         debugTable.bottom().left();
@@ -273,6 +282,11 @@ public class HUD {
         stage.addActor(debugTable);
     }
 
+    /**
+     * Processes commands entered in the debug console.
+     * @param commandLine The full command string.
+     * @return Output message or error.
+     */
     private String handleCommand(String commandLine) {
         String[] parts = commandLine.split("\\s+");
         if (parts.length == 0)
@@ -502,18 +516,28 @@ public class HUD {
         }
     }
 
+    /**
+     * Sets the visibility of the "Interact" prompt.
+     * @param visible True to show, false to hide.
+     */
     public void setPromptVisible(boolean visible) {
         if (promptLabel != null) {
             promptLabel.setVisible(visible);
         }
     }
 
+    /**
+     * Shows the movement hint.
+     */
     public void showMoveHint() {
         if (!moveHintDismissed && moveHintLabel != null) {
             moveHintLabel.setVisible(true);
         }
     }
 
+    /**
+     * Hides and disables the movement hint permanently for this session.
+     */
     public void dismissMoveHint() {
         moveHintDismissed = true;
         if (moveHintLabel != null) {
@@ -521,12 +545,18 @@ public class HUD {
         }
     }
 
+    /**
+     * Shows the sprint hint.
+     */
     public void showSprintHint() {
         if (!sprintHintDismissed && sprintHintLabel != null) {
             sprintHintLabel.setVisible(true);
         }
     }
 
+    /**
+     * Hides and disables the sprint hint.
+     */
     public void dismissSprintHint() {
         sprintHintDismissed = true;
         if (sprintHintLabel != null) {
@@ -534,12 +564,18 @@ public class HUD {
         }
     }
 
+    /**
+     * Shows the attack hint.
+     */
     public void showAttackHint() {
         if (!attackHintDismissed && attackHintLabel != null) {
             attackHintLabel.setVisible(true);
         }
     }
 
+    /**
+     * Hides and disables the attack hint.
+     */
     public void dismissAttackHint() {
         attackHintDismissed = true;
         if (attackHintLabel != null) {
@@ -547,10 +583,17 @@ public class HUD {
         }
     }
 
+    /**
+     * @return The stage instance.
+     */
     public Stage getStage() {
         return stage;
     }
 
+    /**
+     * Renders the HUD.
+     * @param delta Time delta.
+     */
     public void render(float delta) {
 
         int consoleKey = gameScreen.getGame().getConfigManager().getKey("CONSOLE");
@@ -569,10 +612,18 @@ public class HUD {
         stage.draw();
     }
 
+    /**
+     * Resizes the HUD viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
+    /**
+     * Disposes of assets.
+     */
     public void dispose() {
         stage.dispose();
         objectsTexture.dispose();
@@ -592,7 +643,16 @@ public class HUD {
         });
     }
 
+    /**
+     * Inner class representing a pop-up notification for achievements.
+     */
     private static class AchievementPopup extends Table {
+        /**
+         * Creates a new achievement popup.
+         * @param achievement The achievement to display.
+         * @param skin The UI skin.
+         * @param bgPatch The 9-patch for the background.
+         */
         public AchievementPopup(Achievement achievement, Skin skin, com.badlogic.gdx.graphics.g2d.NinePatch bgPatch) {
             this.setBackground(new com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable(bgPatch));
 
@@ -608,6 +668,9 @@ public class HUD {
             this.add(nameLabel).padTop(-5).padLeft(100);
         }
 
+        /**
+         * Animates the popup (slide in, wait, slide out).
+         */
         public void animate() {
             this.addAction(com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence(
                     com.badlogic.gdx.scenes.scene2d.actions.Actions.moveTo(this.getX(), 1080 - 150, 0.5f,

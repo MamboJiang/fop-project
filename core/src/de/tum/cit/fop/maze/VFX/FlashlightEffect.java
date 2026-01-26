@@ -26,18 +26,23 @@ public class FlashlightEffect implements Disposable {
     private Vector2 currentLightTarget;
     private boolean isEnabled;
 
+    /**
+     * Constructor for FlashlightEffect.
+     */
     public FlashlightEffect() {
         currentLightTarget = new Vector2();
         isEnabled = false;
         init();
     }
 
+    /**
+     * Initializes the flashlight effect resources.
+     */
     private void init() {
         try {
             lightBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
                     false);
 
-            // Create Soft Spotlight Texture
             int size = 128;
             Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
             pixmap.setColor(Color.CLEAR);
@@ -55,7 +60,6 @@ public class FlashlightEffect implements Disposable {
 
                     if (dist < radius) {
                         float alpha = 1.0f - (dist / radius);
-                        // Quadratic falloff for softer look
                         alpha = alpha * alpha;
                         pixmap.setColor(1f, 1f, 1f, alpha);
                         pixmap.drawPixel(x, y);
@@ -92,33 +96,24 @@ public class FlashlightEffect implements Disposable {
         if (lightBuffer == null)
             return;
 
-        // 1. Update Light Target (Lag Effect)
         if (rawTargetPos != null) {
-            // Lerp factor: 5f * delta gives smooth lag
             currentLightTarget.lerp(rawTargetPos, 5f * delta);
         } else {
-            // If no target, stay at source or last pos?
         }
 
-        // 2. Draw Light Map to FBO
         lightBuffer.begin();
 
-        // Clear to AMBIENT darkness (Black)
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         if (isEnabled && sourcePos != null) {
-            // A. Draw Beam (Triangle)
             shapeRenderer.setProjectionMatrix(camera.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-            // From Source (Nono)
             Vector2 src = sourcePos;
-            // To Lagged Target (Player)
             Vector2 target = currentLightTarget;
 
             float angle = MathUtils.atan2(target.y - src.y, target.x - src.x);
-            // Length should reach target roughly + some spot radius overlap
             float distToTarget = src.dst(target);
             float length = distToTarget;
 
@@ -127,14 +122,12 @@ public class FlashlightEffect implements Disposable {
             float x1 = src.x;
             float y1 = src.y;
 
-            // Beam ends at target
             float x2 = src.x + MathUtils.cos(angle - coneHalfWidth) * length;
             float y2 = src.y + MathUtils.sin(angle - coneHalfWidth) * length;
 
             float x3 = src.x + MathUtils.cos(angle + coneHalfWidth) * length;
             float y3 = src.y + MathUtils.sin(angle + coneHalfWidth) * length;
 
-            // Colors: Tip White(0.6), End White(0.1) - beam is fainter than spot
             shapeRenderer.triangle(
                     x1, y1,
                     x2, y2,
@@ -145,7 +138,6 @@ public class FlashlightEffect implements Disposable {
 
             shapeRenderer.end();
 
-            // B. Draw Spot (Circle Texture)
             if (spotLightTex != null) {
                 batch.setProjectionMatrix(camera.combined);
                 batch.begin();
@@ -162,39 +154,50 @@ public class FlashlightEffect implements Disposable {
 
         lightBuffer.end();
 
-        // 3. Blend FBO over Scene (Multiply)
         viewport.apply();
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        batch.setBlendFunction(GL20.GL_DST_COLOR, GL20.GL_ZERO); // Multiply
+        batch.setBlendFunction(GL20.GL_DST_COLOR, GL20.GL_ZERO);
 
-        // Draw texture covering the viewport
         float w = viewport.getWorldWidth() * camera.zoom;
         float h = viewport.getWorldHeight() * camera.zoom;
 
-        // Note: FBO texture is upside down, so flip height
         batch.draw(lightBuffer.getColorBufferTexture(),
                 camera.position.x - w / 2,
                 camera.position.y + h / 2,
                 w, -h);
 
-        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA); // Reset
+        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         batch.end();
     }
 
+    /**
+     * Enables or disables the flashlight effect.
+     * @param enabled true to enable, false to disable.
+     */
     public void setEnabled(boolean enabled) {
         this.isEnabled = enabled;
     }
 
+    /**
+     * Checks if the flashlight effect is enabled.
+     * @return true if enabled, false otherwise.
+     */
     public boolean isEnabled() {
         return isEnabled;
     }
 
+    /**
+     * Resets the flashlight effect state.
+     */
     public void reset() {
         isEnabled = false;
         currentLightTarget.setZero();
     }
 
+    /**
+     * Disposes of the resources used by the effect.
+     */
     @Override
     public void dispose() {
         if (spotLightTex != null && spotLightTex.getTexture() != null)

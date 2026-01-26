@@ -17,6 +17,9 @@ import de.tum.cit.fop.maze.MapLoader;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controls the logic for the dungeon, including boss and trap room triggers.
+ */
 public class DungeonController {
 
     private GameScreen gameScreen;
@@ -42,11 +45,18 @@ public class DungeonController {
     private TextureRegion wallRegion;
     private TextureRegion keyRegion;
 
+    /**
+     * Creates a DungeonController.
+     * @param gameScreen The game screen.
+     */
     public DungeonController(GameScreen gameScreen) {
         this.gameScreen = gameScreen;
         loadResources();
     }
 
+    /**
+     * Loads texture resources.
+     */
     private void loadResources() {
         Texture texture = new Texture(Gdx.files.internal("selfmade/basictile.png"));
         TextureRegion[][] regions = TextureRegion.split(texture, 32, 32);
@@ -160,6 +170,9 @@ public class DungeonController {
         }
     }
 
+    /**
+     * Triggers the boss fight.
+     */
     private void triggerBoss() {
         bossTriggered = true;
         gameScreen.spawnBoss((bossRoom.x + bossRoom.width / 2f) * 16, (bossRoom.y + bossRoom.height / 2f) * 16,
@@ -170,6 +183,9 @@ public class DungeonController {
         sealRoom(bossRoom, bossWalls);
     }
 
+    /**
+     * Checks if the boss is defeated.
+     */
     private void checkBossClear() {
         if (gameScreen.getActiveBoss() == null || gameScreen.getActiveBoss().isMarkedForRemoval()) {
 
@@ -182,6 +198,9 @@ public class DungeonController {
         }
     }
 
+    /**
+     * Triggers the trap room event.
+     */
     private void triggerTrap() {
         trapTriggered = true;
         gameScreen.showPopupMessage("It's a Trap! Defeat all enemies!");
@@ -190,6 +209,11 @@ public class DungeonController {
     }
 
 
+    /**
+     * Seals the room with walls.
+     * @param room The room to seal.
+     * @param wallList List to track spawned walls.
+     */
     private void sealRoom(Room room, List<Wall> wallList) {
         for (int x = room.x; x < room.x + room.width; x++) {
             checkNeighborAndSeal(x, room.y, x, room.y - 1, wallList);
@@ -201,6 +225,14 @@ public class DungeonController {
         }
     }
 
+    /**
+     * Checks a neighbor tile and places a wall if valid.
+     * @param rimX Rim X.
+     * @param rimY Rim Y.
+     * @param neighborX Neighbor X.
+     * @param neighborY Neighbor Y.
+     * @param wallList List of walls.
+     */
     private void checkNeighborAndSeal(int rimX, int rimY, int neighborX, int neighborY, List<Wall> wallList) {
 
         if (gameScreen.isWalkable(neighborX, neighborY) && gameScreen.isWalkable(rimX, rimY)) {
@@ -210,6 +242,9 @@ public class DungeonController {
         }
     }
 
+    /**
+     * Checks if the trap room is cleared.
+     */
     private void checkTrapClear() {
         boolean enemiesAlive = false;
         Rectangle roomRect = new Rectangle(trapRoom.x * 16, trapRoom.y * 16, trapRoom.width * 16, trapRoom.height * 16);
@@ -230,6 +265,9 @@ public class DungeonController {
         }
     }
 
+    /**
+     * Unlocks the trap room and spawns a key.
+     */
     private void unlockTrap() {
         trapCleared = true;
         gameScreen.showPopupMessage("Room Cleared!");
@@ -269,6 +307,9 @@ public class DungeonController {
         gameScreen.addGameObject(new Key(cx - 8, cy - 8, 16, 16, keyRegion));
     }
 
+    /**
+     * Spawns an item in the boss room.
+     */
     private void spawnBossRoomItem() {
         if (bossRoom == null)
             return;

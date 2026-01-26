@@ -90,6 +90,9 @@ public class CinematicScreen implements Screen {
         setupUI();
     }
 
+    /**
+     * Loads the cinematic data from the JSON file.
+     */
     private void loadData() {
         Json json = new Json();
         FileHandle file = Gdx.files.internal(storyPath);
@@ -101,6 +104,9 @@ public class CinematicScreen implements Screen {
         }
     }
 
+    /**
+     * Sets up the UI elements including images and dialogues.
+     */
     private void setupUI() {
 
         Table centerTable = new Table();
@@ -200,6 +206,9 @@ public class CinematicScreen implements Screen {
         });
     }
 
+    /**
+     * Starts the bobbing animation for the arrow.
+     */
     private void startBobbing() {
         arrowImage.clearActions();
         arrowImage.addAction(Actions.forever(
@@ -208,6 +217,9 @@ public class CinematicScreen implements Screen {
                         Actions.moveBy(0, 10, 0.5f, Interpolation.sine))));
     }
 
+    /**
+     * Plays a feedback animation when the arrow is clicked or activated.
+     */
     private void playArrowFeedback() {
         arrowImage.clearActions();
         arrowImage.addAction(Actions.sequence(
@@ -216,6 +228,9 @@ public class CinematicScreen implements Screen {
                 Actions.run(this::startBobbing)));
     }
 
+    /**
+     * Creates the arrow texture procedurally.
+     */
     private void createArrowTexture() {
 
         Pixmap p = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
@@ -228,6 +243,9 @@ public class CinematicScreen implements Screen {
         p.dispose();
     }
 
+    /**
+     * Advances to the next frame in the cinematic.
+     */
     private void nextFrame() {
         if (cinematicData == null || cinematicData.getFrames() == null) {
             finish();
@@ -243,6 +261,10 @@ public class CinematicScreen implements Screen {
         updateFrame(cinematicData.getFrames().get(frameIndex));
     }
 
+    /**
+     * Updates the UI to show the specified frame data.
+     * @param frame The frame data to display.
+     */
     private void updateFrame(CinematicData.CinematicFrame frame) {
 
         dialogueText.setText(frame.getText());
@@ -356,6 +378,9 @@ public class CinematicScreen implements Screen {
         }
     }
 
+    /**
+     * Finishes the cinematic and triggers the callback.
+     */
     private void finish() {
         if (finished)
             return;
@@ -371,6 +396,10 @@ public class CinematicScreen implements Screen {
     private float inputDelayTimer = 0.5f;
     private boolean started = false;
 
+    /**
+     * Renders the cinematic screen.
+     * @param delta Time delta.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -405,11 +434,19 @@ public class CinematicScreen implements Screen {
 
     }
 
+    /**
+     * Called when this screen becomes the current screen.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
     }
 
+    /**
+     * Resizes the viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
@@ -418,18 +455,30 @@ public class CinematicScreen implements Screen {
         }
     }
 
+    /**
+     * Called when application is paused.
+     */
     @Override
     public void pause() {
     }
 
+    /**
+     * Called when application is resumed.
+     */
     @Override
     public void resume() {
     }
 
+    /**
+     * Called when screen is hidden.
+     */
     @Override
     public void hide() {
     }
 
+    /**
+     * Disposes of assets.
+     */
     @Override
     public void dispose() {
         stage.dispose();

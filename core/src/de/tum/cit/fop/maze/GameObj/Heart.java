@@ -23,6 +23,9 @@ public class Heart extends GameObject implements Collectable {
         loadAnimation();
     }
     
+    /**
+     * Loads heart animation frames.
+     */
     private void loadAnimation() {
         Texture texture = new Texture(Gdx.files.internal("selfmade/maskitem.png"));
 
@@ -42,6 +45,10 @@ public class Heart extends GameObject implements Collectable {
 
     }
     
+    /**
+     * Updates float animation.
+     * @param delta Time delta
+     */
     public void update(float delta) {
         stateTime += delta;
         this.textureRegion = floatAnimation.getKeyFrame(stateTime, true);

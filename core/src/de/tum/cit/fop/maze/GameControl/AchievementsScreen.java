@@ -132,6 +132,11 @@ public class AchievementsScreen implements Screen {
         rootTable.add(backButton);
     }
 
+    /**
+     * Adds a row for a single achievement to the table.
+     * @param table The parent table.
+     * @param a The achievement data.
+     */
     private void addAchievementRow(Table table, Achievement a) {
         Table row = new Table();
         row.setBackground(skin.getDrawable("button"));
@@ -166,11 +171,18 @@ public class AchievementsScreen implements Screen {
         table.add(row).width(750).padBottom(10).row();
     }
 
+    /**
+     * Shows the screen and sets input processor.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
     }
 
+    /**
+     * Renders the screen.
+     * @param delta Time delta.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -181,6 +193,10 @@ public class AchievementsScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Updates the scrolling background.
+     * @param delta Time delta.
+     */
     private void updateBackground(float delta) {
         if (backgroundImage1 == null || backgroundImage2 == null)
             return;
@@ -201,6 +217,11 @@ public class AchievementsScreen implements Screen {
             backgroundImage2.setX(backgroundImage1.getX() + width);
     }
 
+    /**
+     * Resizes the viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
@@ -224,18 +245,30 @@ public class AchievementsScreen implements Screen {
         }
     }
 
+    /**
+     * Called when application is paused.
+     */
     @Override
     public void pause() {
     }
 
+    /**
+     * Called when application is resumed.
+     */
     @Override
     public void resume() {
     }
 
+    /**
+     * Called when screen is hidden.
+     */
     @Override
     public void hide() {
     }
 
+    /**
+     * Disposes of assets.
+     */
     @Override
     public void dispose() {
         stage.dispose();

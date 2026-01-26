@@ -37,34 +37,61 @@ public class PlayerState {
 
     private int maxEndlessWave = 1;
 
+    /**
+     * Gets current endless wave.
+     * @return Wave number
+     */
     public int getEndlessWave() {
         return endlessWave;
     }
 
+    /**
+     * Sets endless wave.
+     * @param wave Wave number
+     */
     public void setEndlessWave(int wave) {
         this.endlessWave = wave;
         if (wave > maxEndlessWave)
             maxEndlessWave = wave;
     }
 
+    /**
+     * Resets endless wave to 1.
+     */
     public void resetEndlessWave() {
         this.endlessWave = 1;
     }
 
+    /**
+     * Gets max endless wave reached.
+     * @return Max wave
+     */
     public int getMaxEndlessWave() {
         return maxEndlessWave;
     }
 
+    /**
+     * Sets max endless wave.
+     * @param max Max wave
+     */
     public void setMaxEndlessWave(int max) {
         this.maxEndlessWave = max;
     }
 
     private int maxEndlessFloor = 1;
 
+    /**
+     * Gets max endless floor.
+     * @return Max floor
+     */
     public int getMaxEndlessFloor() {
         return maxEndlessFloor;
     }
 
+    /**
+     * Sets max endless floor.
+     * @param floor Floor number
+     */
     public void setMaxEndlessFloor(int floor) {
         if (floor > maxEndlessFloor)
             maxEndlessFloor = floor;
@@ -74,30 +101,58 @@ public class PlayerState {
     private float currentRunHealth = -1;
     private int currentRunXP = 0;
 
+    /**
+     * Gets current run score.
+     * @return Score
+     */
     public int getCurrentRunScore() {
         return currentRunScore;
     }
 
+    /**
+     * Sets current run score.
+     * @param score Score
+     */
     public void setCurrentRunScore(int score) {
         this.currentRunScore = score;
     }
 
+    /**
+     * Gets current run health.
+     * @return Health
+     */
     public float getCurrentRunHealth() {
         return currentRunHealth;
     }
 
+    /**
+     * Sets current run health.
+     * @param health Health
+     */
     public void setCurrentRunHealth(float health) {
         this.currentRunHealth = health;
     }
 
+    /**
+     * Gets current run XP.
+     * @return XP
+     */
     public int getCurrentRunXP() {
         return currentRunXP;
     }
 
+    /**
+     * Adds to current run XP.
+     * @param amount XP amount
+     */
     public void addCurrentRunXP(int amount) {
         this.currentRunXP += amount;
     }
 
+    /**
+     * Sets current run XP.
+     * @param xp XP
+     */
     public void setCurrentRunXP(int xp) {
         this.currentRunXP = xp;
     }
@@ -113,52 +168,101 @@ public class PlayerState {
 
     private boolean attackUnlocked = false;
 
+    /**
+     * Checks if attack is unlocked.
+     * @return true if unlocked
+     */
     public boolean isAttackUnlocked() {
         return attackUnlocked;
     }
 
+    /**
+     * Sets attack unlocked state.
+     * @param unlocked Unlocked
+     */
     public void setAttackUnlocked(boolean unlocked) {
         this.attackUnlocked = unlocked;
     }
 
     private boolean nonoUnlocked = false;
 
+    /**
+     * Checks if Nono is unlocked.
+     * @return true if unlocked
+     */
     public boolean isNonoUnlocked() {
         return nonoUnlocked;
     }
 
+    /**
+     * Sets Nono unlocked state.
+     * @param unlocked Unlocked
+     */
     public void setNonoUnlocked(boolean unlocked) {
         this.nonoUnlocked = unlocked;
     }
 
+    /**
+     * Gets unlocked achievements.
+     * @return Achievement map
+     */
     public java.util.HashMap<String, Boolean> getUnlockedAchievements() {
         return unlockedAchievements;
     }
 
+    /**
+     * Sets unlocked achievements.
+     * @param achievements Achievement map
+     */
     public void setUnlockedAchievements(java.util.HashMap<String, Boolean> achievements) {
         this.unlockedAchievements = achievements;
     }
 
+    /**
+     * Gets achievement progress.
+     * @return Progress map
+     */
     public java.util.HashMap<String, Integer> getAchievementProgress() {
         return achievementProgress;
     }
 
+    /**
+     * Sets achievement progress.
+     * @param progress Progress map
+     */
     public void setAchievementProgress(java.util.HashMap<String, Integer> progress) {
         this.achievementProgress = progress;
     }
 
+    /**
+     * Unlocks an achievement.
+     * @param id Achievement ID
+     */
     public void unlockAchievement(String id) {
         unlockedAchievements.put(id, true);
     }
 
+    /**
+     * Checks if achievement is unlocked.
+     * @param id Achievement ID
+     * @return true if unlocked
+     */
     public boolean isAchievementUnlocked(String id) {
         return unlockedAchievements.getOrDefault(id, false);
     }
 
+    /**
+     * Sets username.
+     * @param name Username
+     */
     public void setUsername(String name) {
         this.username = name;
     }
 
+    /**
+     * Gets username.
+     * @return Username
+     */
     public String getUsername() {
         return username;
     }
@@ -174,10 +278,19 @@ public class PlayerState {
         }
     }
 
+    /**
+     * Checks if level is completed.
+     * @param levelName Level name
+     * @return true if completed
+     */
     public boolean isLevelCompleted(String levelName) {
         return completedLevels.contains(levelName);
     }
 
+    /**
+     * Gets list of completed levels.
+     * @return Level list
+     */
     public java.util.ArrayList<String> getCompletedLevels() {
         return completedLevels;
     }
@@ -192,6 +305,10 @@ public class PlayerState {
         System.out.println("Current XP: " + currentXP);
     }
 
+    /**
+     * Gets current XP.
+     * @return XP amount
+     */
     public int getCurrentXP() {
         return currentXP;
     }
@@ -265,26 +382,50 @@ public class PlayerState {
         return defenseLevel * 0.1f;
     }
 
+    /**
+     * Gets health level.
+     * @return Level
+     */
     public int getHealthLevel() {
         return healthLevel;
     }
 
+    /**
+     * Gets speed level.
+     * @return Level
+     */
     public int getSpeedLevel() {
         return speedLevel;
     }
 
+    /**
+     * Gets defense level.
+     * @return Level
+     */
     public int getDefenseLevel() {
         return defenseLevel;
     }
 
+    /**
+     * Gets discovered encyclopedia IDs.
+     * @return ID set
+     */
     public java.util.HashSet<String> getDiscoveredEncyclopediaIds() {
         return discoveredEncyclopediaIds;
     }
 
+    /**
+     * Sets discovered encyclopedia IDs.
+     * @param ids ID set
+     */
     public void setDiscoveredEncyclopediaIds(java.util.HashSet<String> ids) {
         this.discoveredEncyclopediaIds = ids;
     }
 
+    /**
+     * Adds discovered ID.
+     * @param id ID
+     */
     public void addDiscoveredId(String id) {
         if (this.discoveredEncyclopediaIds == null) {
             this.discoveredEncyclopediaIds = new java.util.HashSet<>();

@@ -34,21 +34,19 @@ public class StoryMenu implements Screen {
     private final MazeRunnerGame game;
     private final Stage stage;
 
-    // State
-    private int state = 0; // 0=Chaos, 1=Boss, 2=Menu
+    private int state = 0;
     private boolean isTransitioning = false;
 
-    // UI Elements
-    private Table bossTable; // Layer 1: Boss Image
-    private Table textLayerTable; // Layer 3: Dialogue Text
-    private Table menuTable; // Layer 4: Buttons
-    private Image gradientBg; // Layer 2: Static Gradient
+    private Table bossTable;
+    private Table textLayerTable;
+    private Table menuTable;
+    private Image gradientBg;
 
     private Image bossImage;
     private Image arrowImage;
     private Table dialogueContainer;
 
-    // Labels
+
     private Label speakerLabel;
     private Label textLabel;
     private com.badlogic.gdx.scenes.scene2d.ui.Container<Label> textAnimContainer;
@@ -62,7 +60,6 @@ public class StoryMenu implements Screen {
     private Image backgroundImage2;
     private float scrollSpeed = 25f;
 
-    // Persistent background position
     public static float savedBackgroundX = 0f;
 
     private Image cinematicBarTop;
@@ -87,17 +84,19 @@ public class StoryMenu implements Screen {
     public StoryMenu(MazeRunnerGame game, boolean isGameMenu) {
         this.game = game;
         this.isGameMenu = isGameMenu;
-        this.stage = new Stage(new ExtendViewport(1920, 1080)); // 1080p Target
+        this.stage = new Stage(new ExtendViewport(1920, 1080));
 
         setupUI();
     }
 
+    /**
+     * Initializes the UI components including background, layers, and interactive elements.
+     */
     private void setupUI() {
-        // Gradient (Static at bottom)
         Pixmap pix = new Pixmap(1, 500, Pixmap.Format.RGBA8888);
         for (int y = 0; y < 500; y++) {
             float alpha = 1.0f - ((float) y / 500f);
-            pix.setColor(0f, 0f, 0.4f, alpha * 0.9f); // Dark Blue
+            pix.setColor(0f, 0f, 0.4f, alpha * 0.9f);
             pix.drawPixel(0, 499 - y);
         }
         gradientTexture = new Texture(pix);
@@ -105,7 +104,7 @@ public class StoryMenu implements Screen {
 
         gradientBg = new Image(gradientTexture);
         gradientBg.setFillParent(false);
-        gradientBg.setSize(stage.getWidth(), 500); // Fixed height
+        gradientBg.setSize(stage.getWidth(), 500);
 
         backgroundTexture = new Texture(Gdx.files.internal("selfmade/background.png"));
 
@@ -129,50 +128,47 @@ public class StoryMenu implements Screen {
 
         cinematicBarTop = new Image(blackTexture);
         cinematicBarBottom = new Image(blackTexture);
-        // ---------------------------------------------------------
-        // Layer 1: Boss Table (Behind Gradient)
-        // ---------------------------------------------------------
+
         bossTable = new Table();
         bossTable.setFillParent(false);
-        bossTable.bottom().left(); // Align content?
+        bossTable.bottom().left();
 
-        // Layer 3: Text Layer (In front of Gradient)
+
         textLayerTable = new Table();
         textLayerTable.setFillParent(false);
         textLayerTable.bottom().left();
 
-        float initialWidth = isGameMenu ? stage.getWidth() : stage.getWidth(); // Always start full for animation if
-                                                                               // GameMenu
+        float initialWidth = isGameMenu ? stage.getWidth() : stage.getWidth();
+
         bossTable.setSize(initialWidth, stage.getHeight());
         textLayerTable.setSize(initialWidth, stage.getHeight());
 
 
         titleTable = new Table();
         titleTable.setFillParent(true);
-        titleTable.top(); // 顶部对齐
+        titleTable.top();
 
 
         Label.LabelStyle titleStyle = new Label.LabelStyle(game.getSkin().getFont("hoefler"), Color.WHITE);
         Label titleLabel = new Label("UNDERMASK", titleStyle);
-        titleLabel.setFontScale(4.0f); // 放大 4 倍
+        titleLabel.setFontScale(4.0f);
         titleLabel.setAlignment(Align.center);
 
         titleTable.add(titleLabel).padTop(300);
         if (isGameMenu) {
             titleTable.setVisible(false);
         }
-        // Add to stage in correct order
+
         stage.addActor(backgroundImage1);
         stage.addActor(backgroundImage2);
         stage.addActor(bossTable);
         stage.addActor(cinematicBarBottom);
-        stage.addActor(cinematicBarTop);// Bottom
-        stage.addActor(gradientBg); // Middle
-        stage.addActor(textLayerTable); // Top of Left Section
+        stage.addActor(cinematicBarTop);
+        stage.addActor(gradientBg);
+        stage.addActor(textLayerTable);
 
         stage.addActor(titleTable);
 
-        // --- Boss Content ---
         bossTexture = new Texture(Gdx.files.internal("player/lihui/bosssit.PNG"));
         bossImage = new Image(bossTexture);
         bossImage.setScaling(Scaling.fit);
@@ -185,17 +181,16 @@ public class StoryMenu implements Screen {
             state = 0;
         }
 
-        // Boss positioned in bossTable
         bossTable.add(bossImage).grow().padTop(com.badlogic.gdx.scenes.scene2d.ui.Value.percentHeight(0.2f, bossTable));
 
-        // Defer scaling (Origin fix)
+
         Gdx.app.postRunnable(() -> {
             bossTable.layout();
             bossImage.setOrigin(Align.center);
             bossImage.setScale(1.3f);
         });
 
-        // --- Text Content ---
+
         dialogueContainer = new Table();
         Table textTable = new Table();
 
@@ -225,14 +220,12 @@ public class StoryMenu implements Screen {
         }
 
 
-        // Initial Text
         if (isGameMenu) {
             animateText("Welcome back to the Maze.");
         } else {
             animateText("You are in a chaos\nPress [space] to continue");
         }
 
-        // Arrow
         createArrowTexture();
         arrowImage = new Image(arrowTexture);
         arrowImage.setOrigin(Align.center);
@@ -253,13 +246,8 @@ public class StoryMenu implements Screen {
         stack.add(arrowTable);
 
         dialogueContainer.add(stack).grow().pad(50);
-
-        // Add dialogue container to Text Layer
         textLayerTable.add(dialogueContainer).growX().height(400).bottom();
 
-        // ---------------------------------------------------------
-        // Layer 4: Menu Table (Right Side / Offscreen)
-        // ---------------------------------------------------------
         menuTable = new Table();
         if (isGameMenu) {
             menuTable.setSize(stage.getWidth() * 0.5f, stage.getHeight());
@@ -272,7 +260,6 @@ public class StoryMenu implements Screen {
         }
         stage.addActor(menuTable);
 
-        // Input Logic
         stage.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -283,7 +270,6 @@ public class StoryMenu implements Screen {
             }
         });
 
-        // Add Listener to Boss Image explicitly
         if (bossImage != null) {
             bossImage.addListener(new ClickListener() {
                 @Override
@@ -297,28 +283,27 @@ public class StoryMenu implements Screen {
             });
         }
 
-        // Entry Animation for Game Hub (Similar to First Menu Entry)
         if (isGameMenu) {
-            isTransitioning = true; // Prevent resize from resetting positions immediately
+            isTransitioning = true;
 
-            // Start with Full Screen Boss (like Intro)
             bossTable.setSize(stage.getWidth(), stage.getHeight());
             textLayerTable.setSize(stage.getWidth(), stage.getHeight());
 
-            // Menu Offscreen Right
             menuTable.setSize(stage.getWidth() * 0.5f, stage.getHeight());
             menuTable.setPosition(stage.getWidth(), 0);
             menuTable.setVisible(false);
 
-            // Trigger Transition
+
             stage.addAction(Actions.delay(0.01f, Actions.run(this::transitionToMenu)));
         }
     }
 
-    // --- Boss Interaction Logic ---
     private int bossClickCount = 0;
     private com.badlogic.gdx.utils.JsonValue bossDialogueData;
 
+    /**
+     * Loads boss dialogue data from JSON if not already loaded.
+     */
     private void loadBossDialogue() {
         if (bossDialogueData == null) {
             com.badlogic.gdx.files.FileHandle file = Gdx.files.internal("data/boss_dialogue.json");
@@ -330,11 +315,14 @@ public class StoryMenu implements Screen {
 
 
 
+    /**
+     * Handles clicks on the boss image to trigger dialogue or interactions.
+     */
     private void handleBossClick() {
         if (bossDialogueData == null)
             loadBossDialogue();
         if (bossDialogueData == null)
-            return; // Failed to load
+            return;
 
         playArrowFeedback();
 
@@ -342,43 +330,31 @@ public class StoryMenu implements Screen {
 
         String textToSay = "";
 
-        // 1. Milestones
+
         com.badlogic.gdx.utils.JsonValue milestones = bossDialogueData.get("milestones");
         if (milestones != null && milestones.has(String.valueOf(bossClickCount))) {
             textToSay = milestones.getString(String.valueOf(bossClickCount));
         }
-        // 2. Count > 100
         else if (bossClickCount > 100) {
             textToSay = String.valueOf(bossClickCount);
         }
-        // 3. Random Pool
         else {
             java.util.List<String> pool = new java.util.ArrayList<>();
 
-            // Common
             com.badlogic.gdx.utils.JsonValue common = bossDialogueData.get("common");
             if (common != null) {
                 for (com.badlogic.gdx.utils.JsonValue val : common)
                     pool.add(val.asString());
             }
 
-            // Conditional: Story Complete
-            // Conditional: Story Complete
             de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
             if (state != null) {
-                // Assuming Level 5 is end or check achievements?
-                // Let's assume if completedLevels size >= 5? Or contains "maps/level-5.tmx"?
-                // User said "Defeated Story Mode Final Boss".
-                // I'll check if achievement "escape_artist" is unlocked? No that's Level 1.
-                // I'll check "completedLevels.size() >= 6".
                 if (state.getCompletedLevels().size() >= 6) {
                     com.badlogic.gdx.utils.JsonValue story = bossDialogueData.get("story_complete");
                     if (story != null)
                         for (com.badlogic.gdx.utils.JsonValue val : story)
                             pool.add(val.asString());
                 }
-
-                // Conditional: Endless > 5 Floors
                 if (state.getMaxEndlessFloor() >= 5) {
                     com.badlogic.gdx.utils.JsonValue endless = bossDialogueData.get("endless_5");
                     if (endless != null)
@@ -396,17 +372,21 @@ public class StoryMenu implements Screen {
 
         animateText(textToSay);
 
-        // Visual feedback
         bossImage.clearActions();
         bossImage.addAction(Actions.sequence(
                 Actions.scaleTo(1.2f, 1.2f, 0.1f),
-                Actions.scaleTo(1.3f, 1.3f, 0.1f) // Return to original scale (1.3 set in init)
+                Actions.scaleTo(1.3f, 1.3f, 0.1f)
         ));
-
-        // Entry Animation for Game Hub (Similar to First Menu Entry)
 
     }
 
+    /**
+     * Creates a styled text button with hover animation.
+     * @param text Button label.
+     * @param skin UI skin.
+     * @param styleName Style name in the skin.
+     * @return The created TextButton.
+     */
     private TextButton createHoverButton(String text, Skin skin, String styleName) {
         final TextButton button = new TextButton(text, skin, styleName);
         button.setTransform(true);
@@ -434,6 +414,10 @@ public class StoryMenu implements Screen {
         return button;
     }
 
+    /**
+     * Animates text appearance in the dialogue box.
+     * @param text The text to display.
+     */
     private void animateText(String text) {
         textLabel.setText(text);
 
@@ -453,6 +437,9 @@ public class StoryMenu implements Screen {
         });
     }
 
+    /**
+     * Handles general input (clicks, key presses) based on current state.
+     */
     private void handleInput() {
         if (isTransitioning)
             return;
@@ -480,6 +467,9 @@ public class StoryMenu implements Screen {
         }
     }
 
+    /**
+     * Adds buttons for the in-game hub menu.
+     */
     private void addGameMenuButtons() {
         Table btnContainer = new Table();
         Skin skin = game.getSkin();
@@ -492,39 +482,6 @@ public class StoryMenu implements Screen {
             }
         });
 
-        // TextButton endlessBtn = createHoverButton("Endless Mode", skin, "middle");
-        // endlessBtn.addListener(new ChangeListener() {
-        // @Override
-        // public void changed(ChangeEvent event, Actor actor) {
-        // boolean unlocked = !game.getPlayerState().getCompletedLevels().isEmpty();
-        // if (unlocked) {
-        // de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
-        // boolean hasRun = state.getEndlessWave() > 1 || state.getCurrentRunScore() >
-        // 0;
-        // if (hasRun) {
-        // Dialog dialog = new Dialog("Resume Run?", skin) {
-        // @Override
-        // protected void result(Object object) {
-        // int choice = (Integer) object;
-        // if (choice == 1) game.goToEndlessMode(state.getUsername());
-        // else if (choice == 2) {
-        // state.resetEndlessWave();
-        // state.resetRunState();
-        // game.goToEndlessMode(state.getUsername());
-        // }
-        // }
-        // };
-        // dialog.text("Continue Wave " + state.getEndlessWave() + "?").button("Yes",
-        // 1).button("New", 2).show(stage);
-        // } else {
-        // game.goToEndlessMode(game.getPlayerState().getUsername());
-        // }
-        // } else {
-        // new Dialog("Locked", skin).text("Complete a level
-        // first!").button("OK").show(stage);
-        // }
-        // }
-        // });
 
         TextButton endlessV2Btn = createHoverButton("Endless Mode", skin, "middle");
         endlessV2Btn.addListener(new ChangeListener() {
@@ -560,7 +517,6 @@ public class StoryMenu implements Screen {
         encyclopediaBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Go to Encyclopedia
                 game.setScreen(new de.tum.cit.fop.maze.GameControl.EncyclopediaScreen(game));
             }
         });
@@ -582,9 +538,7 @@ public class StoryMenu implements Screen {
             }
         });
 
-        // Consistent spacing
         btnContainer.add(selectLevelBtn).padBottom(15).row();
-        // dbtnContainer.add(endlessBtn).padBottom(15).row();
         btnContainer.add(endlessV2Btn).padBottom(15).row();
         btnContainer.add(skillsBtn).padBottom(15).row();
         btnContainer.add(achBtn).padBottom(15).row();
@@ -595,62 +549,54 @@ public class StoryMenu implements Screen {
         menuTable.add(btnContainer).center();
     }
 
-    // State Constants
     private static final int STATE_CHAOS = 0;
     private static final int STATE_BOSS = 1;
-    private static final int STATE_MENU = 2; // Start Menu (New/Continue/Exit)
-    private static final int STATE_GAMEHUB = 3; // Game Menu (Select Level etc)
-    private static final int STATE_INPUT = 4; // Name Input
-    private static final int STATE_OVERWRITE = 5; // Confirm Overwrite
-    private static final int STATE_PRE_CINEMATIC = 6; // Transition to Cinematic
+    private static final int STATE_MENU = 2;
+    private static final int STATE_GAMEHUB = 3;
+    private static final int STATE_INPUT = 4;
+    private static final int STATE_OVERWRITE = 5;
+    private static final int STATE_PRE_CINEMATIC = 6;
 
-    // ... Existing fields ...
     private Table inputTable;
     private Table overwriteTable;
     private com.badlogic.gdx.scenes.scene2d.ui.TextField nameInput;
 
-    // ...
 
-    // Update addMenuButtons to handle Single Save Logic
+    /**
+     * Adds buttons for the main menu.
+     */
     private void addMenuButtons() {
         Table btnContainer = new Table();
         Skin skin = game.getSkin();
         boolean hasSave = de.tum.cit.fop.maze.GameControl.GameSaveManager.hasSave(0);
 
-        // Create Buttons
         TextButton continueBtn = createHoverButton("Continue Game", skin, "middle");
         TextButton newGameBtn = createHoverButton("New Game", skin, "middle");
         TextButton exitBtn = createHoverButton("Exit", skin, "short");
 
-        // Listeners
         if (hasSave) {
             continueBtn.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     if (game.loadGame(0)) {
-                        // Animate: Menu Slides Out Right, Boss Expands to Full
                         isTransitioning = true;
                         float duration = 0.3f;
                         Interpolation interp = Interpolation.pow2Out;
 
-                        // Menu slides out to right
                         menuTable.addAction(Actions.moveTo(stage.getWidth(), 0, duration, interp));
 
-                        // Boss/Text expands to fill screen
                         bossTable.addAction(Actions.sizeTo(stage.getWidth(), stage.getHeight(), duration, interp));
                         textLayerTable.addAction(Actions.sizeTo(stage.getWidth(), stage.getHeight(), duration, interp));
 
-                        // Switch Screen after animation
                         stage.addAction(
                                 Actions.delay(duration, Actions.run(() -> game.setScreen(new StoryMenu(game, true)))));
                     }
                 }
             });
         } else {
-            // Disable Continue
             continueBtn.setDisabled(true);
             continueBtn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
-            continueBtn.setColor(1, 1, 1, 0.5f); // Fade it out
+            continueBtn.setColor(1, 1, 1, 0.5f);
         }
 
         newGameBtn.addListener(new ChangeListener() {
@@ -671,7 +617,6 @@ public class StoryMenu implements Screen {
             }
         });
 
-        // Layout Order
         if (hasSave) {
             btnContainer.add(continueBtn).padBottom(20).row();
             btnContainer.add(newGameBtn).padBottom(20).row();
@@ -684,41 +629,37 @@ public class StoryMenu implements Screen {
 
         menuTable.add(btnContainer).center();
 
-        // Setup other UI tables
         setupInputUI();
         setupOverwriteUI();
     }
 
+    /**
+     * Sets up the placeholder UI for name input (handled dynamically).
+     */
     private void setupInputUI() {
         inputTable = new Table();
-        // Initially hidden
         inputTable.setVisible(false);
         menuTable.addActor(inputTable);
-        // Position it? menuTable uses center layout for btnContainer.
-        // We can add it to menuTable but manage visibility.
-        // Better: Clear menuTable children or use Stack?
-        // Simple: Just hide btnContainer (need reference) and show inputTable.
-        // For now, let's just create it and switch visibility in setState.
-
-        // Actually, let's keep it simple. addMenuButtons created a btnContainer.
-        // We need to access it to hide it.
-        // Refactor: Make btnContainer class field or named actor?
-        // Approach: menuTable.clear(); menuTable.add(inputTable); when switching.
     }
 
+    /**
+     * Sets up the placeholder UI for overwrite confirmation (handled dynamically).
+     */
     private void setupOverwriteUI() {
         overwriteTable = new Table();
         overwriteTable.setVisible(false);
     }
 
+    /**
+     * Switches the menu state and updates UI accordingly.
+     * @param newState The new state ID.
+     */
     private void setState(int newState) {
         this.state = newState;
 
         if (state == STATE_INPUT) {
-            // Hide Standard Buttons
             menuTable.clearChildren();
 
-            // Show Input UI
             Table container = new Table();
             nameInput = new com.badlogic.gdx.scenes.scene2d.ui.TextField("", game.getSkin());
             nameInput.setMessageText("Enter Name...");
@@ -730,7 +671,6 @@ public class StoryMenu implements Screen {
                     String name = nameInput.getText();
                     if (name.trim().isEmpty())
                         name = "Player";
-                    // Start New Game
                     game.startNewGame(name, 0);
                     setState(STATE_PRE_CINEMATIC);
                 }
@@ -759,7 +699,6 @@ public class StoryMenu implements Screen {
             noBtn.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    // Reset to Main Menu
                     menuTable.clearChildren();
                     addMenuButtons();
                     animateText("Welcome back to the Maze.");
@@ -776,11 +715,9 @@ public class StoryMenu implements Screen {
         } else if (state == STATE_PRE_CINEMATIC) {
             isTransitioning = true;
 
-            // Hide Right Menu
             menuTable.clearChildren();
             menuTable.setVisible(false);
 
-            // Reverse Split Animation (Boss back to Full Width)
             float targetWidth = stage.getWidth();
             bossTable.clearActions();
             bossTable.addAction(Actions.sizeTo(targetWidth, stage.getHeight(), 0.8f, Interpolation.pow2Out));
@@ -790,20 +727,21 @@ public class StoryMenu implements Screen {
 
             animateText("Let me tell you the background...");
 
-            // Show Arrow for manual input
             startBobbing();
             arrowImage.addAction(Actions.fadeIn(0.5f));
 
-            // Unlock input after animation
             stage.addAction(Actions.delay(1.0f, Actions.run(() -> isTransitioning = false)));
         }
     }
 
+    /**
+     * Transitions from intro sequence to the main menu view.
+     */
     private void transitionToMenu() {
         isTransitioning = true;
         arrowImage.clearActions();
 
-        if (state == 2) { // Main Menu
+        if (state == 2) {
             arrowImage.setVisible(false);
         } else {
             arrowImage.setVisible(true);
@@ -811,7 +749,6 @@ public class StoryMenu implements Screen {
             startBobbing();
         }
 
-        // Animate BOTH layers
         float targetWidth = stage.getWidth() * 0.5f;
         bossTable.addAction(Actions.sizeTo(targetWidth, stage.getHeight(), 0.8f, Interpolation.pow2Out));
         textLayerTable.addAction(Actions.sizeTo(targetWidth, stage.getHeight(), 0.8f, Interpolation.pow2Out));
@@ -825,6 +762,9 @@ public class StoryMenu implements Screen {
         stage.addAction(Actions.delay(0.8f, Actions.run(() -> isTransitioning = false)));
     }
 
+    /**
+     * Creates the arrow texture procedurally.
+     */
     private void createArrowTexture() {
         Pixmap p = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
         p.setColor(1, 1, 1, 1);
@@ -836,6 +776,9 @@ public class StoryMenu implements Screen {
         p.dispose();
     }
 
+    /**
+     * Starts the bobbing animation for the arrow indicator.
+     */
     private void startBobbing() {
         arrowImage.clearActions();
         arrowImage.setY(0);
@@ -845,6 +788,9 @@ public class StoryMenu implements Screen {
                         Actions.moveBy(0, 5, 0.5f, Interpolation.sine))));
     }
 
+    /**
+     * Plays feedback animation on the arrow.
+     */
     private void playArrowFeedback() {
         if (state == 2)
             return;
@@ -855,6 +801,10 @@ public class StoryMenu implements Screen {
                 Actions.run(this::startBobbing)));
     }
 
+    /**
+     * Renders the menu screen.
+     * @param delta Time delta.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -868,7 +818,6 @@ public class StoryMenu implements Screen {
 
         stage.act(delta);
 
-        // Update Boss Origin continuously
         if (bossImage != null && bossTable != null) {
             bossTable.validate();
             bossImage.setOrigin(Align.center);
@@ -877,6 +826,10 @@ public class StoryMenu implements Screen {
         stage.draw();
     }
 
+    /**
+     * Updates the scrolling background position.
+     * @param delta Time delta.
+     */
     private void updateBackground(float delta) {
         if (backgroundImage1 == null || backgroundImage2 == null)
             return;
@@ -884,8 +837,6 @@ public class StoryMenu implements Screen {
         backgroundImage1.setX(backgroundImage1.getX() - scrollSpeed * delta);
         backgroundImage2.setX(backgroundImage2.getX() - scrollSpeed * delta);
 
-        // Update persistent state
-        // Normalize saved position to ensure consistency across screens
         float w = backgroundImage1.getWidth();
         float currentX = backgroundImage1.getX() % w;
         if (currentX > 0)
@@ -900,16 +851,23 @@ public class StoryMenu implements Screen {
         }
 
         if (backgroundImage2.getX() + width <= 0) {
-            // 把它放到第一张图的屁股后面
             backgroundImage2.setX(backgroundImage1.getX() + width);
         }
     }
 
+    /**
+     * Called when the screen becomes current.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
     }
 
+    /**
+     * Resizes the viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
@@ -921,8 +879,6 @@ public class StoryMenu implements Screen {
             backgroundImage1.setSize(stageW, stageH);
             backgroundImage2.setSize(stageW, stageH);
 
-            // Reposition image2 to seamlessly connect with image1
-            // This prevents gaps or overlaps when screen aspect ratio changes
             backgroundImage2.setX(backgroundImage1.getX() + stageW);
         }
 
@@ -936,7 +892,7 @@ public class StoryMenu implements Screen {
             cinematicBarBottom.setPosition(0, 0);
 
             cinematicBarTop.setSize(stageW, barHeight);
-            cinematicBarTop.setPosition(0, stageH - barHeight); // 放在最顶端
+            cinematicBarTop.setPosition(0, stageH - barHeight);
         }
 
         if (gradientBg != null) {
@@ -951,7 +907,6 @@ public class StoryMenu implements Screen {
 
         if (!isTransitioning) {
             if (state < 2) {
-                // Intro Full Width
                 bossTable.setSize(stage.getWidth(), stage.getHeight());
                 textLayerTable.setSize(stage.getWidth(), stage.getHeight());
                 if (menuTable != null) {
@@ -959,7 +914,7 @@ public class StoryMenu implements Screen {
                     menuTable.setPosition(stage.getWidth(), 0);
                 }
             } else {
-                // Splt 50/50
+
                 float splitW = stage.getWidth() * 0.5f;
                 bossTable.setSize(splitW, stage.getHeight());
                 textLayerTable.setSize(splitW, stage.getHeight());
@@ -972,18 +927,30 @@ public class StoryMenu implements Screen {
         }
     }
 
+    /**
+     * Called when application is paused.
+     */
     @Override
     public void pause() {
     }
 
+    /**
+     * Called when application is resumed.
+     */
     @Override
     public void resume() {
     }
 
+    /**
+     * Called when screen is hidden.
+     */
     @Override
     public void hide() {
     }
 
+    /**
+     * Disposes of assets.
+     */
     @Override
     public void dispose() {
         stage.dispose();

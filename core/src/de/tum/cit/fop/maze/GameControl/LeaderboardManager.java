@@ -15,18 +15,34 @@ public class LeaderboardManager {
 
     private static final String CLOUD_URL = "https://leaderboard-backup.vercel.app/api/leaderboard";
 
+    /**
+     * Represents a single score entry in the leaderboard.
+     */
     public static class ScoreEntry implements Comparable<ScoreEntry> {
         public String name;
         public int score;
 
+        /**
+         * Default constructor for JSON serialization.
+         */
         public ScoreEntry() {
         }
 
+        /**
+         * Creates a new score entry.
+         * @param name Player name.
+         * @param score Player score.
+         */
         public ScoreEntry(String name, int score) {
             this.name = name;
             this.score = score;
         }
 
+        /**
+         * Compares this score to another for sorting (descending order).
+         * @param other The other score entry.
+         * @return Comparison result.
+         */
         @Override
         public int compareTo(ScoreEntry other) {
             return other.score - this.score;

@@ -66,6 +66,15 @@ public class Grid {
         return walkable[x][y];
     }
     
+    /**
+     * Gets the width of the grid.
+     * @return Grid width.
+     */
     public int getWidth() { return width; }
+
+    /**
+     * Gets the height of the grid.
+     * @return Grid height.
+     */
     public int getHeight() { return height; }
 }

@@ -23,6 +23,9 @@ public class ShieldItem extends GameObject implements Collectable {
         loadAnimation();
     }
     
+    /**
+     * Loads shield animation frames.
+     */
     private void loadAnimation() {
         Texture texture = new Texture(Gdx.files.internal("selfmade/shielditem.png"));
 
@@ -35,6 +38,10 @@ public class ShieldItem extends GameObject implements Collectable {
         this.textureRegion = frames[0];
     }
     
+    /**
+     * Updates shield animation.
+     * @param delta Time delta
+     */
     public void update(float delta) {
         stateTime += delta;
         this.textureRegion = animation.getKeyFrame(stateTime, true);

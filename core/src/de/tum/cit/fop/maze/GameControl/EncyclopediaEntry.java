@@ -23,14 +23,23 @@ public class EncyclopediaEntry {
         this.isSecret = false;
     }
 
+    /**
+     * @return The unique ID of the entry.
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * @return The display name of the entry.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return The description of the entry.
+     */
     public String getDescription() {
         return description;
     }
@@ -42,26 +51,49 @@ public class EncyclopediaEntry {
         return texturePath;
     }
 
+    /**
+     * Sets the ID of the entry.
+     * @param id New ID.
+     */
     public void setId(String id) {
         this.id = id;
     }
 
+    /**
+     * Sets the name of the entry.
+     * @param name New name.
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Sets the description of the entry.
+     * @param description New description.
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Sets the texture path for the entry image.
+     * @param texturePath New texture path.
+     */
     public void setTexturePath(String texturePath) {
         this.texturePath = texturePath;
     }
 
+    /**
+     * @return True if this entry is a secret achievement.
+     */
     public boolean isSecret() {
         return isSecret;
     }
 
+    /**
+     * Sets whether this entry is secret.
+     * @param secret Secret status.
+     */
     public void setSecret(boolean secret) {
         isSecret = secret;
     }

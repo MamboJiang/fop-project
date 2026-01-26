@@ -9,10 +9,22 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
  */
 public class MaskItem extends GameObject implements Collectable {
 
+    /**
+     * Creates a MaskItem.
+     * @param x X pos
+     * @param y Y pos
+     * @param width Width
+     * @param height Height
+     * @param textureRegion Texture
+     */
     public MaskItem(float x, float y, float width, float height, TextureRegion textureRegion) {
         super(x, y, width, height, textureRegion);
     }
 
+    /**
+     * Collects mask and changes appearance.
+     * @param character Collecting character
+     */
     @Override
     public void collect(Character character) {
 

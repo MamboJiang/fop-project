@@ -211,9 +211,15 @@ public class StoryScreen implements Screen {
         Gdx.input.setInputProcessor(null);
     }
 
+    /**
+     * Called when the application is paused.
+     */
     @Override
     public void pause() {}
 
+    /**
+     * Called when the application is resumed.
+     */
     @Override
     public void resume() {}
 

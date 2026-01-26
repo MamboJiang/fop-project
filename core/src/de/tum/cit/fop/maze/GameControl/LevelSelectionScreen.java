@@ -279,6 +279,10 @@ public class LevelSelectionScreen implements Screen {
         return String.valueOf(n);
     }
 
+    /**
+     * Renders the screen.
+     * @param delta Time delta.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -289,6 +293,10 @@ public class LevelSelectionScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Updates the scrolling background position.
+     * @param delta Time delta.
+     */
     private void updateBackground(float delta) {
         if (backgroundImage1 == null || backgroundImage2 == null)
             return;
@@ -313,6 +321,11 @@ public class LevelSelectionScreen implements Screen {
         }
     }
 
+    /**
+     * Resizes the viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
@@ -338,6 +351,9 @@ public class LevelSelectionScreen implements Screen {
         }
     }
 
+    /**
+     * Called when the screen becomes the current screen.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -350,18 +366,30 @@ public class LevelSelectionScreen implements Screen {
         }
     }
 
+    /**
+     * Called when the screen is hidden.
+     */
     @Override
     public void hide() {
     }
 
+    /**
+     * Called when application is paused.
+     */
     @Override
     public void pause() {
     }
 
+    /**
+     * Called when application is resumed.
+     */
     @Override
     public void resume() {
     }
 
+    /**
+     * Disposes of assets.
+     */
     @Override
     public void dispose() {
         stage.dispose();

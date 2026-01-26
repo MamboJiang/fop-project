@@ -41,6 +41,10 @@ public class ScreenShake {
         }
     }
     
+    /**
+     * Checks if the screen is currently shaking.
+     * @return true if shaking, false otherwise.
+     */
     public boolean isShaking() {
         return shakeTimer > 0;
     }

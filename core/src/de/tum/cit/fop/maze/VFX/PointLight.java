@@ -10,7 +10,7 @@ public class PointLight {
     public Vector2 position;
     public Color color;
     public float distance;
-    public float intensity; // 0 to 1
+    public float intensity;
 
     /**
      * Constructor for PointLight.
@@ -27,6 +27,11 @@ public class PointLight {
         this.intensity = intensity;
     }
     
+    /**
+     * Sets the position of the light.
+     * @param x X coordinate.
+     * @param y Y coordinate.
+     */
     public void setPosition(float x, float y) {
         this.position.set(x, y);
     }

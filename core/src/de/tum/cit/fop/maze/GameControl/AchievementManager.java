@@ -16,6 +16,9 @@ public class AchievementManager {
     private Map<String, Achievement> achievements;
     private HUD hud;
 
+    /**
+     * Private constructor for Singleton.
+     */
     private AchievementManager() {
         achievements = new HashMap<>();
         loadAchievements();
@@ -40,6 +43,9 @@ public class AchievementManager {
         this.hud = hud;
     }
 
+    /**
+     * Loads achievements from initial configuration.
+     */
     private void loadAchievements() {
         createDefaultAchievements();
     }
@@ -97,6 +103,9 @@ public class AchievementManager {
         state.setAchievementProgress(progress);
     }
 
+    /**
+     * Creates and registers the default set of achievements.
+     */
     private void createDefaultAchievements() {
         achievements.clear();
         addDefault("first_blood", "First Blood", "Kill your first enemy.", EventType.KILL_ENEMY, 1);
@@ -113,6 +122,14 @@ public class AchievementManager {
 
     }
 
+    /**
+     * Adds a default achievement to the registry.
+     * @param id Unique ID.
+     * @param name Display name.
+     * @param desc Description.
+     * @param type Event type.
+     * @param target Target value.
+     */
     private void addDefault(String id, String name, String desc, EventType type, int target) {
         Achievement a = new Achievement(id, name, desc, type, target);
         achievements.put(id, a);
@@ -174,6 +191,10 @@ public class AchievementManager {
         }
     }
 
+    /**
+     * Unlocks the specified achievement and notifies the HUD.
+     * @param a The achievement to unlock.
+     */
     private void unlock(Achievement a) {
         a.setUnlocked(true);
         Gdx.app.log("Achievement", "Unlocked: " + a.getName());

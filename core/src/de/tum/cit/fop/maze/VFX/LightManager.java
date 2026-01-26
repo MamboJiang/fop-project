@@ -22,14 +22,20 @@ public class LightManager implements Disposable {
     private Color ambientColor;
     private boolean enabled = true;
 
+    /**
+     * Constructor for LightManager.
+     */
     public LightManager() {
 
-        this.ambientColor = new Color(0.1f, 0.1f, 0.1f, 1f); // Very dark ambient
+        this.ambientColor = new Color(0.1f, 0.1f, 0.1f, 1f);
         
         createLightTexture();
     }
     
 
+    /**
+     * Creates the light texture used for point lights.
+     */
     private void createLightTexture() {
         int size = 128;
         Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
@@ -115,12 +121,22 @@ public class LightManager implements Disposable {
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
     }
 
+    /**
+     * Disposes of the resources used by the light manager.
+     */
     @Override
     public void dispose() {
         if (fbo != null) fbo.dispose();
         if (lightTexture != null) lightTexture.dispose();
     }
     
+    /**
+     * Sets the ambient color of the light manager.
+     * @param r Red component.
+     * @param g Green component.
+     * @param b Blue component.
+     * @param a Alpha component.
+     */
     public void setAmbientColor(float r, float g, float b, float a) {
         this.ambientColor.set(r, g, b, a);
     }

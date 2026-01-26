@@ -143,6 +143,11 @@ public class MapLoader {
     private static Texture mobsTexture;
     private static Texture robotTexture;
 
+    /**
+     * Retrieves the robot animations.
+     *
+     * @return An array of Animations for the robot.
+     */
     public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getRobotAnimations() {
         if (robotTexture == null) {
             robotTexture = new Texture(Gdx.files.internal("player/sprite/robotsmall.png"));
@@ -160,6 +165,11 @@ public class MapLoader {
         return anims;
     }
 
+    /**
+     * Retrieves the boss animations.
+     *
+     * @return An array of Animations for the boss.
+     */
     public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getBossAnimations() {
         Texture bossTexture = new Texture(Gdx.files.internal("player/sprite/bossnew.png"));
 
@@ -177,6 +187,11 @@ public class MapLoader {
 
     private static Texture droneTexture;
 
+    /**
+     * Retrieves the drone animations.
+     *
+     * @return An array of Animations for the drone.
+     */
     public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getDroneAnimations() {
         if (droneTexture == null) {
             droneTexture = new Texture(Gdx.files.internal("player/sprite/drone.png"));
@@ -244,11 +259,7 @@ public class MapLoader {
         return anims;
     }
 
-    /**
-     * Scans the "maps" directory for .properties files.
-     * 
-     * @return A list of FileHandles for found map files.
-     */
+
     /**
      * Scans the "maps" directory for .properties files.
      * Uses "levels.txt" if available to support JAR packaging.

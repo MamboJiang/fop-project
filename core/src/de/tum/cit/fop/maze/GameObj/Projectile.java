@@ -14,6 +14,14 @@ public class Projectile extends GameObject {
     private float lifeTime = 5.0f;
     private boolean isEnemyProjectile;
 
+    /**
+     * Creates a Projectile.
+     * @param x X pos
+     * @param y Y pos
+     * @param direction Direction vector
+     * @param textureRegion Texture
+     * @param isEnemy From enemy
+     */
     public Projectile(float x, float y, Vector2 direction, TextureRegion textureRegion, boolean isEnemy) {
         super(x, y, 8, 8, textureRegion);
         this.isEnemyProjectile = isEnemy;
@@ -22,6 +30,10 @@ public class Projectile extends GameObject {
 
     }
 
+    /**
+     * Updates projectile position and life.
+     * @param delta Time delta
+     */
     public void update(float delta) {
         position.mulAdd(velocity, delta);
 
@@ -35,6 +47,10 @@ public class Projectile extends GameObject {
         }
     }
 
+    /**
+     * Checks if projectile is from an enemy.
+     * @return true if enemy's
+     */
     public boolean isEnemyProjectile() {
         return isEnemyProjectile;
     }

@@ -8,11 +8,23 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
  */
 public class AttackUnlockItem extends GameObject implements Collectable {
 
+    /**
+     * Creates an AttackUnlockItem.
+     * @param x X pos
+     * @param y Y pos
+     * @param width Width
+     * @param height Height
+     * @param textureRegion Texture
+     */
     public AttackUnlockItem(float x, float y, float width, float height, TextureRegion textureRegion) {
         super(x, y, width, height, textureRegion);
     }
 
     @Override
+    /**
+     * Unlocks the attack ability and gives a key to the character.
+     * @param character The character collecting the item.
+     */
     public void collect(Character character) {
         character.setAttackUnlocked(true);
         character.setHasKey(true);

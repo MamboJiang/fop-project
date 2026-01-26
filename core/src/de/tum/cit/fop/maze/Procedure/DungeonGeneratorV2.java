@@ -36,6 +36,11 @@ public class DungeonGeneratorV2 {
     private TextureRegion trapRegion;
     private TextureRegion chestRegion;
 
+    /**
+     * Creates a DungeonGeneratorV2.
+     * @param width Map width.
+     * @param height Map height.
+     */
     public DungeonGeneratorV2(int width, int height) {
         this.width = width;
         this.height = height;
@@ -44,6 +49,9 @@ public class DungeonGeneratorV2 {
         loadResources();
     }
 
+    /**
+     * Loads tile textures.
+     */
     private void loadResources() {
         Texture texture = new Texture(Gdx.files.internal("selfmade/basictile.png"));
         TextureRegion[][] regions = TextureRegion.split(texture, 32, 32);
@@ -56,13 +64,7 @@ public class DungeonGeneratorV2 {
         chestRegion = regions[1][1];
     }
 
-    /**
-     * Generates a Ver2 dungeon.
-     * 
-     * @param difficulty  Floor/Difficulty index.
-     * @param isBossLevel If true, the last room will be a Boss room.
-     * @return List of GameObjects.
-     */
+
     /**
      * Generates a Ver2 dungeon using Grid-Slot System.
      * 
@@ -340,6 +342,10 @@ public class DungeonGeneratorV2 {
         return placeObjects(difficulty, isBossLevel);
     }
 
+    /**
+     * Carves out the floor for a room.
+     * @param r The room.
+     */
     private void carveRoom(Room r) {
         for (int x = r.x; x < r.x + r.width; x++) {
             for (int y = r.y; y < r.y + r.height; y++) {
@@ -348,6 +354,11 @@ public class DungeonGeneratorV2 {
         }
     }
 
+    /**
+     * Connects two rooms in the grid.
+     * @param r1 Room 1.
+     * @param r2 Room 2.
+     */
     private void connectGridRooms(Room r1, Room r2) {
         int cx1 = r1.x + r1.width / 2;
         int cy1 = r1.y + r1.height / 2;
@@ -379,6 +390,12 @@ public class DungeonGeneratorV2 {
         }
     }
 
+    /**
+     * Places objects (enemies, traps, start/exit) in the dungeon.
+     * @param difficulty Difficulty level.
+     * @param isBossLevel Is boss level.
+     * @return List of game objects.
+     */
     private List<GameObject> placeObjects(int difficulty, boolean isBossLevel) {
         List<GameObject> objects = new ArrayList<>();
         boolean[][] occupied = new boolean[width][height];
@@ -443,6 +460,14 @@ public class DungeonGeneratorV2 {
         return objects;
     }
 
+    /**
+     * Fills a room with enemies and traps.
+     * @param r Room.
+     * @param objects Object list.
+     * @param occupied Occupied grid.
+     * @param enemies Enemy count.
+     * @param traps Trap count.
+     */
     private void fillRoom(Room r, List<GameObject> objects, boolean[][] occupied, int enemies, int traps) {
         for (int j = 0; j < enemies; j++) {
             Vector2 pos = getFreeRandomPoint(r, occupied);
@@ -469,10 +494,20 @@ public class DungeonGeneratorV2 {
         }
     }
 
+    /**
+     * Gets the list of generated rooms.
+     * @return List of rooms.
+     */
     public List<Room> getRooms() {
         return rooms;
     }
 
+    /**
+     * Finds a free random point in a room.
+     * @param r Room.
+     * @param occupied Occupied grid.
+     * @return Vector2 position or null.
+     */
     private Vector2 getFreeRandomPoint(Room r, boolean[][] occupied) {
         for (int k = 0; k < 10; k++) {
             Vector2 p = r.getRandomPoint();

@@ -109,6 +109,10 @@ public class Character extends MovableObject {
         updateBounds();
     }
 
+    /**
+     * Checks if the level is completed.
+     * @return true if completed
+     */
     public boolean isLevelCompleted() {
         return isLevelCompleted;
     }
@@ -212,6 +216,9 @@ public class Character extends MovableObject {
         walkLeft = new Animation<>(0.1f, leftFrames);
     }
 
+    /**
+     * Initiates an attack.
+     */
     public void attack() {
         if (!isAttacking) {
             isAttacking = true;
@@ -220,10 +227,18 @@ public class Character extends MovableObject {
         }
     }
 
+    /**
+     * Checks if character is attacking.
+     * @return true if attacking
+     */
     public boolean isAttacking() {
         return isAttacking;
     }
 
+    /**
+     * Gets current direction.
+     * @return Current direction
+     */
     public Direction getDirection() {
         return currentDirection;
     }
@@ -461,6 +476,9 @@ public class Character extends MovableObject {
         this.shieldTime = duration;
     }
 
+    /**
+     * Loads shield animation frames.
+     */
     private void loadShieldAnimation() {
         Texture texture = new Texture(Gdx.files.internal("selfmade/shielditem.png"));
         TextureRegion region = new TextureRegion(texture);
@@ -469,6 +487,10 @@ public class Character extends MovableObject {
         shieldAnimation.setPlayMode(Animation.PlayMode.LOOP);
     }
 
+    /**
+     * Checks if shielded.
+     * @return true if shielded
+     */
     public boolean isShielded() {
         return shieldTime > 0;
     }
@@ -604,10 +626,18 @@ public class Character extends MovableObject {
         }
     }
 
+    /**
+     * Updates collision bounds.
+     */
     private void updateBounds() {
         this.bounds.setPosition(position.x + 4, position.y + 4);
     }
 
+    /**
+     * Checks for collision with map objects.
+     * @param mapObjects Objects to check
+     * @return Collided object or null
+     */
     private GameObject checkCollision(List<GameObject> mapObjects) {
         for (GameObject obj : mapObjects) {
             if (obj == this)
@@ -667,38 +697,71 @@ public class Character extends MovableObject {
         }
     }
 
+    /**
+     * Takes 1 point of damage.
+     */
     public void takeDamage() {
         takeDamage(1);
     }
 
+    /**
+     * Sets infinite HP mode.
+     * @param enabled Enable/disable
+     */
     public void setInfiniteHP(boolean enabled) {
         this.infiniteHP = enabled;
     }
 
+    /**
+     * Checks if infinite HP is on.
+     * @return true if enabled
+     */
     public boolean isInfiniteHP() {
         return infiniteHP;
     }
 
+    /**
+     * Checks if damage number is requested.
+     * @return true if requested
+     */
     public boolean isDamageNumberRequested() {
         return damageNumberRequested;
     }
 
+    /**
+     * Clears damage number request.
+     */
     public void clearDamageNumberRequest() {
         this.damageNumberRequested = false;
     }
 
+    /**
+     * Checks if screen shake is requested.
+     * @return true if requested
+     */
     public boolean isScreenShakeRequested() {
         return screenShakeRequested;
     }
 
+    /**
+     * Clears screen shake request.
+     */
     public void clearScreenShakeRequest() {
         this.screenShakeRequested = false;
     }
 
+    /**
+     * Gets current lives.
+     * @return Lives count
+     */
     public int getLives() {
         return health;
     }
 
+    /**
+     * Gets max lives.
+     * @return Max lives
+     */
     public int getMaxLives() {
         if (playerState != null) {
             return playerState.getMaxLives();
@@ -706,14 +769,26 @@ public class Character extends MovableObject {
         return 4;
     }
 
+    /**
+     * Checks if player has key.
+     * @return true if has key
+     */
     public boolean hasKey() {
         return hasKey;
     }
 
+    /**
+     * Sets key possession.
+     * @param hasKey Has key
+     */
     public void setHasKey(boolean hasKey) {
         this.hasKey = hasKey;
     }
 
+    /**
+     * Sets attack unlock state.
+     * @param unlocked Unlocked state
+     */
     public void setAttackUnlocked(boolean unlocked) {
         if (playerState != null) {
             playerState.setAttackUnlocked(unlocked);
@@ -721,10 +796,18 @@ public class Character extends MovableObject {
         }
     }
 
+    /**
+     * Checks if attack is unlocked.
+     * @return true if unlocked
+     */
     public boolean isAttackUnlocked() {
         return playerState != null && playerState.isAttackUnlocked();
     }
 
+    /**
+     * Sets current lives.
+     * @param lives Lives to set
+     */
     public void setLives(int lives) {
         this.health = lives;
         int max = getMaxLives();
@@ -734,6 +817,10 @@ public class Character extends MovableObject {
             this.health = 0;
     }
 
+    /**
+     * Adds lives.
+     * @param amount Amount to add
+     */
     public void addLives(int amount) {
         this.health += amount;
         game.playPowerUpSound();
@@ -744,6 +831,10 @@ public class Character extends MovableObject {
             this.health = 0;
     }
 
+    /**
+     * Gets velocity vector.
+     * @return Velocity
+     */
     public Vector2 getVelocity() {
         return velocity;
     }
@@ -817,6 +908,13 @@ public class Character extends MovableObject {
         }
     }
 
+    /**
+     * Checks if a wall exists within a specific area.
+     * @param area Area to check
+     * @param mapObjects List of map objects
+     * @param ignoreSelf Object to ignore (self)
+     * @return true if wall interaction exists
+     */
     private boolean isWallAt(Rectangle area, List<GameObject> mapObjects, GameObject ignoreSelf) {
         for (GameObject obj : mapObjects) {
             if (obj == ignoreSelf)
@@ -829,6 +927,14 @@ public class Character extends MovableObject {
         return false;
     }
 
+    /**
+     * Checks if a position is free of obstacles.
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param mapObjects Map objects
+     * @param ignoreSelf Object to ignore
+     * @return true if free
+     */
     private boolean isPositionFree(float x, float y, List<GameObject> mapObjects, GameObject ignoreSelf) {
         Rectangle testBounds = new Rectangle(x + 4, y + 4, 8, 8);
         for (GameObject obj : mapObjects) {
@@ -846,18 +952,33 @@ public class Character extends MovableObject {
         return true;
     }
 
+    /**
+     * Checks if block effect is requested.
+     * @return true if requested
+     */
     public boolean isBlockEffectRequested() {
         return blockEffectRequested;
     }
 
+    /**
+     * Clears the block effect request flag.
+     */
     public void clearBlockEffectRequest() {
         this.blockEffectRequested = false;
     }
 
+    /**
+     * Gets current health cast to float.
+     * @return Health
+     */
     public float getCurrentHealth() {
         return (float) this.health;
     }
 
+    /**
+     * Sets current health.
+     * @param health Health value
+     */
     public void setCurrentHealth(float health) {
         this.health = (int) health;
 

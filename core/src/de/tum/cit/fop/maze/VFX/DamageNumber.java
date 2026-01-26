@@ -16,15 +16,15 @@ public class DamageNumber {
     private float offsetX;
 
     private String text;
-    private Color color; // Added Color field
+    private Color color;
 
     private float stateTime;
     private float lifeTime;
     private boolean isFinished;
 
-    private static final float PHASE_1_DURATION = 0.2f; // Pop Up
-    private static final float PHASE_2_DURATION = 0.4f; // Float
-    private static final float PHASE_3_DURATION = 0.2f; // Fade
+    private static final float PHASE_1_DURATION = 0.2f;
+    private static final float PHASE_2_DURATION = 0.4f;
+    private static final float PHASE_3_DURATION = 0.2f;
 
     /**
      * Constructor for DamageNumber with custom text and color.
@@ -133,6 +133,10 @@ public class DamageNumber {
         }
     }
 
+    /**
+     * Checks if the effect has finished.
+     * @return true if finished, false otherwise.
+     */
     public boolean isFinished() {
         return isFinished;
     }

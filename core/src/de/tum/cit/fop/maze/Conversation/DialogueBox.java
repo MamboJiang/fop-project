@@ -21,12 +21,18 @@ import java.util.Map;
  */
 public class DialogueBox extends Group {
     
+    /**
+     * Enumeration for different dialogue bubble styles.
+     */
     public enum DialogueType {
         NORMAL,
         SHOUT,
         THINK
     }
     
+    /**
+     * Enumeration for tail directions.
+     */
     public enum TailDirection {
         DOWN,
         LEFT_DOWN,
@@ -92,6 +98,10 @@ public class DialogueBox extends Group {
         setVisible(false);
     }
     
+    /**
+     * Loads assets and splits textures for 9-patch bubbles.
+     * @param texture The source texture.
+     */
     private void loadAssets(Texture texture) {
         TextureRegion[][] grid = TextureRegion.split(texture, 16, 16);
         styleRegions = new HashMap<>();
@@ -114,6 +124,12 @@ public class DialogueBox extends Group {
         }
     }
     
+    /**
+     * Loads tail textures for a specific dialogue type.
+     * @param grid Texture grid.
+     * @param type Dialogue type.
+     * @param startRow Start row in the grid.
+     */
     private void loadTailsForType(TextureRegion[][] grid, DialogueType type, int startRow) {
         Map<TailDirection, TextureRegion> map = new HashMap<>();
         map.put(TailDirection.DOWN, mergeRegions(grid[startRow][12], grid[startRow+1][12]));
@@ -122,6 +138,13 @@ public class DialogueBox extends Group {
         tailRegions.put(type, map);
     }
     
+    /**
+     * Extracts a 3x3 grid for 9-patch rendering.
+     * @param fullGrid Full texture grid.
+     * @param startRow Start row.
+     * @param startCol Start column.
+     * @return 3x3 TextureRegion array.
+     */
     private TextureRegion[][] get3x3Grid(TextureRegion[][] fullGrid, int startRow, int startCol) {
         TextureRegion[][] block = new TextureRegion[3][3];
         for(int r=0; r<3; r++) {
@@ -132,16 +155,29 @@ public class DialogueBox extends Group {
         return block;
     }
     
+    /**
+     * Merges two texture regions vertically.
+     * @param top Top region.
+     * @param bottom Bottom region.
+     * @return Merged region.
+     */
     private TextureRegion mergeRegions(TextureRegion top, TextureRegion bottom) {
        return new TextureRegion(top.getTexture(), top.getRegionX(), top.getRegionY(), 16, 32);
     }
     
+    /**
+     * Sets the dialogue bubble type.
+     * @param type Dialogue type.
+     */
     private void setType(DialogueType type) {
         this.currentType = type;
         rebuildBackground();
         updateTail();
     }
     
+    /**
+     * Rebuilds the background table based on the current style.
+     */
     private void rebuildBackground() {
         backgroundTable.clear();
         TextureRegion[][] reg = styleRegions.get(currentType);
@@ -166,6 +202,11 @@ public class DialogueBox extends Group {
     }
     
 
+    /**
+     * Shows text with default settings.
+     * @param text Text to show.
+     * @param type Dialogue type.
+     */
     public void show(String text, DialogueType type) {
         show(text, type, 300f);
     }
@@ -173,6 +214,10 @@ public class DialogueBox extends Group {
 
     private boolean autoSize = true;
 
+    /**
+     * Enables or disables auto-sizing of the bubble.
+     * @param autoSize True to auto-size, false otherwise.
+     */
     public void setAutoSize(boolean autoSize) {
         this.autoSize = autoSize;
     }
@@ -216,6 +261,10 @@ public class DialogueBox extends Group {
         updateTail();
     }
     
+    /**
+     * Updates the typing effect.
+     * @param delta Time delta.
+     */
     @Override
     public void act(float delta) {
         super.act(delta);
@@ -241,10 +290,17 @@ public class DialogueBox extends Group {
         }
     }
     
+    /**
+     * Checks if typing is finished.
+     * @return True if finished, false otherwise.
+     */
     public boolean isFinished() {
         return typingFinished;
     }
     
+    /**
+     * Skips the typing effect and shows full text immediately.
+     */
     public void skipTypewriter() {
         if (!typingFinished) {
             textLabel.setText(targetText);
@@ -258,16 +314,27 @@ public class DialogueBox extends Group {
     }
     
 
+    /**
+     * Sets the tail X position.
+     * @param relativeX X position relative to the bubble.
+     */
     public void setTailPosition(float relativeX) {
         this.tailX = relativeX;
         updateTail();
     }
     
+    /**
+     * Sets the tail direction.
+     * @param direction Tail direction.
+     */
     public void setTailDirection(TailDirection direction) {
         this.currentTailDirection = direction;
         updateTail();
     }
     
+    /**
+     * Updates tail visibility and position.
+     */
     private void updateTail() {
         if (currentTailDirection == TailDirection.NONE) {
             tailImage.setVisible(false);
@@ -290,6 +357,11 @@ public class DialogueBox extends Group {
         }
     }
     
+    /**
+     * Sets the size of the dialogue box.
+     * @param width Width.
+     * @param height Height.
+     */
     @Override
     public void setSize(float width, float height) {
         super.setSize(width, height);
@@ -298,6 +370,9 @@ public class DialogueBox extends Group {
         }
     }
     
+    /**
+     * Hides the dialogue box.
+     */
     public void hide() {
         this.setVisible(false);
     }

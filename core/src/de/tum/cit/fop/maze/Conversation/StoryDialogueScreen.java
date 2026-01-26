@@ -170,6 +170,9 @@ public class StoryDialogueScreen implements Screen {
         });
     }
     
+    /**
+     * Creates the log window for dialogue history.
+     */
     private void createLogWindow() {
         logWindow = new Window("Dialogue History", game.getSkin());
         logWindow.setVisible(false);
@@ -200,6 +203,9 @@ public class StoryDialogueScreen implements Screen {
         stage.addActor(logWindow);
     }
     
+    /**
+     * Creates the in-game pause menu.
+     */
     private void createPauseMenu() {
         pauseMenu = new PauseMenu(game, 
             () -> {
@@ -210,11 +216,17 @@ public class StoryDialogueScreen implements Screen {
         stage.addActor(pauseMenu);
     }
     
+    /**
+     * Shows the pause menu and pauses the game logic.
+     */
     private void showPauseMenu() {
         isPaused = true;
         pauseMenu.show();
     }
     
+    /**
+     * Shows the dialogue history log.
+     */
     private void showLogWindow() {
         StringBuilder sb = new StringBuilder();
         for (String entry : historyLog) {
@@ -225,6 +237,9 @@ public class StoryDialogueScreen implements Screen {
         logWindow.toFront();
     }
     
+    /**
+     * Advances the story dialogue to the next line.
+     */
     private void advanceDialogue() {
         conversationIndex++;
         if (conversationIndex >= texts.length) {
@@ -234,6 +249,9 @@ public class StoryDialogueScreen implements Screen {
         updateDialogue();
     }
     
+    /**
+     * Updates the dialogue box content and characters.
+     */
     private void updateDialogue() {
         String text = texts[conversationIndex];
         boolean isLeft = speakers[conversationIndex];
@@ -257,6 +275,10 @@ public class StoryDialogueScreen implements Screen {
     
     private float autoTimer = 0;
 
+    /**
+     * Renders the story dialogue screen.
+     * @param delta Time delta.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
@@ -276,22 +298,39 @@ public class StoryDialogueScreen implements Screen {
         }
     }
 
+    /**
+     * Resizes the viewport.
+     * @param width New width.
+     * @param height New height.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
+    /**
+     * Called when the application is paused.
+     */
     @Override
     public void pause() {}
 
+    /**
+     * Called when the application is resumed.
+     */
     @Override
     public void resume() {}
 
+    /**
+     * Called when this screen is hidden.
+     */
     @Override
     public void hide() {
         stage.dispose();
     }
 
+    /**
+     * Disposes of assets.
+     */
     @Override
     public void dispose() {
         stage.dispose();

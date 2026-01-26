@@ -23,6 +23,9 @@ public class ConfigManager {
         loadConfig();
     }
 
+    /**
+     * Loads the configuration from the local file system.
+     */
     private void loadConfig() {
         FileHandle file = Gdx.files.local(CONFIG_FILE);
         if (file.exists()) {
@@ -39,6 +42,9 @@ public class ConfigManager {
         validateKeyBindings();
     }
 
+    /**
+     * Creates a default configuration with standard key bindings.
+     */
     private void createDefaultConfig() {
         config = new GameConfig();
 
@@ -53,6 +59,9 @@ public class ConfigManager {
         saveConfig();
     }
 
+    /**
+     * Ensures all necessary key bindings exist.
+     */
     private void validateKeyBindings() {
         Map<String, Integer> keys = config.getKeyBindings();
         if (!keys.containsKey("UP"))
@@ -77,19 +86,33 @@ public class ConfigManager {
         file.writeString(json.prettyPrint(config), false);
     }
 
+    /**
+     * @return Current music volume.
+     */
     public float getMusicVolume() {
         return config.getMusicVolume();
     }
 
+    /**
+     * Sets the music volume.
+     * @param volume New volume (0.0 - 1.0).
+     */
     public void setMusicVolume(float volume) {
         config.setMusicVolume(volume);
         saveConfig();
     }
 
+    /**
+     * @return Current sound volume.
+     */
     public float getSoundVolume() {
         return config.getSoundVolume();
     }
 
+    /**
+     * Sets the sound volume.
+     * @param volume New volume (0.0 - 1.0).
+     */
     public void setSoundVolume(float volume) {
         config.setSoundVolume(volume);
         saveConfig();

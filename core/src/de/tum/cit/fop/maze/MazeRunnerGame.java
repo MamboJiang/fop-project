@@ -225,6 +225,10 @@ public class MazeRunnerGame extends Game {
         goToMenu(true);
     }
 
+    /**
+     * Switches to the Main Menu screen with an optional transition.
+     * @param transition Whether to play a transition effect.
+     */
     public void goToMenu(boolean transition) {
         Runnable action = () -> {
             if (warFogMusic != null && warFogMusic.isPlaying()) {
@@ -307,6 +311,10 @@ public class MazeRunnerGame extends Game {
     }
     
 
+    /**
+     * Starts an Endless Mode game.
+     * @param playerName The name of the player starting the run.
+     */
     public void goToEndlessMode(String playerName) {
         playTransition(() -> {
             int startDifficulty = 1;
@@ -562,6 +570,10 @@ public class MazeRunnerGame extends Game {
         this.currentSlotIndex = -1;
     }
 
+    /**
+     * Gets the currently playing music.
+     * @return The active Music instance, or null if none is playing.
+     */
     public Music getCurrentMusic(){
         if(backgroundMusic != null){
             if(backgroundMusic.isPlaying()){
@@ -581,6 +593,9 @@ public class MazeRunnerGame extends Game {
         return null;
     }
     @Override
+    /**
+     * Renders the game and updates the transition effect.
+     */
     public void render() {
         super.render();
         if (transitionEffect != null) {
