@@ -620,7 +620,7 @@ public class Enemy extends MovableObject {
         }
     }
 
-    @Override
+
     /**
      * Draws the enemy.
      * @param batch SpriteBatch

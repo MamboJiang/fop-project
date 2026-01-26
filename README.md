@@ -261,6 +261,7 @@ classDiagram
 -   **Epic Boss Battles**: Challenge the ultimate boss with complex attack patterns and strategic mechanics.
 -   **Character-Driven Dialogue**: Experience the story through an expressive interface with dynamic character sprites.
 -   **RPG Elements**: Level up and customize your character's stats in Endless Mode.
+-   **Immersive Loading**: A meticulously crafted loading animation tailored to match the game's plot.
 -   **Dynamic Lighting**: Atmospheric visual effects including fog of war.
 -   **Encyclopedia System**: Automatically unlocks entries for characters, enemies, and items as you encounter them.
 -   **Interactive Menu Screen**: Click and interact with the character directly on the main menu for unique dialogues.
