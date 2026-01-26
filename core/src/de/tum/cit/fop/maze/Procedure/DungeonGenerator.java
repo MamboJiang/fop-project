@@ -49,7 +49,7 @@ public class DungeonGenerator {
         TextureRegion[][] regions = TextureRegion.split(texture, 32, 32);
         
         wallRegion = regions[0][0];
-        floorRegion = regions[1][0]; // Row 1, Col 0
+        floorRegion = regions[1][0];
         entryRegion = regions[0][2];
         exitRegion = regions[0][1];
         trapRegion = regions[2][2];

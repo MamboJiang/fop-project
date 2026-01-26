@@ -31,8 +31,7 @@ public class MapLoader {
 
         Texture texture = new Texture(Gdx.files.internal("basictiles.png"));
         TextureRegion[][] regions = TextureRegion.split(texture, 16, 16);
-        
-        // Custom 32x32 tiles
+
         Texture customTexture = new Texture(Gdx.files.internal("selfmade/basictile.png"));
         TextureRegion[][] customRegs = TextureRegion.split(customTexture, 32, 32);
 
@@ -49,7 +48,6 @@ public class MapLoader {
                 mapHeight = Integer.parseInt(props.getProperty("Height"));
             }
 
-            // If dimensions are missing, calculate them from keys
             if (mapWidth == 0 || mapHeight == 0) {
                 for (String key : props.stringPropertyNames()) {
                     if (key.contains(",")) {
@@ -62,13 +60,11 @@ public class MapLoader {
                             if (y >= mapHeight)
                                 mapHeight = y + 1;
                         } catch (NumberFormatException e) {
-                            // Ignore non-coordinate keys
                         }
                     }
                 }
             }
 
-            // Default to 15 only if still 0 (empty map or no coordinates)
             if (mapWidth == 0)
                 mapWidth = 15;
             if (mapHeight == 0)
@@ -87,11 +83,8 @@ public class MapLoader {
                     }
 
                     if (type != 0) {
-                        // For Level 5, do NOT generate floor for undefined areas (Void)
                         if (mapFile.nameWithoutExtension().equals("level-5") && type == -1) {
-                            // Do nothing (Void)
                         } else {
-                            // PATH used to be regions[1][1], now customRegs[0][1] (1,0)
                             objects.add(new Path(worldX, worldY, 16, 16, customRegs[1][0]));
                         }
                     }
@@ -99,7 +92,6 @@ public class MapLoader {
                     GameObject obj = null;
                     switch (type) {
                         case 0:
-                            // WALL used to be regions[0][0], now customRegs[0][0] (0,0)
                             obj = new Wall(worldX, worldY, 16, 16, customRegs[0][0]);
                             break;
                         case 1:
@@ -115,8 +107,7 @@ public class MapLoader {
                             obj = new EnemySpawnPoint(worldX, worldY, 16, 16, regions[3][6]);
                             break;
                         case 5:
-                            // Use knife texture for Level 2, chest for others
-                            TextureRegion keyTexture = customRegs[1][1]; // Default chest
+                            TextureRegion keyTexture = customRegs[1][1];
                             if (mapFile.nameWithoutExtension().equals("level-2")) {
                                 Texture knifeTexture = new Texture(Gdx.files.internal("selfmade/knifeitem.png"));
                                 keyTexture = new TextureRegion(knifeTexture);
@@ -124,11 +115,9 @@ public class MapLoader {
                             obj = new Key(worldX, worldY, 16, 16, keyTexture);
                             break;
                         case 6:
-                            // Ghost
                             obj = new GhostSpawnPoint(worldX, worldY, 16, 16, regions[3][6]);
                             break;
                         case 7:
-                            // Dialogue Trigger
                             obj = new DialogueTrigger(worldX, worldY, 16, 16, regions[2][1]);
                             break;
                         case 8:
@@ -158,19 +147,14 @@ public class MapLoader {
         if (robotTexture == null) {
             robotTexture = new Texture(Gdx.files.internal("player/sprite/robotsmall.png"));
         }
-        
-        // Split 32x32
+
         TextureRegion[][] tmp = TextureRegion.split(robotTexture, 32, 32);
         com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] anims = new com.badlogic.gdx.graphics.g2d.Animation[4];
         float frameDuration = 0.2f;
 
-        // Down (Row 0)
         anims[0] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[0][0], tmp[0][1], tmp[0][2]);
-        // Left (Row 1)
         anims[1] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[1][0], tmp[1][1], tmp[1][2]);
-        // Right (Row 2)
         anims[2] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[2][0], tmp[2][1], tmp[2][2]);
-        // Up (Row 3)
         anims[3] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[3][0], tmp[3][1], tmp[3][2]);
 
         return anims;
@@ -179,18 +163,13 @@ public class MapLoader {
     public static com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] getBossAnimations() {
         Texture bossTexture = new Texture(Gdx.files.internal("player/sprite/bossnew.png"));
 
-        // Split 64x64
         TextureRegion[][] tmp = TextureRegion.split(bossTexture, 64, 64);
         com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] anims = new com.badlogic.gdx.graphics.g2d.Animation[4];
         float frameDuration = 0.2f;
 
-        // Down (Row 0)
         anims[0] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[0][0], tmp[0][1], tmp[0][2]);
-        // Left (Row 1)
         anims[1] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[1][0], tmp[1][1], tmp[1][2]);
-        // Right (Row 2)
         anims[2] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[2][0], tmp[2][1], tmp[2][2]);
-        // Up (Row 3)
         anims[3] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[3][0], tmp[3][1], tmp[3][2]);
 
         return anims;
@@ -202,19 +181,14 @@ public class MapLoader {
         if (droneTexture == null) {
             droneTexture = new Texture(Gdx.files.internal("player/sprite/drone.png"));
         }
-        
-        // Split 32x32
+
         TextureRegion[][] tmp = TextureRegion.split(droneTexture, 32, 32);
         com.badlogic.gdx.graphics.g2d.Animation<TextureRegion>[] anims = new com.badlogic.gdx.graphics.g2d.Animation[4];
         float frameDuration = 0.2f;
 
-        // Down (Row 0)
         anims[0] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[0][0], tmp[0][1], tmp[0][2]);
-        // Left (Row 1)
         anims[1] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[1][0], tmp[1][1], tmp[1][2]);
-        // Right (Row 2)
         anims[2] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[2][0], tmp[2][1], tmp[2][2]);
-        // Up (Row 3)
         anims[3] = new com.badlogic.gdx.graphics.g2d.Animation<>(frameDuration, tmp[3][0], tmp[3][1], tmp[3][2]);
 
         return anims;
@@ -283,12 +257,9 @@ public class MapLoader {
      */
     public static List<FileHandle> getMapFiles() {
         List<FileHandle> files = new ArrayList<>();
-        
-        // Method 1: Try reading levels.txt (Best for JAR)
-        // Check "maps/levels.txt" (Internal - inside JAR)
+
         FileHandle indexFile = Gdx.files.internal("maps/levels.txt");
         if (!indexFile.exists()) {
-             // Try assets/maps/levels.txt (Dev env)
              indexFile = Gdx.files.internal("assets/maps/levels.txt");
         }
         
@@ -298,8 +269,7 @@ public class MapLoader {
             for (String line : lines) {
                 if (line.trim().isEmpty()) continue;
                 String filename = line.trim();
-                
-                // Try to find the file
+
                 FileHandle mapFile = Gdx.files.internal("maps/" + filename);
                 if (!mapFile.exists()) {
                     mapFile = Gdx.files.internal("assets/maps/" + filename);
@@ -312,7 +282,6 @@ public class MapLoader {
             if (!files.isEmpty()) return files;
         }
 
-        // Method 2: Fallback to directory listing (Works in IDE/Desktop)
         FileHandle dir = Gdx.files.internal("maps");
         if (!dir.exists() || !dir.isDirectory()) {
             dir = Gdx.files.internal("assets/maps"); 

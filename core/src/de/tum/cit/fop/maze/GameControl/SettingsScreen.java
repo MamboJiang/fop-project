@@ -29,7 +29,6 @@ public class SettingsScreen implements Screen {
     private String actionToRebind = null;
     private TextButton activeRebindButton = null;
 
-    // Background Fields
     private Texture backgroundTexture;
     private Image backgroundImage1;
     private Image backgroundImage2;
@@ -50,7 +49,6 @@ public class SettingsScreen implements Screen {
         this.game = game;
         this.stage = new Stage(new com.badlogic.gdx.utils.viewport.FitViewport(1920, 1080), game.getSpriteBatch());
 
-        // Background Setup
         backgroundTexture = new Texture(Gdx.files.internal("selfmade/background.png"));
         backgroundImage1 = new Image(backgroundTexture);
         backgroundImage2 = new Image(backgroundTexture);
@@ -58,7 +56,6 @@ public class SettingsScreen implements Screen {
         backgroundImage1.setScaling(Scaling.stretch);
         backgroundImage2.setScaling(Scaling.stretch);
 
-        // Use saved position from StoryMenu
         backgroundImage1.setSize(stage.getWidth(), stage.getHeight());
         backgroundImage2.setSize(stage.getWidth(), stage.getHeight());
         backgroundImage1.setPosition(StoryMenu.savedBackgroundX, 0);
@@ -67,7 +64,6 @@ public class SettingsScreen implements Screen {
         stage.addActor(backgroundImage1);
         stage.addActor(backgroundImage2);
 
-        // Overlay Setup (Black)
         Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         p.setColor(0, 0, 0, 0.6f);
         p.fill();
@@ -77,7 +73,6 @@ public class SettingsScreen implements Screen {
         overlayImage.setSize(stage.getWidth(), stage.getHeight());
         stage.addActor(overlayImage);
 
-        // Cinematic Bars
         Pixmap p2 = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         p2.setColor(Color.BLACK);
         p2.fill();
@@ -98,7 +93,7 @@ public class SettingsScreen implements Screen {
         Label.LabelStyle bodyStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.WHITE);
 
         Label titleLabel = new Label("Settings", titleStyle);
-        titleLabel.setFontScale(1.5f); // Make title larger
+        titleLabel.setFontScale(1.5f);
         table.add(titleLabel).padBottom(20).colspan(2).row();
 
         table.add(new Label("Music Volume:", bodyStyle)).right().padRight(10);
@@ -206,7 +201,6 @@ public class SettingsScreen implements Screen {
         backgroundImage1.setX(backgroundImage1.getX() - scrollSpeed * delta);
         backgroundImage2.setX(backgroundImage2.getX() - scrollSpeed * delta);
 
-        // Normalize saved position to ensure consistency across screens
         float w = backgroundImage1.getWidth();
         float currentX = backgroundImage1.getX() % w;
         if (currentX > 0)

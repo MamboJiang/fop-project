@@ -27,7 +27,6 @@ public class DialogueTrigger extends GameObject {
      */
     public boolean checkProximity(com.badlogic.gdx.math.Vector2 playerPosition) {
         float distance = position.dst(playerPosition);
-        // Interaction radius of 32 units (2 blocks)
         isNearPlayer = distance < 32.0f;
         return isNearPlayer;
     }

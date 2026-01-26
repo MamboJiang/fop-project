@@ -39,7 +39,6 @@ public class LevelSelectionScreen implements Screen {
     private Texture frameTexture;
     private Table contentTable;
 
-    // Background Fields
     private Texture backgroundTexture;
     private Image backgroundImage1;
     private Image backgroundImage2;
@@ -58,14 +57,10 @@ public class LevelSelectionScreen implements Screen {
      */
     public LevelSelectionScreen(MazeRunnerGame game) {
         this.game = game;
-        // Use FitViewport to maintain aspect ratio
         this.stage = new Stage(new FitViewport(1920, 1080), game.getSpriteBatch());
 
-        // Load Frame Texture
         frameTexture = new Texture(Gdx.files.internal("selfmade/uielements/levelselect.png"));
         Image frameImage = new Image(frameTexture);
-
-        // Background Setup
         backgroundTexture = new Texture(Gdx.files.internal("selfmade/background.png"));
         backgroundImage1 = new Image(backgroundTexture);
         backgroundImage2 = new Image(backgroundTexture);
@@ -73,8 +68,7 @@ public class LevelSelectionScreen implements Screen {
         backgroundImage1.setScaling(Scaling.stretch);
         backgroundImage2.setScaling(Scaling.stretch);
 
-        // Use saved position from StoryMenu
-        backgroundImage1.setSize(stage.getWidth(), stage.getHeight()); // Initial size
+        backgroundImage1.setSize(stage.getWidth(), stage.getHeight());
         backgroundImage2.setSize(stage.getWidth(), stage.getHeight());
         backgroundImage1.setPosition(StoryMenu.savedBackgroundX, 0);
         backgroundImage2.setPosition(StoryMenu.savedBackgroundX + stage.getWidth(), 0);
@@ -82,7 +76,6 @@ public class LevelSelectionScreen implements Screen {
         stage.addActor(backgroundImage1);
         stage.addActor(backgroundImage2);
 
-        // Overlay Removed as requested
 
         Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         p.setColor(0, 0, 0, 0.6f);
@@ -93,7 +86,6 @@ public class LevelSelectionScreen implements Screen {
         overlayImage.setSize(stage.getWidth(), stage.getHeight());
         stage.addActor(overlayImage);
 
-        // Cinematic Bars (Solid Black)
         Pixmap p2 = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         p2.setColor(Color.BLACK);
         p2.fill();
@@ -106,46 +98,28 @@ public class LevelSelectionScreen implements Screen {
         stage.addActor(cinematicBarTop);
         stage.addActor(cinematicBarBottom);
 
-        // Root Table
         Table rootTable = new Table();
         rootTable.setFillParent(true);
         stage.addActor(rootTable);
 
-        // Title (Static)
         Label.LabelStyle titleStyle = new Label.LabelStyle(game.getSkin().getFont("hoefler"), Color.WHITE);
         Label titleLabel = new Label("Select Level", titleStyle);
-        titleLabel.setFontScale(1.5f); // Make title larger
+        titleLabel.setFontScale(1.5f);
         rootTable.add(titleLabel).padBottom(50).row();
 
-        // Animated Content Table
         contentTable = new Table();
         rootTable.add(contentTable);
 
-        // Container implementation: Stack (Frame + ScrollPane) doesn't work well with
-        // Tables naturally,
-        // but we can use a Table with a background or just layer them if we use a
-        // Stack.
-        // However, precise positioning is easier if we just center the frame and put
-        // buttons inside/over it.
-        // The user says "Frame's image is levelselect.png".
-
-        // Let's use a Stack or just a Container Table with background
         com.badlogic.gdx.scenes.scene2d.ui.Stack stack = new com.badlogic.gdx.scenes.scene2d.ui.Stack();
 
-        // Layer 1: Frame centered
         Table frameTable = new Table();
-        frameTable.add(frameImage); // Removed visual frame as requested
-        stack.add(frameTable); // Removed visual frame as requested
+        frameTable.add(frameImage);
+        stack.add(frameTable);
 
-        // Layer 2: Buttons
-        // We need the buttons to be aligned with the "holes" in the frame if it has
-        // any,
-        // but user just said "horizontal layout".
-        // I will create a ScrollPane that sits centrally.
+
 
         Table levelsTable = new Table();
         List<FileHandle> mapFiles = MapLoader.getMapFiles();
-        // Sort files by name to ensure consistent order (Windows vs Mac)
         java.util.Collections.sort(mapFiles, new java.util.Comparator<FileHandle>() {
             @Override
             public int compare(FileHandle o1, FileHandle o2) {
@@ -161,12 +135,10 @@ public class LevelSelectionScreen implements Screen {
             for (int i = 0; i < mapFiles.size(); i++) {
                 final FileHandle mapFile = mapFiles.get(i);
 
-                // Determine if unlocked
                 boolean isUnlocked = false;
                 if (i == 0) {
-                    isUnlocked = true; // Level 0 always unlocked
+                    isUnlocked = true;
                 } else {
-                    // Check if previous level (i-1) is completed
                     FileHandle prevMap = mapFiles.get(i - 1);
                     String prevLevelName = prevMap.nameWithoutExtension();
                     if (game.getPlayerState().isLevelCompleted(prevLevelName)) {
@@ -174,7 +146,6 @@ public class LevelSelectionScreen implements Screen {
                     }
                 }
 
-                // Determine Display Name
                 String displayName;
                 if (isUnlocked) {
                     displayName = convertToRoman(i + 1);
@@ -186,11 +157,10 @@ public class LevelSelectionScreen implements Screen {
 
                 if (!isUnlocked) {
                     levelButton.setDisabled(true);
-                    levelButton.setColor(1, 1, 1, 0.5f); // Dim locked buttons
+                    levelButton.setColor(1, 1, 1, 0.5f);
                     levelButton.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
                 }
 
-                // Button Logic
                 if (isUnlocked) {
                     levelButton.addListener(new ChangeListener() {
                         @Override
@@ -199,7 +169,6 @@ public class LevelSelectionScreen implements Screen {
                         }
                     });
 
-                    // Hover Logic for Label
                     final int levelIndex = i + 1;
                     final String mapName = mapFile.nameWithoutExtension();
 
@@ -216,7 +185,7 @@ public class LevelSelectionScreen implements Screen {
                         }
                     });
                 } else {
-                    // Listener for locked buttons (optional feedback)
+
                     levelButton.addListener(new ClickListener() {
                         @Override
                         public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -231,29 +200,27 @@ public class LevelSelectionScreen implements Screen {
                     });
                 }
 
-                levelsTable.add(levelButton).pad(15); // Horizontal spacing
+                levelsTable.add(levelButton).pad(15);
             }
         }
 
         ScrollPane scrollPane = new ScrollPane(levelsTable);
-        // scrollPane.setFadeScrollBars(false); // Removed as requested
-        scrollPane.setScrollingDisabled(false, true); // Allow horizontal, disable vertical
 
-        // Add ScrollPane to Stack (Layer 2)
-        // We might need to pad it to fit inside the frame visuals.
-        // Assuming frame is a border around the buttons.
+        scrollPane.setScrollingDisabled(false, true);
+
+
         Table scrollContainer = new Table();
-        scrollContainer.add(scrollPane).width(1200).height(200); // Adjust width/height to fit frame
+        scrollContainer.add(scrollPane).width(1200).height(200);
         stack.add(scrollContainer);
 
         contentTable.add(stack).padBottom(20).row();
 
-        // Level Name Label
+
         levelNameLabel = new Label("", bodyStyle);
         levelNameLabel.setAlignment(Align.center);
         contentTable.add(levelNameLabel).padBottom(30).minHeight(40).row();
 
-        // Back Button
+
         TextButton backButton = new TextButton("Back", game.getSkin(), "short");
         backButton.addListener(new ChangeListener() {
             @Override
@@ -271,7 +238,6 @@ public class LevelSelectionScreen implements Screen {
      * @param filename Filename of the map.
      */
     private void updateLabel(int index, String filename) {
-        // "Level X - [Custom Name]"
         String customName = getLevelName(index);
         String display = "Level " + index + " - " + customName;
         levelNameLabel.setText(display);
@@ -307,7 +273,6 @@ public class LevelSelectionScreen implements Screen {
      * @return Roman numeral string.
      */
     private String convertToRoman(int n) {
-        // Simple 1-10 converter
         String[] roman = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" };
         if (n > 0 && n <= 10)
             return roman[n - 1];
@@ -328,12 +293,9 @@ public class LevelSelectionScreen implements Screen {
         if (backgroundImage1 == null || backgroundImage2 == null)
             return;
 
-        // Scroll
         backgroundImage1.setX(backgroundImage1.getX() - scrollSpeed * delta);
         backgroundImage2.setX(backgroundImage2.getX() - scrollSpeed * delta);
 
-        // Update persistent state in StoryMenu so when we return, it's synced
-        // Normalize saved position to ensure consistency across screens
         float w = backgroundImage1.getWidth();
         float currentX = backgroundImage1.getX() % w;
         if (currentX > 0)

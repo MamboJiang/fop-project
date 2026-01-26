@@ -34,7 +34,7 @@ public class Enemy extends MovableObject {
     protected int pathIndex = 0;
     protected float pathTimer = 0;
     protected static final float PATH_UPDATE_INTERVAL = 0.5f;
-    protected float detectionRange = 64f; // 4 Tiles (16 * 4)
+    protected float detectionRange = 64f;
 
     protected float confusedTimer = 0f;
     protected float stunTimer = 0f;
@@ -72,7 +72,7 @@ public class Enemy extends MovableObject {
 
         this.bounds = new Rectangle(x + 4, y + 4, 8, 8);
 
-        this.health = 60; // Set initial health to 60
+        this.health = 60;
 
         this.maxSpeed = speed;
         this.acceleration = 50f;
@@ -85,8 +85,8 @@ public class Enemy extends MovableObject {
      * @param direction Direction of the knockback.
      */
     public void knockback(Vector2 direction) {
-        this.velocity.set(direction).scl(250f); // Knockback speed
-        this.stunTimer = 0.5f; // 0.5s stun
+        this.velocity.set(direction).scl(250f);
+        this.stunTimer = 0.5f;
     }
 
     /**
@@ -98,7 +98,6 @@ public class Enemy extends MovableObject {
         if (damageCooldownTimer <= 0) {
             this.health -= amount;
             this.damageFlashTime = FLASH_DURATION;
-            // Separate cooldown for enemies: 0.3s (allows combos)
             this.damageCooldownTimer = 0.3f;
 
             if (this.health <= 0) {
@@ -120,7 +119,6 @@ public class Enemy extends MovableObject {
 
         if (stunTimer > 0) {
             stunTimer -= delta;
-            // Apply friction to slide while stunned
             if (velocity.len() > 0) {
                 float friction = 300f;
                 float speed = velocity.len();
@@ -130,7 +128,6 @@ public class Enemy extends MovableObject {
                 velocity.setLength(speed);
             }
             updatePhysics(delta);
-            // Handle collision while sliding
             if (velocity.len() > 1f) {
                 float oldX = position.x;
                 position.x += velocity.x * delta;
@@ -148,7 +145,7 @@ public class Enemy extends MovableObject {
                     updateBounds();
                 }
             }
-            return; // Skip AI logic while stunned
+            return;
         }
 
         if (currentState == State.CHASE || currentState == State.RETREAT) {

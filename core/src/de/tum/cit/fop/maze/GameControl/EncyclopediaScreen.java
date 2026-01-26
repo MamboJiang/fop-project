@@ -16,7 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.viewport.ExtendViewport; // 推荐使用ExtendViewport适配不同屏幕
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.math.Interpolation;
 import de.tum.cit.fop.maze.MazeRunnerGame;
 import java.util.Map;
@@ -28,7 +28,7 @@ public class EncyclopediaScreen implements Screen {
     private final Skin skin;
     private final EncyclopediaManager encyclopediaManager;
 
-    // UI Assets
+
     private Texture backgroundTexture;
     private Image backgroundImage1;
     private Image backgroundImage2;
@@ -44,24 +44,23 @@ public class EncyclopediaScreen implements Screen {
 
     private Texture detailPanelTexture;
 
-    // Font Styles
+
     private Label.LabelStyle titleStyle;
     private Label.LabelStyle bodyStyle;
-    private Color themeColor = Color.valueOf("6699CC"); // 统一的淡蓝色
+    private Color themeColor = Color.valueOf("6699CC");
 
     public EncyclopediaScreen(MazeRunnerGame game) {
         this.game = game;
         this.skin = game.getSkin();
         this.encyclopediaManager = EncyclopediaManager.getInstance();
 
-        // Use ExtendViewport 1920x1080
         this.stage = new Stage(new ExtendViewport(1920, 1080), game.getSpriteBatch());
 
         loadAssets();
         setupStyles();
         buildUI();
 
-        // Update protagonist name
+
         if (this.encyclopediaManager.getAllEntries().containsKey("main_character")) {
             this.encyclopediaManager.getAllEntries().get("main_character").setName(game.getPlayerState().getUsername());
         }
@@ -69,7 +68,7 @@ public class EncyclopediaScreen implements Screen {
     }
 
     private void loadAssets() {
-        // 1. Background
+
         backgroundTexture = new Texture(Gdx.files.internal("selfmade/background.png"));
         backgroundImage1 = new Image(backgroundTexture);
         backgroundImage2 = new Image(backgroundTexture);
@@ -77,14 +76,12 @@ public class EncyclopediaScreen implements Screen {
         backgroundImage2.setScaling(Scaling.stretch);
         detailPanelTexture = new Texture(Gdx.files.internal("selfmade/uielements/levelbuttonbase.png"));
 
-        // Sync background position
         backgroundImage1.setPosition(StoryMenu.savedBackgroundX, 0);
         backgroundImage2.setPosition(StoryMenu.savedBackgroundX + stage.getWidth(), 0);
 
         stage.addActor(backgroundImage1);
         stage.addActor(backgroundImage2);
 
-        // 2. Cinematic Bars
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.BLACK);
         pixmap.fill();
@@ -95,10 +92,8 @@ public class EncyclopediaScreen implements Screen {
         stage.addActor(cinematicBarTop);
         stage.addActor(cinematicBarBottom);
 
-        // 3. UI Elements
         titleBgTexture = new Texture(Gdx.files.internal("selfmade/uielements/buttontype2.png"));
 
-        // Semi-transparent black background for cards
         Pixmap p2 = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         p2.setColor(0, 0, 0, 0.5f);
         p2.fill();
@@ -108,7 +103,6 @@ public class EncyclopediaScreen implements Screen {
     }
 
     private void setupStyles() {
-        // 使用 Hoefler Text 字体
         titleStyle = new Label.LabelStyle(skin.getFont("hoefler"), themeColor);
         bodyStyle = new Label.LabelStyle(skin.getFont("hoefler"), Color.WHITE);
     }
@@ -118,7 +112,6 @@ public class EncyclopediaScreen implements Screen {
         root.setFillParent(true);
         stage.addActor(root);
 
-        // --- 1. Title Section ---
         Table titleTable = new Table();
         titleTable.setBackground(new TextureRegionDrawable(titleBgTexture));
 
@@ -128,7 +121,6 @@ public class EncyclopediaScreen implements Screen {
 
         root.add(titleTable).padTop(80).padBottom(20).row();
 
-        // --- 2. Content Area (Grid) ---
         Table contentTable = new Table();
         contentTable.top();
 
@@ -138,7 +130,6 @@ public class EncyclopediaScreen implements Screen {
         for (EncyclopediaEntry entry : entries.values()) {
             boolean isUnlocked = game.getPlayerState().getDiscoveredEncyclopediaIds().contains(entry.getId());
 
-            // Create Card
             Table card = createEntryCard(entry, isUnlocked);
 
             contentTable.add(card).width(320).height(380).pad(20);
@@ -150,7 +141,6 @@ public class EncyclopediaScreen implements Screen {
             }
         }
 
-        // --- 3. Scroll Pane ---
         ScrollPane scrollPane = new ScrollPane(contentTable);
         scrollPane.setScrollingDisabled(true, false);
         scrollPane.setFadeScrollBars(false);
@@ -158,7 +148,6 @@ public class EncyclopediaScreen implements Screen {
 
         root.add(scrollPane).expand().fill().pad(20).padBottom(40).row();
 
-        // --- 4. Back Button ---
         TextButton backButton = createHoverButton("Back to Menu", "short");
         backButton.addListener(new ChangeListener() {
             @Override
@@ -207,7 +196,6 @@ public class EncyclopediaScreen implements Screen {
 
         card.setBackground(new TextureRegionDrawable(cardBgTexture));
 
-        // Icon Logic
         Image icon;
         Texture texture;
         try {
@@ -226,18 +214,15 @@ public class EncyclopediaScreen implements Screen {
             icon.setColor(Color.BLACK);
         }
 
-        // Text Logic
         String nameText = isUnlocked ? entry.getName() : "???";
         Label nameLabel = new Label(nameText, bodyStyle);
         nameLabel.setAlignment(Align.center);
         if (!isUnlocked)
             nameLabel.setColor(Color.GRAY);
 
-        // Assemble
         card.add(icon).size(128, 128).pad(20).row();
         card.add(nameLabel).padBottom(20).row();
 
-        // Interaction
         card.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -271,7 +256,6 @@ public class EncyclopediaScreen implements Screen {
             }
         };
 
-        // 设置 Dialog 背景为深色半透明，统一风格
         dialog.setBackground(new TextureRegionDrawable(detailPanelTexture));
 
         dialog.setMovable(false);
@@ -280,12 +264,10 @@ public class EncyclopediaScreen implements Screen {
         Table content = dialog.getContentTable();
         content.pad(50);
 
-        // 标题
-        Label titleLabel = new Label(entry.getName(), titleStyle); // 使用统一的主题色字体
+        Label titleLabel = new Label(entry.getName(), titleStyle);
         titleLabel.setFontScale(1.5f);
         content.add(titleLabel).padBottom(30).row();
 
-        // 图片
         try {
             Texture bigTex = new Texture(Gdx.files.internal(entry.getTexturePath()));
             Image bigImage = new Image(bigTex);
@@ -294,14 +276,12 @@ public class EncyclopediaScreen implements Screen {
         } catch (Exception e) {
         }
 
-        // 描述
-        Label descLabel = new Label(entry.getDescription(), bodyStyle); // 使用白色字体
+        Label descLabel = new Label(entry.getDescription(), bodyStyle);
         descLabel.setWrap(true);
         descLabel.setAlignment(Align.center);
         descLabel.setFontScale(1.1f);
         content.add(descLabel).width(700).padBottom(40).row();
 
-        // 关闭按钮
         TextButton closeBtn = createHoverButton("Close", "short");
         dialog.button(closeBtn, true);
         dialog.getButtonTable().getCell(closeBtn).width(200).height(60).padBottom(20);
@@ -323,18 +303,18 @@ public class EncyclopediaScreen implements Screen {
         if (backgroundImage1 == null || backgroundImage2 == null)
             return;
 
-        // Scrolling Logic
+
         backgroundImage1.setX(backgroundImage1.getX() - scrollSpeed * delta);
         backgroundImage2.setX(backgroundImage2.getX() - scrollSpeed * delta);
 
         float w = backgroundImage1.getWidth();
-        // Fix modulo for negative numbers
+
         float currentX = backgroundImage1.getX() % w;
         if (currentX > 0)
             currentX -= w;
         StoryMenu.savedBackgroundX = currentX;
 
-        // Loop
+
         if (backgroundImage1.getX() + w <= 0) {
             backgroundImage1.setX(backgroundImage2.getX() + w);
         }
@@ -350,13 +330,13 @@ public class EncyclopediaScreen implements Screen {
         float stageW = stage.getWidth();
         float stageH = stage.getHeight();
 
-        // 调整背景尺寸
+
         if (backgroundImage1 != null)
             backgroundImage1.setSize(stageW, stageH);
         if (backgroundImage2 != null)
             backgroundImage2.setSize(stageW, stageH);
 
-        // 调整黑边尺寸
+
         if (cinematicBarTop != null && cinematicBarBottom != null) {
             float barHeight = stageH * CINEMATIC_RATIO;
             cinematicBarBottom.setSize(stageW, barHeight);

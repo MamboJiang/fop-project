@@ -180,7 +180,7 @@ public class DialogueBox extends Group {
 
     private String targetText = "";
     private float charTimer = 0;
-    private float charsPerSecond = 30; // Speed
+    private float charsPerSecond = 30;
     private boolean typingFinished = true;
 
 

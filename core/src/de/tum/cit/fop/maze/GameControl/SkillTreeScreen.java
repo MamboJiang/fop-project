@@ -34,7 +34,7 @@ public class SkillTreeScreen implements Screen {
 
     private Label xpLabel;
 
-    // Background Fields
+
     private Texture backgroundTexture;
     private Image backgroundImage1;
     private Image backgroundImage2;
@@ -62,7 +62,6 @@ public class SkillTreeScreen implements Screen {
 
         loadAssets();
 
-        // Background Setup
         backgroundTexture = new Texture(Gdx.files.internal("selfmade/background.png"));
         backgroundImage1 = new Image(backgroundTexture);
         backgroundImage2 = new Image(backgroundTexture);
@@ -70,7 +69,6 @@ public class SkillTreeScreen implements Screen {
         backgroundImage1.setScaling(Scaling.stretch);
         backgroundImage2.setScaling(Scaling.stretch);
 
-        // Use saved position from StoryMenu
         backgroundImage1.setSize(stage.getWidth(), stage.getHeight());
         backgroundImage2.setSize(stage.getWidth(), stage.getHeight());
         backgroundImage1.setPosition(StoryMenu.savedBackgroundX, 0);
@@ -79,7 +77,6 @@ public class SkillTreeScreen implements Screen {
         stage.addActor(backgroundImage1);
         stage.addActor(backgroundImage2);
 
-        // Overlay Setup (Black)
         Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         p.setColor(0, 0, 0, 0.6f);
         p.fill();
@@ -89,7 +86,6 @@ public class SkillTreeScreen implements Screen {
         overlayImage.setSize(stage.getWidth(), stage.getHeight());
         stage.addActor(overlayImage);
 
-        // Cinematic Bars
         Pixmap p2 = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         p2.setColor(Color.BLACK);
         p2.fill();
@@ -101,7 +97,6 @@ public class SkillTreeScreen implements Screen {
         stage.addActor(cinematicBarTop);
         stage.addActor(cinematicBarBottom);
 
-        // Initialize root table
         rootTable = new Table();
         rootTable.setFillParent(true);
         stage.addActor(rootTable);
@@ -299,7 +294,6 @@ public class SkillTreeScreen implements Screen {
         backgroundImage1.setX(backgroundImage1.getX() - scrollSpeed * delta);
         backgroundImage2.setX(backgroundImage2.getX() - scrollSpeed * delta);
 
-        // Normalize saved position to ensure consistency across screens
         float w = backgroundImage1.getWidth();
         float currentX = backgroundImage1.getX() % w;
         if (currentX > 0)

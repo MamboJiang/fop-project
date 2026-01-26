@@ -83,7 +83,7 @@ public class DialogueScreen implements Screen {
         
 
         leftChar = new Image(tmp[0][0]);
-        leftChar.setScale(4f); // Make them big
+        leftChar.setScale(4f);
         leftChar.setPosition(100, 300);
         stage.addActor(leftChar);
         
@@ -147,7 +147,7 @@ public class DialogueScreen implements Screen {
             dialogueBox.setTailPosition(40f);
         } else {
             dialogueBox.setTailDirection(DialogueBox.TailDirection.RIGHT_DOWN);
-            dialogueBox.setTailPosition(dialogueBox.getWidth() - 40f - 16f); // 40px from right (-16 for tail width)
+            dialogueBox.setTailPosition(dialogueBox.getWidth() - 40f - 16f);
         }
         
 

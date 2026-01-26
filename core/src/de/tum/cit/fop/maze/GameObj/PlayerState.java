@@ -5,7 +5,6 @@ package de.tum.cit.fop.maze.GameObj;
  * Holds stats, level, xp, achievements, and upgrades.
  */
 public class PlayerState {
-    // Data exists mostly in memory, with JSON serialization for persistence
     private String username;
     private int currentXP;
     private int healthLevel;

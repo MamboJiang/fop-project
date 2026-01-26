@@ -122,7 +122,7 @@ public class AchievementManager {
      * Saves achievements (Implementation pending).
      */
     private void saveAchievements() {
-        // Placeholder for future save implementation
+
     }
 
     /**

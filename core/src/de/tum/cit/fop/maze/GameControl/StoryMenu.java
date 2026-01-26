@@ -72,6 +72,8 @@ public class StoryMenu implements Screen {
 
     private boolean isGameMenu = false;
 
+    private Table titleTable;
+
     public StoryMenu(MazeRunnerGame game) {
         this(game, false);
     }
@@ -144,6 +146,19 @@ public class StoryMenu implements Screen {
         bossTable.setSize(initialWidth, stage.getHeight());
         textLayerTable.setSize(initialWidth, stage.getHeight());
 
+
+        titleTable = new Table();
+        titleTable.setFillParent(true);
+        titleTable.top(); // 顶部对齐
+
+
+        Label.LabelStyle titleStyle = new Label.LabelStyle(game.getSkin().getFont("hoefler"), Color.WHITE);
+        Label titleLabel = new Label("UNDERMASK", titleStyle);
+        titleLabel.setFontScale(4.0f); // 放大 4 倍
+        titleLabel.setAlignment(Align.center);
+
+        titleTable.add(titleLabel).padTop(300);
+
         // Add to stage in correct order
         stage.addActor(backgroundImage1);
         stage.addActor(backgroundImage2);
@@ -152,6 +167,8 @@ public class StoryMenu implements Screen {
         stage.addActor(cinematicBarTop);// Bottom
         stage.addActor(gradientBg); // Middle
         stage.addActor(textLayerTable); // Top of Left Section
+
+        stage.addActor(titleTable);
 
         // --- Boss Content ---
         bossTexture = new Texture(Gdx.files.internal("player/lihui/bosssit.PNG"));
@@ -199,6 +216,12 @@ public class StoryMenu implements Screen {
 
         textTable.add(speakerLabel).expandX().padBottom(20).row();
         textTable.add(textAnimContainer).growX().padBottom(20).row();
+
+        if (!isGameMenu) {
+            titleTable.getColor().a = 0;
+            titleTable.addAction(Actions.fadeIn(1.0f));
+        }
+
 
         // Initial Text
         if (isGameMenu) {
@@ -302,6 +325,8 @@ public class StoryMenu implements Screen {
             }
         }
     }
+
+
 
     private void handleBossClick() {
         if (bossDialogueData == null)
@@ -438,6 +463,7 @@ public class StoryMenu implements Screen {
         if (state == 0) {
             playArrowFeedback();
             state = 1;
+            titleTable.addAction(Actions.fadeOut(0.5f));
             bossImage.addAction(Actions.fadeIn(1.0f));
             animateText("Welcome... to the Maze.");
             speakerLabel.setColor(0, 1, 1, 1);
@@ -713,7 +739,7 @@ public class StoryMenu implements Screen {
 
             menuTable.add(container).center();
 
-            animateText("Do you remember your name?");
+            animateText("Do you still remember your name?");
 
         } else if (state == STATE_OVERWRITE) {
             menuTable.clearChildren();

@@ -136,8 +136,6 @@ public class Character extends MovableObject {
      */
     private void loadAnimations() {
         characterTexture = new Texture(Gdx.files.internal("player/sprite/aligned_character.png"));
-        // TextureRegion[][] tmp = TextureRegion.split(texture, 16, 32); // Removed as
-        // we manually split
 
         Texture thingsTexture = new Texture(Gdx.files.internal("things.png"));
         TextureRegion[][] thingsTmp = TextureRegion.split(thingsTexture, 16, 16);
@@ -153,25 +151,21 @@ public class Character extends MovableObject {
         TextureRegion[] attUpFrames = new TextureRegion[4];
         TextureRegion[] attLeftFrames = new TextureRegion[4];
 
-        // Frame extraction
-        // Frame extraction for Walking
+
         int frameW = 26;
         int frameH = 46;
 
-        // Load Attack Texture
         Texture attSheet = new Texture(Gdx.files.internal("player/sprite/aligned_character_mask_knife.png"));
         int attFrameW = 32;
         int attFrameH = 48;
 
         for (int i = 0; i < 4; i++) {
-            // Walking: Rows 0-3, 46x26 from 'texture'
             downFrames[i] = new TextureRegion(characterTexture, i * frameW, 0, frameW, frameH);
             rightFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH * 3, frameW, frameH);
             upFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH * 2, frameW, frameH);
             leftFrames[i] = new TextureRegion(characterTexture, i * frameW, frameH, frameW, frameH);
 
-            // Attacking: Rows 0-3 from 'attSheet', 32x48
-            // Order assumption: Down(0), Right(1), Up(2), Left(3) to match previous logic
+
             attDownFrames[i] = new TextureRegion(attSheet, i * attFrameW, 0, attFrameW, attFrameH);
             attRightFrames[i] = new TextureRegion(attSheet, i * attFrameW, attFrameH * 3, attFrameW, attFrameH);
             attUpFrames[i] = new TextureRegion(attSheet, i * attFrameW, attFrameH * 2, attFrameW, attFrameH);
@@ -201,7 +195,6 @@ public class Character extends MovableObject {
 
         int frameW = 26;
         int frameH = 46;
-        // Recreate animations
         TextureRegion[] downFrames = new TextureRegion[4];
         TextureRegion[] rightFrames = new TextureRegion[4];
         TextureRegion[] upFrames = new TextureRegion[4];
@@ -223,7 +216,7 @@ public class Character extends MovableObject {
         if (!isAttacking) {
             isAttacking = true;
             attackTimer = 0f;
-            stateTime = 0f; // Reset animation time for the attack
+            stateTime = 0f;
         }
     }
 
@@ -245,7 +238,7 @@ public class Character extends MovableObject {
     private void collisionAddressing(GameObject hitObject, float oldPosition, boolean isXAxis) {
         if (hitObject != null) {
             if (hitObject.isMarkedForRemoval()) {
-                return; // Already collected/destroyed
+                return;
             }
 
             if (hitObject instanceof Wall || hitObject instanceof EntryPoint) {
@@ -308,7 +301,6 @@ public class Character extends MovableObject {
 
         handleInput(configManager);
 
-        // Attack Logic
         if (Gdx.input.isKeyJustPressed(Input.Keys.J)) {
             if (isAttackUnlocked() && !isAttacking) {
                 attack();
@@ -352,7 +344,6 @@ public class Character extends MovableObject {
         }
 
         updatePhysics(delta);
-        // ... existing code ...
 
         if (isMoving) {
 
@@ -437,7 +428,7 @@ public class Character extends MovableObject {
         if (isMoving || isAttacking) {
             this.textureRegion = currentAnim.getKeyFrame(stateTime, true);
         } else {
-            this.textureRegion = currentAnim.getKeyFrame(0, true); // Stand still frame
+            this.textureRegion = currentAnim.getKeyFrame(0, true);
         }
 
         if (damageFlashTime > 0) {
@@ -492,7 +483,6 @@ public class Character extends MovableObject {
         setupDamageFlash(batch);
 
         if (isAttacking) {
-            // Draw 24x36 sprite centered on 16x32 body (width difference 8 -> offset -4)
             batch.draw(textureRegion, position.x - 2, position.y, 20, 32);
         } else {
             batch.draw(textureRegion, position.x, position.y, width, height);
@@ -500,7 +490,6 @@ public class Character extends MovableObject {
 
         endDamageFlash(batch);
 
-        // drawArrow(batch); // Disabled as per user request
 
         batch.setColor(Color.WHITE);
 
@@ -512,8 +501,8 @@ public class Character extends MovableObject {
             float actualWidth = 26f;
             float actualHeight = 46f;
 
-            float drawX = (position.x + 8) - (actualWidth / 2); // Center on character center (pos.x+8)
-            float drawY = position.y + (32 - actualHeight) / 2; // Center vertically on character height (32)
+            float drawX = (position.x + 8) - (actualWidth / 2);
+            float drawY = position.y + (32 - actualHeight) / 2;
 
             batch.draw(shieldFrame, drawX, drawY, actualWidth, actualHeight);
 
@@ -728,7 +717,7 @@ public class Character extends MovableObject {
     public void setAttackUnlocked(boolean unlocked) {
         if (playerState != null) {
             playerState.setAttackUnlocked(unlocked);
-            game.saveGame(); // Save immediately upon unlocking
+            game.saveGame();
         }
     }
 
@@ -885,7 +874,7 @@ public class Character extends MovableObject {
      */
     public Rectangle getAttackRect() {
         Rectangle attackBox = new Rectangle(getBounds());
-        float range = 32f; // Doubled from 16f
+        float range = 32f;
 
         switch (currentDirection) {
             case UP:

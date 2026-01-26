@@ -15,18 +15,17 @@ public class MaskItem extends GameObject implements Collectable {
 
     @Override
     public void collect(Character character) {
-        // Grant key
+
         character.setHasKey(true);
 
-        // Change sprite
+
         character.loadMaskAppearance();
 
-        // Remove item
         setMarkedForRemoval(true);
 
         System.out.println("Mask obtained! Appearance changed.");
 
-        // Achievement tracking
+
         de.tum.cit.fop.maze.GameControl.AchievementManager.getInstance()
                 .onEvent(de.tum.cit.fop.maze.GameControl.EventType.COLLECT_ITEM, 1);
     }

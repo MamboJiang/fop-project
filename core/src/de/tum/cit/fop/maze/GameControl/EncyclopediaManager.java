@@ -85,7 +85,6 @@ public class EncyclopediaManager {
         EncyclopediaEntry drone = allEntries.get("enemy_drone");
 
         if (isStoryCompleted) {
-            // Truth Mode
             character.setTexturePath("player/lihui/maincharacterlh.png");
             character.setDescription(
                     "The mask is shattered. You realize the 'enemy' you killed was just a human trying to stop the virus. "
@@ -116,7 +115,6 @@ public class EncyclopediaManager {
                             +
                             "You didn't dismantle a war-mech. You executed a fellow survivor who was screaming for you to wake up.");
         } else {
-            // Standard Mode
             character.setName(state.getUsername());
             character.setDescription("The Runner. You woke up with no memory, knowing only that you must run. " +
                     "The maze feels dangerous, but you are determined to deliver the Serum to save humanity.");

@@ -22,7 +22,7 @@ public abstract class MovableObject extends GameObject {
     protected float damageCooldownTimer = 0f;
 
     protected static final float FLASH_DURATION = 0.15f;
-    protected static final float DAMAGE_COOLDOWN_DURATION = 1.0f; // 1 second invulnerability
+    protected static final float DAMAGE_COOLDOWN_DURATION = 1.0f;
 
     /**
      * Applies damage to the object if not in cooldown.
@@ -32,8 +32,8 @@ public abstract class MovableObject extends GameObject {
     public void takeDamage(int amount) {
         if (damageCooldownTimer <= 0) {
             this.health -= amount;
-            this.damageFlashTime = FLASH_DURATION; // Short visual flash
-            this.damageCooldownTimer = DAMAGE_COOLDOWN_DURATION; // Long invulnerability
+            this.damageFlashTime = FLASH_DURATION;
+            this.damageCooldownTimer = DAMAGE_COOLDOWN_DURATION;
 
             if (this.health <= 0) {
                 this.health = 0;
@@ -111,16 +111,15 @@ public abstract class MovableObject extends GameObject {
      */
     public MovableObject(float x, float y, float width, float height, TextureRegion textureRegion) {
         super(x, y, width, height, textureRegion);
-        this.health = 100; // Default
+        this.health = 100;
     }
 
-    // ... rest of physics code unchanged but copied here to be safe if replaced
 
     /**
      * Updates velocity based on input, acceleration and friction.
      */
     protected void updatePhysics(float delta) {
-        updateDamageFlash(delta); // Auto update flash timer
+        updateDamageFlash(delta);
 
         float targetX = inputVector.x * maxSpeed;
         float targetY = inputVector.y * maxSpeed;

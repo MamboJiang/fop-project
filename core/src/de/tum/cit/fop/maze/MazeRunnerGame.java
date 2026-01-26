@@ -25,26 +25,20 @@ import de.tum.cit.fop.maze.GameObj.PlayerState;
  * It manages the screens and global resources like SpriteBatch and Skin.
  */
 public class MazeRunnerGame extends Game {
-    // Screens
     private MenuScreen menuScreen;
     private GameScreen gameScreen;
 
-    // Sprite Batch for rendering
     private SpriteBatch spriteBatch;
 
-    // UI Skin
     private Skin skin;
 
-    // Character animation downwards
     private Animation<TextureRegion> characterDownAnimation;
-    
-    // Configuration Manager
+
     private ConfigManager configManager;
     public Music backgroundMusic;
     public Music warFogMusic;
     public Music bossFightMusic;
 
-    // Transition Effect
     private de.tum.cit.fop.maze.VFX.TransitionEffect transitionEffect;
 
     private PlayerState playerState;
@@ -83,26 +77,19 @@ public class MazeRunnerGame extends Game {
         
         transitionEffect = new de.tum.cit.fop.maze.VFX.TransitionEffect();
 
-        // --- Custom UI Setup ---
         try {
-            // Load custom font
             com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator generator = 
                 new com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator(Gdx.files.internal("other/Hoefler Text Regular.ttf"));
             com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter parameter = 
                 new com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter();
             parameter.size = 36;
-            // Optional: Add border for visibility if buttons are light, but assuming dark text or white on dark
-            // User requested specific font, I'll keep it simple first
             com.badlogic.gdx.graphics.g2d.BitmapFont customFont = generator.generateFont(parameter);
             generator.dispose();
             skin.add("hoefler", customFont);
-            
-            // Load button textures
+
             Texture btnBase = new Texture(Gdx.files.internal("selfmade/uielements/buttonbase.png"));
             Texture btnOn = new Texture(Gdx.files.internal("selfmade/uielements/buttonon.png"));
             Texture btnPressed = new Texture(Gdx.files.internal("selfmade/uielements/buttonpressed.png"));
-            
-            // Overwrite "default" TextButtonStyle
             com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle style = new com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle();
             com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableUp = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnBase));
             com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableOver = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnOn));
@@ -120,25 +107,20 @@ public class MazeRunnerGame extends Game {
             style.over = drawableOver;
             style.down = drawableDown;
             style.font = customFont;
-            style.fontColor = com.badlogic.gdx.graphics.Color.BLACK; // Using Black text for now, assuming light button or vice versa. 
-            // Wait, "buttonbase" often implies wood/stone. Let's try White first? Or check user intent.
-            // craft/craftacular usually has white text on dark buttons.
+            style.fontColor = com.badlogic.gdx.graphics.Color.BLACK;
             style.fontColor = com.badlogic.gdx.graphics.Color.WHITE; 
             
             skin.add("default", style, com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
 
-            // Load SHORT button textures
             Texture btnBaseShort = new Texture(Gdx.files.internal("selfmade/uielements/buttonbaseshort.png"));
             Texture btnOnShort = new Texture(Gdx.files.internal("selfmade/uielements/buttononshort.png"));
             Texture btnPressedShort = new Texture(Gdx.files.internal("selfmade/uielements/buttonpressedshort.png"));
 
-            // Define "short" style
             com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle shortStyle = new com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle();
             com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableUpShort = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnBaseShort));
             com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableOverShort = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnOnShort));
             com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableDownShort = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnPressedShort));
-            
-            // Apply scale to short buttons too
+
             drawableUpShort.setMinWidth(drawableUpShort.getMinWidth() * scale);
             drawableUpShort.setMinHeight(drawableUpShort.getMinHeight() * scale);
             drawableOverShort.setMinWidth(drawableOverShort.getMinWidth() * scale);
@@ -154,7 +136,6 @@ public class MazeRunnerGame extends Game {
 
             skin.add("short", shortStyle, com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
 
-            // Define "keybinding" style (Short texture, 0.75 scale)
             com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle keyBindingStyle = new com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle();
             com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable kbUp = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnBaseShort));
             com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable kbOver = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnOnShort));
@@ -175,19 +156,16 @@ public class MazeRunnerGame extends Game {
             keyBindingStyle.fontColor = com.badlogic.gdx.graphics.Color.WHITE;
 
             skin.add("keybinding", keyBindingStyle, com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
-            
-            // Load MIDDLE button textures
+
             Texture btnBaseMiddle = new Texture(Gdx.files.internal("selfmade/uielements/buttonbasemiddle.png"));
             Texture btnOnMiddle = new Texture(Gdx.files.internal("selfmade/uielements/buttononmiddle.png"));
             Texture btnPressedMiddle = new Texture(Gdx.files.internal("selfmade/uielements/buttonpressedmiddle.png"));
 
-            // Define "middle" style
             com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle middleStyle = new com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle();
             com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableUpMiddle = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnBaseMiddle));
             com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableOverMiddle = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnOnMiddle));
             com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable drawableDownMiddle = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(btnPressedMiddle));
-            
-            // Apply scale (assuming same scale as others)
+
             float middleScale = 0.4f;
             drawableUpMiddle.setMinWidth(drawableUpMiddle.getMinWidth() * middleScale);
             drawableUpMiddle.setMinHeight(drawableUpMiddle.getMinHeight() * middleScale);
@@ -204,7 +182,6 @@ public class MazeRunnerGame extends Game {
 
             skin.add("middle", middleStyle, com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
 
-            // Load LEVEL SELECT button textures
             Texture btnLevelBase = new Texture(Gdx.files.internal("selfmade/uielements/levelbuttonbase.png"));
             Texture btnLevelOn = new Texture(Gdx.files.internal("selfmade/uielements/levelbuttonon.png"));
             
@@ -220,7 +197,6 @@ public class MazeRunnerGame extends Game {
         } catch (Exception e) {
             Gdx.app.error("MazeRunnerGame", "Failed to load custom UI assets", e);
         }
-        // -----------------------
 
         this.loadCharacterAnimation();
         playerState = null;
@@ -238,7 +214,6 @@ public class MazeRunnerGame extends Game {
         bossFightMusic.setLooping(true);
         bossFightMusic.setVolume(configManager.getMusicVolume());
 
-        // Start with StoryMenu instead of MenuScreen
         setScreen(new de.tum.cit.fop.maze.GameControl.StoryMenu(this));
     }
 
@@ -252,7 +227,6 @@ public class MazeRunnerGame extends Game {
 
     public void goToMenu(boolean transition) {
         Runnable action = () -> {
-            // Stop Level/Boss Music
             if (warFogMusic != null && warFogMusic.isPlaying()) {
                 warFogMusic.stop();
             }
@@ -260,7 +234,6 @@ public class MazeRunnerGame extends Game {
                 bossFightMusic.stop();
             }
 
-            // Resume Background Music
             if (backgroundMusic != null && !backgroundMusic.isPlaying()) {
                 backgroundMusic.play();
             }
@@ -358,22 +331,15 @@ public class MazeRunnerGame extends Game {
      */
     public void goToEndlessModeVer2(String playerName) {
         playTransition(() -> {
-            // Ver2 uses a different tracking or resets wave?
-            // For now, let's reuse playerState.endlessWave but assume it starts at 1
-            // or modify GameScreen to handle "Floor 1-1" from difficulty 1.
 
             int startDifficulty = 1;
             if (playerState != null) {
                 startDifficulty = playerState.getEndlessWave();
             }
 
-            // Pass isEndlessVer2 = true (Need to modify GameScreen constructor first, but I will do it next)
-            // For now, I will use a temporary constructor signature or setter.
-            // Actually, I'll update GameScreen constructor signature in the next step.
-            // I'll call a new setter setEndlessVer2(true).
             
             GameScreen gs = new GameScreen(this, true, playerName);
-            gs.setEndlessVer2(true); // Will add this method in GameScreen
+            gs.setEndlessVer2(true);
             gs.setDifficulty(startDifficulty);
             this.setScreen(gs);
 
@@ -632,7 +598,6 @@ public class MazeRunnerGame extends Game {
         if (transitionEffect != null) {
             transitionEffect.start(onCovered);
         } else {
-            // Fallback if transition is null for some reason
             onCovered.run();
         }
     }

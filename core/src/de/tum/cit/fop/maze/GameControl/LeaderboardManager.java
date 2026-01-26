@@ -29,7 +29,7 @@ public class LeaderboardManager {
 
         @Override
         public int compareTo(ScoreEntry other) {
-            return other.score - this.score; // Descending order (higher score first)
+            return other.score - this.score;
         }
     }
 

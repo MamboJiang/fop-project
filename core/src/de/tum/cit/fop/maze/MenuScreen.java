@@ -13,8 +13,6 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-
-// Animation imports
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -51,13 +49,11 @@ public class MenuScreen implements Screen {
 
             contentTable.add(new Label("Maze Runner", game.getSkin(), "title")).padBottom(80).row();
 
-            // Add animated table for buttons
             animatedTable = new Table();
             contentTable.add(animatedTable).row();
 
             int latestSlot = de.tum.cit.fop.maze.GameControl.GameSaveManager.getLatestSaveSlot();
 
-            // Story Mode Button
             TextButton storyButton = createHoverButton("Story Mode", game.getSkin());
             animatedTable.add(storyButton).padBottom(15).row();
             storyButton.addListener(new ChangeListener() {
@@ -124,7 +120,6 @@ public class MenuScreen implements Screen {
             String title = "Welcome, " + game.getPlayerState().getUsername();
             contentTable.add(new Label(title, game.getSkin(), "title")).padBottom(50).row();
 
-            // Add animated table for buttons
             animatedTable = new Table();
             contentTable.add(animatedTable).row();
 
@@ -203,7 +198,6 @@ public class MenuScreen implements Screen {
             encyclopediaButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    // Switch to the screen just created
                     game.setScreen(new de.tum.cit.fop.maze.GameControl.EncyclopediaScreen(game));
                 }
             });
@@ -234,14 +228,14 @@ public class MenuScreen implements Screen {
      */
     private TextButton createHoverButton(String text, Skin skin) {
         final TextButton button = new TextButton(text, skin);
-        button.setTransform(true); // Enable transform for scaling
-        button.setOrigin(Align.center); // Scale from center
+        button.setTransform(true);
+        button.setOrigin(Align.center);
 
         button.addListener(new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 super.enter(event, x, y, pointer, fromActor);
-                if (pointer == -1) { // Mouse move
+                if (pointer == -1) {
                     button.clearActions();
                     button.addAction(Actions.scaleTo(1.1f, 1.1f, 0.1f, Interpolation.smooth));
                 }
@@ -281,18 +275,8 @@ public class MenuScreen implements Screen {
     public void show() {
         Gdx.input.setInputProcessor(stage);
 
-        // Entrance Animation: Slide up from bottom
-        // We use setTransform(true) on table if needed, but actions on position usually
-        // work fine.
-        // We set initial position below screen (-height)
-        // Note: setFillParent(true) layout might interfere if not handled, but Actions
-        // often override.
-        // If it snaps back, we might need to disable fillParent, but let's try this
-        // standard approach first.
-
         if (animatedTable != null) {
-            // Force layout to determine correct center position first
-            contentTable.pack(); // Force layout on the parent table
+            contentTable.pack();
 
             animatedTable.clearActions();
             animatedTable.addAction(Actions.sequence(

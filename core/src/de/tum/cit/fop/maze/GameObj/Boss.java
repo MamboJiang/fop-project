@@ -16,9 +16,8 @@ public class Boss extends Enemy {
     private BossState bossState = BossState.IDLE;
     private float stateTimer = 0f;
     private float maxHealth = 500f;
-    private boolean active = false; // Default inactive
+    private boolean active = false;
 
-    // Base stats
     private float normalSpeed = 60f;
     private float dashSpeed = 400f;
 
@@ -28,7 +27,6 @@ public class Boss extends Enemy {
     private List<Projectile> projectilesRef;
     private TextureRegion bulletTexture;
 
-    // Cache dash direction
     private Vector2 dashDirection = new Vector2();
 
     public Boss(float x, float y, Animation<TextureRegion>[] anims, Grid grid, Character target,
@@ -41,11 +39,8 @@ public class Boss extends Enemy {
         this.projectilesRef = projectiles;
         this.bulletTexture = bulletTex;
 
-        // Adjust collision bounds for larger Boss (proportionally smaller than visual
-        // size)
         this.bounds = new com.badlogic.gdx.math.Rectangle(x + 24, y + 24, 48, 48);
 
-        // Adjust physics for smoother movement
         this.acceleration = 1000f;
         this.friction = 800f;
     }
@@ -53,8 +48,6 @@ public class Boss extends Enemy {
     @Override
     public void update(float delta) {
         if (!active) {
-            // Can still update animation (idle) or do nothing
-            // Let's allow animation update so it doesn't freeze but stay in IDLE
             updateAnimation(delta);
             return;
         }
@@ -62,10 +55,8 @@ public class Boss extends Enemy {
         stateTimer += delta;
         dashCooldown -= delta;
 
-        // Reset inputs
         inputVector.set(0, 0);
 
-        // State Machine
         switch (bossState) {
             case IDLE:
                 handleIdle(delta);
@@ -80,13 +71,9 @@ public class Boss extends Enemy {
                 handleDashing(delta);
                 break;
         }
-
-        // 1. Calculate physics
         updatePhysics(delta);
 
-        // 2. Apply movement
         if (velocity.len() > 1f) {
-            // --- X Axis ---
             float oldX = position.x;
             position.x += velocity.x * delta;
             updateBounds();
@@ -96,7 +83,6 @@ public class Boss extends Enemy {
                 updateBounds();
             }
 
-            // --- Y Axis ---
             float oldY = position.y;
             position.y += velocity.y * delta;
             updateBounds();
@@ -109,7 +95,6 @@ public class Boss extends Enemy {
 
         updateAnimation(delta);
         if (this.getBounds().overlaps(target.getBounds())) {
-            // Check shield before dealing damage (same as regular enemies)
             if (!target.isShielded()) {
                 target.takeDamage(1);
             }
@@ -119,7 +104,6 @@ public class Boss extends Enemy {
             damageFlashTime -= delta;
     }
 
-    // Collision check using the grid
     private boolean checkCollision() {
         int minX = (int) (bounds.x / 16);
         int maxX = (int) ((bounds.x + bounds.width) / 16);
@@ -136,9 +120,9 @@ public class Boss extends Enemy {
         return false;
     }
 
-    // Select animation frame based on velocity
+
     private void updateAnimation(float delta) {
-        // Increment stateTime for animation playback
+
         stateTime += delta;
 
         if (velocity.len() > 10f) {
@@ -150,13 +134,13 @@ public class Boss extends Enemy {
             }
             this.textureRegion = currentAnim.getKeyFrame(stateTime, true);
         } else {
-            // Idle frame
+
             this.textureRegion = walkDown.getKeyFrame(stateTime, true);
         }
     }
 
     private void handleIdle(float delta) {
-        // IDLE 状态下 inputVector 保持为 0，物理引擎会自动应用摩擦力减速
+
 
         if (stateTimer > 0.3f) {
             float dist = Vector2.dst(position.x, position.y, target.getPosition().x, target.getPosition().y);
@@ -180,7 +164,7 @@ public class Boss extends Enemy {
     private void handleChase(float delta) {
         this.maxSpeed = normalSpeed;
 
-        // Set inputVector towards target
+
         Vector2 dir = new Vector2(target.getPosition()).sub(position).nor();
         inputVector.set(dir);
 
@@ -190,7 +174,7 @@ public class Boss extends Enemy {
     }
 
     private void handleShooting(float delta) {
-        // Stop movement during shooting (inputVector remains 0)
+
 
         shootCooldown -= delta;
         if (shootCooldown <= 0) {
@@ -205,11 +189,11 @@ public class Boss extends Enemy {
 
     private void shootProjectile() {
         if (projectilesRef != null) {
-            // Shoot from center
-            float centerX = position.x + width / 2 - 8; // Center bullet (assuming 16px bullet)
+
+            float centerX = position.x + width / 2 - 8;
             float centerY = position.y + height / 2 - 8;
 
-            // Aim at center of target
+
             com.badlogic.gdx.math.Rectangle targetBounds = target.getBounds();
             Vector2 targetCenter = new Vector2(
                     targetBounds.x + targetBounds.width / 2,
@@ -222,17 +206,17 @@ public class Boss extends Enemy {
     }
 
     private void handleDashing(float delta) {
-        // Enforce max speed
+
         this.maxSpeed = dashSpeed;
 
-        // Apply input to prevent friction from stopping boss
+
         inputVector.set(dashDirection);
 
-        // Check Dash end
+
         if (stateTimer > 0.5f) {
-            dashCooldown = 3.0f; // Reset cooldown
-            velocity.set(0, 0); // Stop immediately
-            switchState(BossState.CHASE); // Return to chase
+            dashCooldown = 3.0f;
+            velocity.set(0, 0);
+            switchState(BossState.CHASE);
         }
     }
 
@@ -241,14 +225,14 @@ public class Boss extends Enemy {
         this.stateTimer = 0f;
 
         if (newState == BossState.DASHING) {
-            // 1. Lock direction
+
             if (target != null) {
                 dashDirection = new Vector2(target.getPosition()).sub(position).nor();
             } else {
-                dashDirection.set(1, 0); // Fallback
+                dashDirection.set(1, 0);
             }
 
-            // 2. Instant velocity set, don't wait for acceleration
+
             velocity.set(dashDirection).scl(dashSpeed);
         }
     }
@@ -256,7 +240,7 @@ public class Boss extends Enemy {
     @Override
     public void draw(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
         setupDamageFlash(batch);
-        // Draw Boss at 96x96 size (centered offset by -8 to account for larger sprite)
+
         batch.draw(getTextureRegion(), getPosition().x - 8, getPosition().y - 8, 64, 64);
         endDamageFlash(batch);
     }

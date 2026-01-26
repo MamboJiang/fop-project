@@ -19,7 +19,7 @@ public class SaveSlotScreen implements Screen {
 
     private final MazeRunnerGame game;
     private final Stage stage;
-    private final boolean isLoading; // true = Load Game, false = New Game
+    private final boolean isLoading;
     private Table buttonsTable;
 
     /**
@@ -38,12 +38,10 @@ public class SaveSlotScreen implements Screen {
         
         String titleText = isLoading ? "Load Game - Select Slot" : "New Game - Select Slot";
         table.add(new Label(titleText, game.getSkin(), "title")).padBottom(50).row();
-        
-        // Container for animated buttons
+
         buttonsTable = new Table();
         table.add(buttonsTable).row();
-        
-        // 3 Slots
+
         for (int i = 0; i < 3; i++) {
             final int slotIndex = i;
             String summary = GameSaveManager.getSaveSummary(slotIndex);
@@ -134,11 +132,9 @@ public class SaveSlotScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
-        
-        // Entrance Animation
+
         if (buttonsTable != null) {
             buttonsTable.clearActions();
-            // Start below screen
             buttonsTable.addAction(Actions.sequence(
                 Actions.moveBy(0, -stage.getHeight()),
                 Actions.moveBy(0, stage.getHeight(), 0.3f, Interpolation.exp5Out)

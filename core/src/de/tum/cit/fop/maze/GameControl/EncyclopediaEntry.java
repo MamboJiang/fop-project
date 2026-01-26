@@ -23,7 +23,6 @@ public class EncyclopediaEntry {
         this.isSecret = false;
     }
 
-    // Getters...
     public String getId() {
         return id;
     }

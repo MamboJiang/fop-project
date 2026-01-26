@@ -74,7 +74,7 @@ public class PathFinder {
                 return reconstructPath(current);
             }
             
-            for (int[] offset : new int[][]{{0,1}, {0,-1}, {1,0}, {-1,0}}) { // 4-Directional
+            for (int[] offset : new int[][]{{0,1}, {0,-1}, {1,0}, {-1,0}}) {
                 int nx = current.x + offset[0];
                 int ny = current.y + offset[1];
                 

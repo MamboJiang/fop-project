@@ -180,7 +180,7 @@ public class StoryDialogueScreen implements Screen {
         
         logLabel = new Label("", game.getSkin());
         logLabel.setWrap(true);
-        logLabel.setAlignment(com.badlogic.gdx.utils.Align.topLeft); // Better reading
+        logLabel.setAlignment(com.badlogic.gdx.utils.Align.topLeft);
         
         ScrollPane scrollPane = new ScrollPane(logLabel, game.getSkin());
         scrollPane.setFadeScrollBars(false);

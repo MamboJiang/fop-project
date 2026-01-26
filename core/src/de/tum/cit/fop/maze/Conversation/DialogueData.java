@@ -60,7 +60,6 @@ public class DialogueData {
     public float getRightOffsetY() { return rightOffsetY; }
     public void setRightOffsetY(float rightOffsetY) { this.rightOffsetY = rightOffsetY; }
 
-    // Generic portrait fields replaced by specific Left/Right
     private float leftPortraitScale = 1.0f;
     private float leftPortraitOffsetX = 0f;
     private float leftPortraitOffsetY = 0f;

@@ -65,7 +65,6 @@ public class StoryScreen implements Screen {
         rootTable.setFillParent(true);
         stage.addActor(rootTable);
 
-        // Story Label
         storyLabel = new Label("", game.getSkin());
         storyLabel.setColor(Color.WHITE);
         storyLabel.setAlignment(Align.center);

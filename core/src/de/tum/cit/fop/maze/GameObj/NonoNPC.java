@@ -18,10 +18,8 @@ public class NonoNPC extends GameObject {
     
     public void update(float delta) {
         stateTime += delta;
-        // Bobbing animation: Up and down sine wave
         float offset = MathUtils.sin(stateTime * 3f) * 5f; 
         position.y = baseY + offset;
-        // Update collision/interaction bounds
         bounds.y = position.y;
     }
     

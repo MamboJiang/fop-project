@@ -33,7 +33,7 @@ public class CinematicScreen implements Screen {
     private final MazeRunnerGame game;
     private final Stage stage;
 
-    // Data
+
     private CinematicData cinematicData;
     private int frameIndex = -1;
     private String storyPath;
@@ -41,7 +41,7 @@ public class CinematicScreen implements Screen {
     private Runnable onFinish;
     private boolean finished = false;
 
-    // UI
+
     private Container<Label> textContainer;
     private Label dialogueText;
     private Image blueRect;
@@ -55,7 +55,7 @@ public class CinematicScreen implements Screen {
 
     private Table bottomContainer;
 
-    // Dialogue Integration
+
     private DialogueManager dialogueManager;
 
     /**
@@ -82,7 +82,7 @@ public class CinematicScreen implements Screen {
         this.onFinish = onFinish;
         this.stage = new Stage(new ExtendViewport(1920, 1080), game.getSpriteBatch());
 
-        // Initialize DialogueManager
+
         this.dialogueManager = new DialogueManager(game.getSkin(), game.getPlayerState());
         this.dialogueManager.setBackgroundScrimVisible(false);
 
@@ -97,17 +97,17 @@ public class CinematicScreen implements Screen {
             cinematicData = json.fromJson(CinematicData.class, file);
         } else {
             Gdx.app.error("CinematicScreen", storyPath + " not found!");
-            cinematicData = new CinematicData(); // Empty
+            cinematicData = new CinematicData();
         }
     }
 
     private void setupUI() {
-        // 1. Center Content (Stack)
+
         Table centerTable = new Table();
         centerTable.setFillParent(true);
         stage.addActor(centerTable);
 
-        // Blue Rect
+
         Pixmap p = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         p.setColor(0.0f, 0.4f, 0.8f, 1f);
         p.fill();
@@ -115,20 +115,20 @@ public class CinematicScreen implements Screen {
         p.dispose();
 
         blueRect = new Image(blueTexture);
-        blueRect.setSize(1500, 900); // Set size for origin calculation
+        blueRect.setSize(1500, 900);
         blueRect.setOrigin(Align.center);
-        blueRect.setScale(0); // Start hidden
+        blueRect.setScale(0);
         blueRect.setVisible(false);
 
-        // Story Image
+
         storyImage = new Image();
         storyImage.setSize(1500, 900);
-        storyImage.setScaling(Scaling.fit); // Maintain aspect ratio
+        storyImage.setScaling(Scaling.fit);
         storyImage.setOrigin(Align.center);
-        storyImage.setColor(1, 1, 1, 0); // Transparent
+        storyImage.setColor(1, 1, 1, 0);
         storyImage.setVisible(false);
 
-        // Stack them
+
         Stack stack = new Stack();
 
         Group blueRectGroup = new Group();
@@ -137,31 +137,31 @@ public class CinematicScreen implements Screen {
         stack.add(blueRectGroup);
         stack.add(storyImage);
 
-        // Center the stack
+
         centerTable.add(stack).size(1500, 900).center().padBottom(250);
 
-        // 2. Bottom Bar
+
         Table uiTable = new Table();
         uiTable.setFillParent(true);
         stage.addActor(uiTable);
         uiTable.bottom();
 
-        // Gradient
+
         Pixmap pix = new Pixmap(1, 500, Pixmap.Format.RGBA8888);
         for (int y = 0; y < 500; y++) {
             float alpha = 1.0f - ((float) y / 500f);
-            pix.setColor(0f, 0f, 0.4f, alpha * 0.9f); // Dark Blue
+            pix.setColor(0f, 0f, 0.4f, alpha * 0.9f);
             pix.drawPixel(0, 499 - y);
         }
         gradientTexture = new Texture(pix);
         pix.dispose();
 
         Table bottomContainer = new Table();
-        this.bottomContainer = bottomContainer; // Assign to field
+        this.bottomContainer = bottomContainer;
         bottomContainer.setBackground(new TextureRegionDrawable(gradientTexture));
         uiTable.add(bottomContainer).growX().height(450).bottom();
 
-        // Text
+
         Label.LabelStyle labelStyle = new Label.LabelStyle(game.getSkin().getFont("hoefler"),
                 com.badlogic.gdx.graphics.Color.WHITE);
         dialogueText = new Label("", labelStyle);
@@ -169,7 +169,7 @@ public class CinematicScreen implements Screen {
         dialogueText.setWrap(true);
         dialogueText.setFontScale(1.2f);
 
-        // Wrap in Container to enable actor-based scaling animation
+
         textContainer = new Container<>(dialogueText);
         textContainer.setTransform(true);
         textContainer.setOrigin(Align.center);
@@ -177,22 +177,20 @@ public class CinematicScreen implements Screen {
 
         bottomContainer.add(textContainer).growX().padLeft(100).padRight(100).padTop(50).row();
 
-        // Arrow
+
         createArrowTexture();
         arrowImage = new Image(arrowTexture);
         arrowImage.setOrigin(Align.center);
 
-        // Initial bobbing
         startBobbing();
 
         bottomContainer.add(arrowImage).size(32, 24).padBottom(30).padTop(10);
 
-        // Input
+
         stage.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // If Dialogue is active, do NOT advance frame from here.
-                // DialogueManager handles its own input.
+
                 if (dialogueManager.isActive())
                     return;
 
@@ -219,7 +217,7 @@ public class CinematicScreen implements Screen {
     }
 
     private void createArrowTexture() {
-        // Draw a white triangle V
+
         Pixmap p = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
         p.setColor(1, 1, 1, 1);
         for (int i = 0; i < 4; i++) {
@@ -246,67 +244,61 @@ public class CinematicScreen implements Screen {
     }
 
     private void updateFrame(CinematicData.CinematicFrame frame) {
-        // Text Animation: Pop big then back (Overshoot)
+
         dialogueText.setText(frame.getText());
         textContainer.clearActions();
-        textContainer.setScale(0f); // Start hidden immediately
+        textContainer.setScale(0f);
 
-        // Defer layout calculation to ensure Label wrapping is processed by Stage
+
         Gdx.app.postRunnable(() -> {
-            // Force layout update so the container has the correct size/pos before
-            // animation
+
             bottomContainer.layout();
             textContainer.setOrigin(Align.center);
 
-            // Use single SwingOut for smooth overshoot (pop and settle)
+
             textContainer.addAction(Actions.scaleTo(1.0f, 1.0f, 0.15f, Interpolation.swingOut));
         });
 
-        // Image Logic
         if (frame.isShowImage()) {
             String newImagePath = frame.getImage();
 
-            // Check if image is same as previous
+
             if (newImagePath != null && newImagePath.equals(currentImagePath) && storyTexture != null) {
-                // SKIP Animation - Keep everything visible
+
                 blueRect.setVisible(true);
-                blueRect.setScale(1.0f); // Ensure scale is 1
+                blueRect.setScale(1.0f);
                 blueRect.clearActions();
 
                 storyImage.setVisible(true);
-                storyImage.setColor(1, 1, 1, 1); // Ensure full alpha
+                storyImage.setColor(1, 1, 1, 1);
                 storyImage.clearActions();
 
-                // Check for special endings based on image path
+
                 if (newImagePath.endsWith("endstory.png")) {
-                    // Logic handled in updateFrame triggers
+
                 }
 
-                // Wait, if next frame has SAME image but DIFFERENT text, updateFrame is called.
-                // Check for Ending 5 Trigger (Specific Text)
+
                 if (frame.getText() != null && frame.getText().contains("###")) {
                     dialogueManager.loadDialogue("ending5");
                     dialogueManager.startDialogue();
                 }
 
             } else {
-                // NEW Image or First Image
+
                 currentImagePath = newImagePath;
 
-                // Always replay animation
+
                 blueRect.setVisible(true);
 
-                // Random rotation: +/- [3, 10] degrees
                 float randomAngle = MathUtils.randomSign() * MathUtils.random(3f, 5f);
                 blueRect.setRotation(randomAngle);
 
                 blueRect.setScale(0f);
 
-                // NO Overshoot for Rect (One time in place) -> exp5Out
                 blueRect.clearActions();
-                blueRect.addAction(Actions.scaleTo(1.0f, 1.0f, 0.2f, Interpolation.swingOut)); // 0.2s Fast
+                blueRect.addAction(Actions.scaleTo(1.0f, 1.0f, 0.2f, Interpolation.swingOut));
 
-                // Load Image
                 if (frame.getImage() != null) {
                     if (storyTexture != null)
                         storyTexture.dispose();
@@ -314,7 +306,6 @@ public class CinematicScreen implements Screen {
                         storyTexture = new Texture(Gdx.files.internal(frame.getImage()));
                         storyImage.setDrawable(new TextureRegionDrawable(storyTexture));
 
-                        // Match blueRect size to the fitted image size
                         Vector2 fittedSize = Scaling.fit.apply(storyTexture.getWidth(), storyTexture.getHeight(), 1500,
                                 900);
                         float w = fittedSize.x;
@@ -322,12 +313,10 @@ public class CinematicScreen implements Screen {
 
                         blueRect.setSize(w, h);
 
-                        // Manual centering in the 1500x900 group
                         blueRect.setPosition((1500 - w) / 2f, (900 - h) / 2f);
 
                         blueRect.setOrigin(Align.center);
 
-                        // Trigger Dialogue based on Image Name (User Request)
                         String imgPath = frame.getImage();
                         if (imgPath.endsWith("endstory.png")) {
                             dialogueManager.loadDialogue("ending1");
@@ -343,7 +332,6 @@ public class CinematicScreen implements Screen {
                                 dialogueManager.loadDialogue("ending5");
                                 dialogueManager.startDialogue();
                             } else {
-                                // Only start ending4 if valid and NOT ending5
                                 dialogueManager.loadDialogue("ending4");
                                 dialogueManager.startDialogue();
                             }
@@ -355,9 +343,8 @@ public class CinematicScreen implements Screen {
                 }
 
                 storyImage.setVisible(true);
-                storyImage.setColor(1, 1, 1, 0); // Transparent
+                storyImage.setColor(1, 1, 1, 0);
                 storyImage.clearActions();
-                // Wait for Rect (0.2s) then fade in fast (0.1s)
                 storyImage.addAction(Actions.sequence(
                         Actions.delay(0.1f),
                         Actions.fadeIn(0.1f)));
@@ -365,7 +352,7 @@ public class CinematicScreen implements Screen {
         } else {
             blueRect.setVisible(false);
             storyImage.setVisible(false);
-            currentImagePath = null; // Reset if image hidden
+            currentImagePath = null;
         }
     }
 
@@ -398,35 +385,28 @@ public class CinematicScreen implements Screen {
             inputDelayTimer -= delta;
         }
 
-        // 1. Draw Cinematic Stage (Background) FIRST
         stage.act(delta);
         stage.draw();
 
-        // 2. Handle Input & Draw Dialogue (Foreground)
         if (dialogueManager.isActive()) {
             if (Gdx.input.getInputProcessor() != dialogueManager.getStage()) {
                 Gdx.input.setInputProcessor(dialogueManager.getStage());
             }
-            // Update Dialogue
             dialogueManager.render(delta);
         } else {
             if (Gdx.input.getInputProcessor() != stage) {
                 Gdx.input.setInputProcessor(stage);
             }
-            // Handle Cinematic Input (Space)
             if (inputDelayTimer <= 0 && Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-                // Simulate click on arrow for feedback
                 playArrowFeedback();
                 nextFrame();
             }
         }
 
-        // Draw Dialogue on top if active is handled by dialogueManager.render()
     }
 
     @Override
     public void show() {
-        // Initial input processor
         Gdx.input.setInputProcessor(stage);
     }
 

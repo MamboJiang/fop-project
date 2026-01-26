@@ -18,19 +18,17 @@ public class Nono extends GameObject {
     private Animation<TextureRegion> idleDown, idleLeft, idleRight, idleUp;
     private Animation<TextureRegion> blinkDown, blinkLeft, blinkRight, blinkUp;
     private Animation<TextureRegion> currentAnim;
-    private int currentDirection = 0; // 0=Down, 1=Left, 2=Right, 3=Up
+    private int currentDirection = 0;
     private float hoverOffset = 0f;
     private Vector2 velocity = new Vector2();
 
-    // Blink Logic
     private float blinkTimer = 0f;
     private float nextBlinkTime;
     private boolean isBlinking = false;
     private float blinkStateTime = 0f;
 
-    // Movement Parameters
     private static final float LEASH_RADIUS = 30f;
-    private static final float MAX_SPEED = 200f; // Increased from 100f
+    private static final float MAX_SPEED = 200f;
     private static final float FRICTION = 0.9f;
 
     public Nono(float x, float y, Character target) {
@@ -46,24 +44,22 @@ public class Nono extends GameObject {
 
         float blinkDuration = 0.1f;
 
-        // Down (Row 0)
-        // Down (Row 0)
+
         idleDown = new Animation<>(1f, tmp[0][0]);
-        // Blink logic: Open -> Shut -> Open
+
         blinkDown = new Animation<>(blinkDuration, tmp[0][1], tmp[0][2]);
         blinkDown.setPlayMode(Animation.PlayMode.NORMAL);
 
-        // Left (Row 1)
+
         idleLeft = new Animation<>(1f, tmp[1][0]);
         blinkLeft = new Animation<>(blinkDuration, tmp[1][1], tmp[1][2]);
         blinkLeft.setPlayMode(Animation.PlayMode.NORMAL);
 
-        // Right (Row 2)
         idleRight = new Animation<>(1f, tmp[2][0]);
         blinkRight = new Animation<>(blinkDuration, tmp[2][1], tmp[2][2]);
         blinkRight.setPlayMode(Animation.PlayMode.NORMAL);
 
-        // Up (Row 3)
+
         idleUp = new Animation<>(1f, tmp[3][0]);
         blinkUp = new Animation<>(blinkDuration, tmp[3][1], tmp[3][2]);
         blinkUp.setPlayMode(Animation.PlayMode.NORMAL);
@@ -82,14 +78,11 @@ public class Nono extends GameObject {
     public void update(float delta) {
         stateTime += delta;
 
-        // Hovering effect
         hoverOffset = MathUtils.sin(stateTime * 5f) * 1.5f;
 
         if (target != null) {
-            // Update objective position
             updateObjective();
 
-            // Center-to-center distance check
             float targetCenterX = target.getPosition().x + target.getWidth() / 2;
             float targetCenterY = target.getPosition().y + target.getHeight() / 2;
             float myCenterX = position.x + width / 2;
@@ -97,49 +90,46 @@ public class Nono extends GameObject {
 
             float distToPlayer = Vector2.dst(myCenterX, myCenterY, targetCenterX, targetCenterY);
 
-            // Determine where Nono should fly
             Vector2 desiredPosition = new Vector2(targetCenterX, targetCenterY);
 
             if (objectivePosition != null) {
-                // Fly towards objective, but not beyond leash range from player
+
                 float objX = objectivePosition.x;
                 float objY = objectivePosition.y;
 
-                // Calculate direction from player to objective
+
                 float dirX = objX - targetCenterX;
                 float dirY = objY - targetCenterY;
                 float distToObj = (float) Math.sqrt(dirX * dirX + dirY * dirY);
 
                 if (distToObj > 0.1f) {
-                    // Normalize direction
+
                     dirX /= distToObj;
                     dirY /= distToObj;
 
-                    // Nono's ideal position is along the line from player to objective
-                    // but clamped to LEASH_RADIUS from player
+
                     float maxDist = Math.min(LEASH_RADIUS, distToObj);
-                    desiredPosition.x = targetCenterX + dirX * maxDist * 0.8f; // 80% of max distance
+                    desiredPosition.x = targetCenterX + dirX * maxDist * 0.8f;
                     desiredPosition.y = targetCenterY + dirY * maxDist * 0.8f;
                 }
             }
 
-            // Calculate pull towards desired position
+
             float pullX = desiredPosition.x - myCenterX;
             float pullY = desiredPosition.y - myCenterY;
             float distToDesired = (float) Math.sqrt(pullX * pullX + pullY * pullY);
 
-            // Apply force towards desired position
-            if (distToDesired > 2f) { // Dead zone to prevent jitter
-                float force = distToDesired * 30f; // Adjust stiffness
+
+            if (distToDesired > 2f) {
+                float force = distToDesired * 30f;
                 float angle = MathUtils.atan2(pullY, pullX);
                 velocity.x += MathUtils.cos(angle) * force * delta;
                 velocity.y += MathUtils.sin(angle) * force * delta;
             }
 
-            // Apply Velocity
+
             velocity.scl(FRICTION);
 
-            // Clamp to MAX_SPEED
             if (velocity.len() > MAX_SPEED) {
                 velocity.setLength(MAX_SPEED);
             }
@@ -147,24 +137,23 @@ public class Nono extends GameObject {
             position.x += velocity.x * delta;
             position.y += velocity.y * delta;
 
-            // Determine Direction
             if (velocity.len() > 10f) {
                 if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
                     if (velocity.x > 0)
-                        currentDirection = 2; // Right
+                        currentDirection = 2;
                     else
-                        currentDirection = 1; // Left
+                        currentDirection = 1;
                 } else {
                     if (velocity.y > 0)
-                        currentDirection = 3; // Up
+                        currentDirection = 3;
                     else
-                        currentDirection = 0; // Down
+                        currentDirection = 0;
                 }
             }
 
         }
 
-        // Blink Logic
+
         if (!isBlinking) {
             blinkTimer += delta;
             if (blinkTimer >= nextBlinkTime) {
@@ -175,7 +164,7 @@ public class Nono extends GameObject {
             }
         } else {
             blinkStateTime += delta;
-            // Check if animation finished
+
             Animation<TextureRegion> checkAnim = null;
             switch (currentDirection) {
                 case 0:
@@ -195,8 +184,6 @@ public class Nono extends GameObject {
                 isBlinking = false;
             }
         }
-
-        // Select Animation
         if (isBlinking) {
             switch (currentDirection) {
                 case 0:
@@ -240,8 +227,7 @@ public class Nono extends GameObject {
         float minDst = Float.MAX_VALUE;
         boolean hasKey = target.hasKey();
 
-        // Priority order: MaskItem > Key > AttackUnlockItem (if no key) > Exit (if has
-        // key)
+
         for (GameObject obj : mapObjects) {
             if (obj instanceof MaskItem) {
                 float dst = Vector2.dst2(target.getPosition().x, target.getPosition().y,
@@ -254,7 +240,6 @@ public class Nono extends GameObject {
             }
         }
 
-        // If no MaskItem, look for Key
         if (objectivePosition == null && !hasKey) {
             for (GameObject obj : mapObjects) {
                 if (obj instanceof Key) {
@@ -269,7 +254,6 @@ public class Nono extends GameObject {
             }
         }
 
-        // If no Key and no key held, look for AttackUnlockItem
         if (objectivePosition == null && !hasKey) {
             for (GameObject obj : mapObjects) {
                 if (obj instanceof AttackUnlockItem) {
@@ -284,7 +268,6 @@ public class Nono extends GameObject {
             }
         }
 
-        // If has key or no items found, look for Exit
         if (objectivePosition == null || hasKey) {
             for (GameObject obj : mapObjects) {
                 if (obj instanceof Exit) {

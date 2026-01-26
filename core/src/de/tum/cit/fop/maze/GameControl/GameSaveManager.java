@@ -109,7 +109,7 @@ public class GameSaveManager {
         com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("MazeRunnerGlobalPrefs");
         int slot = prefs.getInteger("default_save_slot", -1);
         if (slot != -1 && !hasSave(slot)) {
-            return -1; // Reset if file deleted
+            return -1;
         }
         return slot;
     }
@@ -124,7 +124,6 @@ public class GameSaveManager {
         if (file.exists()) {
             file.delete();
 
-            // If we deleted the default save, clear the preference
             if (getDefaultSaveSlot() == slotIndex) {
                 com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("MazeRunnerGlobalPrefs");
                 prefs.remove("default_save_slot");
