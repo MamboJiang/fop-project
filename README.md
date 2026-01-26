@@ -254,15 +254,16 @@ classDiagram
 
 ## Key Features
 
-- **Polished Story Mode**: A meticulously crafted narrative campaign featuring immersive visual-novel storytelling.
-- **Visual Novel Interface**: Classic storytelling UI featuring character portraits and dialogue boxes.
-- **Interactive Title Screen**: Click and interact with the character directly on the main menu for unique dialogues.
-- **Loyal Companion**: A dedicated sidekick character that follows and accompanies you throughout the maze.
-- **Strategic Combat**: Battle enemies featuring distinct pathfinding logic, unique behaviors, and specific kill strategies.
-- **RPG Elements**: Level up and customize your character's stats in Endless Mode.
-- **Encyclopedia System**: Automatically unlocks entries for characters, enemies, and items as you encounter them.
-- **Dynamic Lighting**: Atmospheric visual effects including fog of war.
-- **Smooth Movement**: Physics-based controls with smart corner sliding.
-- **Online Leaderboard**: Track your best runs against players worldwide.
-- **Hand-Crafted Assets**: Features 50+ original illustrations, 3 music tracks, and 6 custom sound effects.
+-   **Cinematic Storytelling**: A meticulously crafted narrative campaign featuring immersive visual-novel storytelling.
+-   **Smooth Movement**: Physics-based controls with smart corner sliding.
+-   **Loyal Companion**: A dedicated sidekick character that follows and accompanies you throughout the maze.
+-   **Strategic Combat**: Battle enemies featuring distinct pathfinding logic, unique behaviors, and specific kill strategies.
+-   **Epic Boss Battles**: Challenge the ultimate boss with complex attack patterns and strategic mechanics.
+-   **Character-Driven Dialogue**: Experience the story through an expressive interface with dynamic character sprites.
+-   **RPG Elements**: Level up and customize your character's stats in Endless Mode.
+-   **Dynamic Lighting**: Atmospheric visual effects including fog of war.
+-   **Encyclopedia System**: Automatically unlocks entries for characters, enemies, and items as you encounter them.
+-   **Interactive Menu Screen**: Click and interact with the character directly on the main menu for unique dialogues.
+-   **Online Leaderboard**: Track your best runs against players worldwide.
+-   **Hand-Crafted Assets**: Features 50+ original illustrations, 3 music tracks, and 6 custom sound effects.
 
