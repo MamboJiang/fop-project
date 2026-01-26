@@ -158,7 +158,9 @@ public class StoryMenu implements Screen {
         titleLabel.setAlignment(Align.center);
 
         titleTable.add(titleLabel).padTop(300);
-
+        if (isGameMenu) {
+            titleTable.setVisible(false);
+        }
         // Add to stage in correct order
         stage.addActor(backgroundImage1);
         stage.addActor(backgroundImage2);

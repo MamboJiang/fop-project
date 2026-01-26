@@ -254,11 +254,15 @@ classDiagram
 
 ## Key Features
 
--   **Cinematic Storytelling**: Immersive visual-novel style intros and endings.
--   **Encyclopedia System**: Automatically unlocks entries for characters, enemies, and items as you encounter them.
--   **RPG Elements**: Level up and customize your character's stats in Endless Mode.
--   **Dynamic Lighting**: Atmospheric visual effects including fog of war.
--   **Smooth Movement**: Physics-based controls with smart corner sliding.
--   **Online Leaderboard**: Track your best runs against players worldwide.
--   **Original Soundtrack**: Enjoy custom-composed music and sound effects created specifically for this game.
+- **Polished Story Mode**: A meticulously crafted narrative campaign featuring immersive visual-novel storytelling.
+- **Visual Novel Interface**: Classic storytelling UI featuring character portraits and dialogue boxes.
+- **Interactive Title Screen**: Click and interact with the character directly on the main menu for unique dialogues.
+- **Loyal Companion**: A dedicated sidekick character that follows and accompanies you throughout the maze.
+- **Strategic Combat**: Battle enemies featuring distinct pathfinding logic, unique behaviors, and specific kill strategies.
+- **RPG Elements**: Level up and customize your character's stats in Endless Mode.
+- **Encyclopedia System**: Automatically unlocks entries for characters, enemies, and items as you encounter them.
+- **Dynamic Lighting**: Atmospheric visual effects including fog of war.
+- **Smooth Movement**: Physics-based controls with smart corner sliding.
+- **Online Leaderboard**: Track your best runs against players worldwide.
+- **Hand-Crafted Assets**: Features 50+ original illustrations, 3 music tracks, and 6 custom sound effects.
 
