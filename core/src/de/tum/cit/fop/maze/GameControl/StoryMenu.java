@@ -221,7 +221,7 @@ public class StoryMenu implements Screen {
 
 
         if (isGameMenu) {
-            animateText("Welcome back to the Maze.");
+            animateText("Welcome back to the Undermask.");
         } else {
             animateText("You are in a chaos\nPress [space] to continue");
         }
@@ -454,7 +454,7 @@ public class StoryMenu implements Screen {
             state = 1;
             titleTable.addAction(Actions.fadeOut(0.5f));
             bossImage.addAction(Actions.fadeIn(1.0f));
-            animateText("Welcome... to the Maze.");
+            animateText("Welcome... to the Undermask.");
             speakerLabel.setColor(0, 1, 1, 1);
             speakerLabel.setVisible(true);
 
@@ -474,7 +474,7 @@ public class StoryMenu implements Screen {
         Table btnContainer = new Table();
         Skin skin = game.getSkin();
 
-        TextButton selectLevelBtn = createHoverButton("Select Level", skin, "middle");
+        TextButton selectLevelBtn = createHoverButton("Story Mode", skin, "middle");
         selectLevelBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -701,7 +701,7 @@ public class StoryMenu implements Screen {
                 public void changed(ChangeEvent event, Actor actor) {
                     menuTable.clearChildren();
                     addMenuButtons();
-                    animateText("Welcome back to the Maze.");
+                    animateText("Welcome back to the Undermask.");
                 }
             });
 
