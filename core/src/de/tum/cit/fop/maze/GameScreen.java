@@ -1047,7 +1047,7 @@ public class GameScreen implements Screen {
 
         if (level5EndingTriggered) {
             endingTimer += delta;
-            if (endingTimer > 2.5f) {
+            if (endingTimer > 1.0f) {
                 game.setScreen(
                         new de.tum.cit.fop.maze.GameControl.CinematicScreen(game, "story/data/ending.json", () -> {
                             game.goToMenu(false);
