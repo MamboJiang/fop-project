@@ -212,6 +212,7 @@ classDiagram
     }
     Collectable <|.. Heart
     Collectable <|.. ShieldItem
+    Collectable <|.. Key
     DungeonController --> Room : manages
     Enemy ..> PathFinder : uses
     PathFinder ..> Grid : uses
