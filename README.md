@@ -203,6 +203,15 @@ classDiagram
     GameScreen --> DialogueManager : owns
     GameScreen --> DungeonController : uses
     GameScreen ..> DungeonGeneratorV2 : uses
+    GameScreen --> MapLoader : uses
+    class MapLoader {
+        +loadMap(FileHandle) : List~GameObject~
+    }
+    class Collectable { <<interface>>
+        +collect(Character)
+    }
+    Collectable <|.. Heart
+    Collectable <|.. ShieldItem
     DungeonController --> Room : manages
     Enemy ..> PathFinder : uses
     PathFinder ..> Grid : uses
