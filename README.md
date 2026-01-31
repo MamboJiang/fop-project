@@ -199,6 +199,7 @@ classDiagram
     MazeRunnerGame --> AchievementManager : accesses
     MazeRunnerGame --> EncyclopediaManager : accesses
     GameScreen --> HUD : owns
+    GameScreen --> MazeRunnerGame : uses
     GameScreen --> DialogueManager : owns
     GameScreen --> DungeonController : uses
     GameScreen ..> DungeonGeneratorV2 : uses
