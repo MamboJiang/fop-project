@@ -46,7 +46,6 @@ public class StoryMenu implements Screen {
     private Image arrowImage;
     private Table dialogueContainer;
 
-
     private Label speakerLabel;
     private Label textLabel;
     private com.badlogic.gdx.scenes.scene2d.ui.Container<Label> textAnimContainer;
@@ -90,7 +89,8 @@ public class StoryMenu implements Screen {
     }
 
     /**
-     * Initializes the UI components including background, layers, and interactive elements.
+     * Initializes the UI components including background, layers, and interactive
+     * elements.
      */
     private void setupUI() {
         Pixmap pix = new Pixmap(1, 500, Pixmap.Format.RGBA8888);
@@ -133,7 +133,6 @@ public class StoryMenu implements Screen {
         bossTable.setFillParent(false);
         bossTable.bottom().left();
 
-
         textLayerTable = new Table();
         textLayerTable.setFillParent(false);
         textLayerTable.bottom().left();
@@ -143,11 +142,9 @@ public class StoryMenu implements Screen {
         bossTable.setSize(initialWidth, stage.getHeight());
         textLayerTable.setSize(initialWidth, stage.getHeight());
 
-
         titleTable = new Table();
         titleTable.setFillParent(true);
         titleTable.top();
-
 
         Label.LabelStyle titleStyle = new Label.LabelStyle(game.getSkin().getFont("hoefler"), Color.WHITE);
         Label titleLabel = new Label("UNDERMASK", titleStyle);
@@ -183,13 +180,11 @@ public class StoryMenu implements Screen {
 
         bossTable.add(bossImage).grow().padTop(com.badlogic.gdx.scenes.scene2d.ui.Value.percentHeight(0.2f, bossTable));
 
-
         Gdx.app.postRunnable(() -> {
             bossTable.layout();
             bossImage.setOrigin(Align.center);
             bossImage.setScale(1.3f);
         });
-
 
         dialogueContainer = new Table();
         Table textTable = new Table();
@@ -218,7 +213,6 @@ public class StoryMenu implements Screen {
             titleTable.getColor().a = 0;
             titleTable.addAction(Actions.fadeIn(1.0f));
         }
-
 
         if (isGameMenu) {
             animateText("Welcome back to the Undermask.");
@@ -293,7 +287,6 @@ public class StoryMenu implements Screen {
             menuTable.setPosition(stage.getWidth(), 0);
             menuTable.setVisible(false);
 
-
             stage.addAction(Actions.delay(0.01f, Actions.run(this::transitionToMenu)));
         }
     }
@@ -313,8 +306,6 @@ public class StoryMenu implements Screen {
         }
     }
 
-
-
     /**
      * Handles clicks on the boss image to trigger dialogue or interactions.
      */
@@ -330,15 +321,12 @@ public class StoryMenu implements Screen {
 
         String textToSay = "";
 
-
         com.badlogic.gdx.utils.JsonValue milestones = bossDialogueData.get("milestones");
         if (milestones != null && milestones.has(String.valueOf(bossClickCount))) {
             textToSay = milestones.getString(String.valueOf(bossClickCount));
-        }
-        else if (bossClickCount > 100) {
+        } else if (bossClickCount > 100) {
             textToSay = String.valueOf(bossClickCount);
-        }
-        else {
+        } else {
             java.util.List<String> pool = new java.util.ArrayList<>();
 
             com.badlogic.gdx.utils.JsonValue common = bossDialogueData.get("common");
@@ -375,15 +363,15 @@ public class StoryMenu implements Screen {
         bossImage.clearActions();
         bossImage.addAction(Actions.sequence(
                 Actions.scaleTo(1.2f, 1.2f, 0.1f),
-                Actions.scaleTo(1.3f, 1.3f, 0.1f)
-        ));
+                Actions.scaleTo(1.3f, 1.3f, 0.1f)));
 
     }
 
     /**
      * Creates a styled text button with hover animation.
-     * @param text Button label.
-     * @param skin UI skin.
+     * 
+     * @param text      Button label.
+     * @param skin      UI skin.
      * @param styleName Style name in the skin.
      * @return The created TextButton.
      */
@@ -416,6 +404,7 @@ public class StoryMenu implements Screen {
 
     /**
      * Animates text appearance in the dialogue box.
+     * 
      * @param text The text to display.
      */
     private void animateText(String text) {
@@ -482,17 +471,16 @@ public class StoryMenu implements Screen {
             }
         });
 
-
         TextButton endlessV2Btn = createHoverButton("Endless Mode", skin, "middle");
         endlessV2Btn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 de.tum.cit.fop.maze.GameObj.PlayerState state = game.getPlayerState();
-                if (state.isAttackUnlocked() || state.isNonoUnlocked()) {
+                if (state.getCompletedLevels().size() >= 6) {
                     game.goToEndlessModeVer2(state.getUsername());
                 } else {
                     animateText(
-                            "You need to be able to attack first or you are not qualified yet! Play your story first!");
+                            "You need to complete the story mode first!");
                 }
             }
         });
@@ -560,7 +548,6 @@ public class StoryMenu implements Screen {
     private Table inputTable;
     private Table overwriteTable;
     private com.badlogic.gdx.scenes.scene2d.ui.TextField nameInput;
-
 
     /**
      * Adds buttons for the main menu.
@@ -652,6 +639,7 @@ public class StoryMenu implements Screen {
 
     /**
      * Switches the menu state and updates UI accordingly.
+     * 
      * @param newState The new state ID.
      */
     private void setState(int newState) {
@@ -803,6 +791,7 @@ public class StoryMenu implements Screen {
 
     /**
      * Renders the menu screen.
+     * 
      * @param delta Time delta.
      */
     @Override
@@ -828,6 +817,7 @@ public class StoryMenu implements Screen {
 
     /**
      * Updates the scrolling background position.
+     * 
      * @param delta Time delta.
      */
     private void updateBackground(float delta) {
@@ -865,7 +855,8 @@ public class StoryMenu implements Screen {
 
     /**
      * Resizes the viewport.
-     * @param width New width.
+     * 
+     * @param width  New width.
      * @param height New height.
      */
     @Override
